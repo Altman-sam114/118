@@ -1,0 +1,13 @@
+.DS_Store
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Generated native backend artifacts.
+NativeBackend/Build/
+LocalDiffusion/Frameworks/*.xcframework/
+
+# Runtime assets are stored in Application Support on device.
+*.gguf
+*.safetensors
+*.ckpt

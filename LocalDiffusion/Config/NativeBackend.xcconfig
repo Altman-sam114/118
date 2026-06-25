@@ -1,0 +1,6 @@
+// Include this xcconfig in the LocalDiffusion target after installing
+// LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework.
+
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) USE_STABLE_DIFFUSION_CPP
+FRAMEWORK_SEARCH_PATHS = $(inherited) "$(PROJECT_DIR)/LocalDiffusion/Frameworks"
+OTHER_LDFLAGS = $(inherited) -lc++ -framework Accelerate -framework CoreGraphics -framework Foundation -framework ImageIO -framework Metal -framework UniformTypeIdentifiers

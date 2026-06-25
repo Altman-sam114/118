@@ -1,0 +1,1290 @@
+import SwiftData
+import SwiftUI
+import UniformTypeIdentifiers
+
+struct ModelLibraryView: View {
+    let fileStore: AppFileStore
+
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var downloads: HuggingFaceDownloadManager
+    @Query(sort: \LocalModel.updatedAt, order: .reverse) private var models: [LocalModel]
+    @State private var showingAddModel = false
+    @State private var modelDirectoryBytes: Int64 = 0
+    @State private var showingModelFileImporter = false
+    @State private var isImportingModelFile = false
+    @State private var pendingModelDeletion: ModelDeletionState?
+    @State private var pendingUntrackedModelDeletion: UntrackedModelFile?
+    @State private var importingUntrackedModel: UntrackedModelFile?
+    @State private var inspectedModel: LocalModel?
+    @State private var deleteErrorMessage: String?
+    @State private var untrackedModelFiles: [UntrackedModelFile] = []
+
+    private var readyModels: [LocalModel] {
+        models.filter(\.isReady)
+    }
+
+    private var trackedModelBytes: Int64 {
+        readyModels.reduce(0) { $0 + $1.downloadedBytes }
+    }
+
+    private var untrackedModelBytes: Int64 {
+        untrackedModelFiles.reduce(0) { $0 + $1.bytes }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if models.isEmpty, untrackedModelFiles.isEmpty {
+                    VStack(spacing: 12) {
+                        EmptyStateView(
+                            systemImage: "shippingbox",
+                            title: "No models",
+                            message: "Add a Hugging Face GGUF model to begin."
+                        )
+
+                        Button {
+                            showingAddModel = true
+                        } label: {
+                            Label("Download from Hugging Face", systemImage: "arrow.down")
+                        }
+                        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+
+                        Button {
+                            showingModelFileImporter = true
+                        } label: {
+                            Label("Import GGUF File", systemImage: "square.and.arrow.down")
+                        }
+                        .buttonStyle(SciFiSecondaryButtonStyle())
+                        .disabled(isImportingModelFile)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                } else {
+                    storageSections
+                }
+            }
+            .navigationTitle("Models")
+            .sciFiScreen()
+            .bottomTabBarClearance()
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        reconcileModelFiles()
+                    } label: {
+                        Label("Refresh Storage", systemImage: "arrow.clockwise")
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button {
+                            showingAddModel = true
+                        } label: {
+                            Label("Download from Hugging Face", systemImage: "arrow.down")
+                        }
+
+                        Button {
+                            showingModelFileImporter = true
+                        } label: {
+                            Label("Import GGUF File", systemImage: "square.and.arrow.down")
+                        }
+                        .disabled(isImportingModelFile)
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddModel) {
+                AddModelView(fileStore: fileStore, existingModels: models) { model in
+                    modelContext.insert(model)
+                    try? modelContext.save()
+                    downloads.start(model)
+                }
+            }
+            .fileImporter(
+                isPresented: $showingModelFileImporter,
+                allowedContentTypes: [UTType(filenameExtension: "gguf") ?? .data],
+                allowsMultipleSelection: false
+            ) { result in
+                handleModelFileImport(result)
+            }
+            .sheet(item: $importingUntrackedModel) { file in
+                UntrackedModelImportEditor(file: file) { name, family in
+                    importUntrackedModel(file, name: name, family: family)
+                    importingUntrackedModel = nil
+                }
+            }
+            .sheet(item: $inspectedModel) { model in
+                ModelDetailView(
+                    model: model,
+                    progress: downloads.progress(for: model),
+                    localURL: fileStore.modelURL(for: model.localFilename),
+                    fileExists: fileStore.fileExists(at: fileStore.modelURL(for: model.localFilename)),
+                    diskBytes: fileStore.fileSize(at: fileStore.modelURL(for: model.localFilename)),
+                    availableModelFilenames: trackedAuxiliaryModelFilenames(for: model)
+                ) {
+                    startOrResume(model)
+                } pause: {
+                    downloads.pause(model)
+                    try? modelContext.save()
+                } cancel: {
+                    downloads.cancel(model)
+                    try? modelContext.save()
+                } delete: {
+                    requestDeleteModels([model])
+                }
+            }
+            .onAppear {
+                reconcileModelFiles()
+            }
+            .confirmationDialog("Delete model?", isPresented: modelDeleteBinding, titleVisibility: .visible) {
+                Button(modelDeleteButtonTitle, role: .destructive) {
+                    performPendingModelDeletion()
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingModelDeletion = nil
+                }
+            } message: {
+                Text(modelDeleteMessage)
+            }
+            .confirmationDialog("Delete untracked model file?", isPresented: untrackedModelDeleteBinding, titleVisibility: .visible) {
+                Button("Delete File", role: .destructive) {
+                    performPendingUntrackedModelDeletion()
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingUntrackedModelDeletion = nil
+                }
+            } message: {
+                Text(untrackedModelDeleteMessage)
+            }
+            .alert("Model Storage", isPresented: deleteErrorBinding) {
+                Button("OK", role: .cancel) {
+                    deleteErrorMessage = nil
+                }
+            } message: {
+                Text(deleteErrorMessage ?? "")
+            }
+            .overlay {
+                if isImportingModelFile {
+                    ProgressView("Importing model file")
+                        .padding()
+                        .foregroundStyle(SciFiTheme.primaryText)
+                        .background(SciFiTheme.panelStrong, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(SciFiTheme.cyan.opacity(0.35), lineWidth: 1)
+                        }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var storageSections: some View {
+        Section {
+            StorageSummaryRow(
+                readyCount: readyModels.count,
+                totalCount: models.count,
+                trackedBytes: trackedModelBytes,
+                directoryBytes: modelDirectoryBytes,
+                untrackedCount: untrackedModelFiles.count,
+                untrackedBytes: untrackedModelBytes
+            )
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 8, trailing: 16))
+        }
+
+        if !models.isEmpty {
+            Section("Downloaded Models") {
+                ForEach(models) { model in
+                    ModelRow(model: model, progress: downloads.progress(for: model)) {
+                        startOrResume(model)
+                    } pause: {
+                        downloads.pause(model)
+                        try? modelContext.save()
+                    } cancel: {
+                        downloads.cancel(model)
+                        try? modelContext.save()
+                    } delete: {
+                        requestDeleteModels([model])
+                    } details: {
+                        inspectedModel = model
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
+                .onDelete(perform: deleteModels)
+            }
+        }
+
+        if !untrackedModelFiles.isEmpty {
+            Section("Untracked Files") {
+                ForEach(untrackedModelFiles) { file in
+                    UntrackedModelFileRow(file: file) {
+                        importingUntrackedModel = file
+                    } delete: {
+                        pendingUntrackedModelDeletion = file
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
+            }
+        }
+    }
+
+    private func startOrResume(_ model: LocalModel) {
+        if model.status == .paused {
+            downloads.resume(model)
+        } else {
+            downloads.start(model)
+        }
+        try? modelContext.save()
+    }
+
+    private func deleteModels(at offsets: IndexSet) {
+        requestDeleteModels(offsets.map { models[$0] })
+    }
+
+    private func requestDeleteModels(_ selectedModels: [LocalModel]) {
+        guard !selectedModels.isEmpty else { return }
+        pendingModelDeletion = ModelDeletionState(models: selectedModels)
+    }
+
+    private func performPendingModelDeletion() {
+        guard let deletion = pendingModelDeletion else { return }
+
+        var deletedAnyModel = false
+        var failedDeletions: [String] = []
+
+        for modelID in deletion.modelIDs {
+            guard let model = models.first(where: { $0.id == modelID }) else { continue }
+
+            do {
+                downloads.prepareForDeletion(model)
+                try fileStore.removeModelFile(named: model.localFilename)
+                try? fileStore.removeResumeData(forModelFilename: model.localFilename)
+                modelContext.delete(model)
+                deletedAnyModel = true
+            } catch {
+                let message = "Could not delete local model file: \(error.localizedDescription)"
+                downloads.keepAfterFailedDeletion(model, message: message)
+                failedDeletions.append("\(model.name): \(message)")
+            }
+        }
+
+        if deletedAnyModel {
+            try? modelContext.save()
+            refreshStorageUsage()
+            refreshUntrackedModelFiles()
+        }
+
+        if failedDeletions.isEmpty {
+            self.pendingModelDeletion = nil
+        } else {
+            self.pendingModelDeletion = nil
+            deleteErrorMessage = failedDeletions.joined(separator: "\n")
+        }
+    }
+
+    private func reconcileModelFiles() {
+        var changed = false
+
+        for model in models {
+            let url = fileStore.modelURL(for: model.localFilename)
+            let size = fileStore.fileSize(at: url)
+
+            if fileStore.fileExists(at: url), size > 0 {
+                if model.downloadedBytes != size {
+                    model.downloadedBytes = size
+                    changed = true
+                }
+                if model.totalBytes < size {
+                    model.totalBytes = size
+                    changed = true
+                }
+                if model.status != .ready {
+                    model.status = .ready
+                    model.lastError = nil
+                    changed = true
+                }
+            } else if model.status == .ready {
+                model.downloadedBytes = 0
+                model.status = .failed
+                model.lastError = "The model file is missing from Application Support."
+                changed = true
+            } else if model.status == .downloading, !downloads.hasActiveDownload(for: model) {
+                if downloads.hasResumeData(for: model) {
+                    model.status = .paused
+                    model.lastError = "Download was interrupted. Tap resume to continue."
+                } else {
+                    model.downloadedBytes = 0
+                    model.status = .queued
+                    model.lastError = "Download was interrupted. Tap download to restart."
+                }
+                changed = true
+            } else if model.status == .paused, !downloads.hasResumeData(for: model) {
+                model.downloadedBytes = 0
+                model.status = .queued
+                model.lastError = "Resume data is unavailable. Tap download to restart."
+                changed = true
+            }
+        }
+
+        refreshStorageUsage()
+        refreshUntrackedModelFiles()
+
+        if changed {
+            try? modelContext.save()
+        }
+    }
+
+    private func refreshStorageUsage() {
+        modelDirectoryBytes = fileStore.modelDirectorySize()
+    }
+
+    private func refreshUntrackedModelFiles() {
+        let trackedFilenames = Set(models.map(\.localFilename))
+        guard let filenames = try? fileStore.modelFilenames() else {
+            untrackedModelFiles = []
+            return
+        }
+
+        untrackedModelFiles = filenames
+            .filter { !trackedFilenames.contains($0) }
+            .map { filename in
+                let url = fileStore.modelURL(for: filename)
+                return UntrackedModelFile(
+                    filename: filename,
+                    bytes: fileStore.fileSize(at: url)
+                )
+            }
+            .sorted { $0.filename < $1.filename }
+    }
+
+    private func performPendingUntrackedModelDeletion() {
+        guard let pendingUntrackedModelDeletion else { return }
+
+        do {
+            try fileStore.removeModelFile(named: pendingUntrackedModelDeletion.filename)
+            self.pendingUntrackedModelDeletion = nil
+            refreshStorageUsage()
+            refreshUntrackedModelFiles()
+        } catch {
+            self.pendingUntrackedModelDeletion = nil
+            deleteErrorMessage = "\(pendingUntrackedModelDeletion.filename): Could not delete local model file: \(error.localizedDescription)"
+        }
+    }
+
+    private func handleModelFileImport(_ result: Result<[URL], Error>) {
+        do {
+            guard let sourceURL = try result.get().first else { return }
+            isImportingModelFile = true
+            let fileStore = fileStore
+
+            Task {
+                do {
+                    let filename = try await Task.detached(priority: .utility) {
+                        try fileStore.importModelFile(from: sourceURL)
+                    }.value
+
+                    refreshStorageUsage()
+                    refreshUntrackedModelFiles()
+                    if let importedFile = untrackedModelFiles.first(where: { $0.filename == filename }) {
+                        importingUntrackedModel = importedFile
+                    }
+                } catch {
+                    deleteErrorMessage = "Could not import model file: \(error.localizedDescription)"
+                }
+                isImportingModelFile = false
+            }
+        } catch {
+            deleteErrorMessage = "Could not import model file: \(error.localizedDescription)"
+        }
+    }
+
+    private func importUntrackedModel(_ file: UntrackedModelFile, name: String, family: ModelFamily) {
+        guard !models.contains(where: { $0.localFilename == file.filename }) else {
+            deleteErrorMessage = "\(file.filename) is already tracked in the model library."
+            refreshUntrackedModelFiles()
+            return
+        }
+
+        let modelURL = fileStore.modelURL(for: file.filename)
+        let size = fileStore.fileSize(at: modelURL)
+        guard fileStore.fileExists(at: modelURL), size > 0 else {
+            deleteErrorMessage = "\(file.filename) is missing or empty."
+            refreshUntrackedModelFiles()
+            return
+        }
+
+        let model = LocalModel(
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            family: family,
+            sourceRepository: "Local Import",
+            sourceFilename: file.filename,
+            sourceRevision: "",
+            sourceURLString: modelURL.absoluteString,
+            localFilename: file.filename,
+            downloadedBytes: size,
+            totalBytes: size,
+            status: .ready
+        )
+        modelContext.insert(model)
+
+        do {
+            try modelContext.save()
+            refreshStorageUsage()
+            refreshUntrackedModelFiles()
+        } catch {
+            modelContext.delete(model)
+            try? modelContext.save()
+            deleteErrorMessage = "Could not import \(file.filename): \(error.localizedDescription)"
+        }
+    }
+
+    private func trackedAuxiliaryModelFilenames(for model: LocalModel) -> [String] {
+        models
+            .filter { $0.id != model.id && $0.status == .ready }
+            .map(\.localFilename)
+            .sorted()
+    }
+
+    private var modelDeleteBinding: Binding<Bool> {
+        Binding(
+            get: { pendingModelDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingModelDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var modelDeleteButtonTitle: String {
+        guard let pendingModelDeletion else { return "Delete Model" }
+        return pendingModelDeletion.modelIDs.count == 1 ? "Delete Model" : "Delete Models"
+    }
+
+    private var modelDeleteMessage: String {
+        guard let pendingModelDeletion else {
+            return "This removes the model metadata and local file from Application Support."
+        }
+
+        if pendingModelDeletion.modelIDs.count == 1 {
+            let name = pendingModelDeletion.names.first ?? "this model"
+            return "This removes \(name) and its local file from Application Support."
+        }
+
+        return "This removes \(pendingModelDeletion.modelIDs.count) models and their local files from Application Support."
+    }
+
+    private var deleteErrorBinding: Binding<Bool> {
+        Binding(
+            get: { deleteErrorMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    deleteErrorMessage = nil
+                }
+            }
+        )
+    }
+
+    private var untrackedModelDeleteBinding: Binding<Bool> {
+        Binding(
+            get: { pendingUntrackedModelDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingUntrackedModelDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var untrackedModelDeleteMessage: String {
+        guard let pendingUntrackedModelDeletion else {
+            return "This removes an app-managed GGUF file that is not connected to model metadata."
+        }
+
+        return "This removes \(pendingUntrackedModelDeletion.filename) from Application Support."
+    }
+}
+
+private struct ModelDeletionState: Identifiable {
+    let modelIDs: [UUID]
+    let names: [String]
+
+    init(models: [LocalModel]) {
+        self.modelIDs = models.map(\.id)
+        self.names = models.map(\.name)
+    }
+
+    var id: String {
+        modelIDs.map(\.uuidString).joined(separator: "-")
+    }
+}
+
+private struct UntrackedModelFile: Identifiable, Equatable {
+    let filename: String
+    let bytes: Int64
+
+    var id: String {
+        filename
+    }
+}
+
+private struct StorageSummaryRow: View {
+    let readyCount: Int
+    let totalCount: Int
+    let trackedBytes: Int64
+    let directoryBytes: Int64
+    let untrackedCount: Int
+    let untrackedBytes: Int64
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Storage Matrix")
+                        .font(.headline)
+                        .foregroundStyle(SciFiTheme.primaryText)
+                    Text("\(totalCount) tracked models")
+                        .font(.caption)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+                Spacer(minLength: 12)
+                SciFiStatusPill(
+                    title: "\(readyCount) ready",
+                    systemImage: "checkmark.circle",
+                    color: readyCount == 0 ? SciFiTheme.amber : SciFiTheme.mint
+                )
+            }
+
+            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
+                GridRow {
+                    Text("Tracked")
+                    Text(ByteCountFormatter.fileSizeString(trackedBytes))
+                        .foregroundStyle(SciFiTheme.primaryText)
+                }
+                GridRow {
+                    Text("On Disk")
+                    Text(ByteCountFormatter.fileSizeString(directoryBytes))
+                        .foregroundStyle(SciFiTheme.primaryText)
+                }
+                GridRow {
+                    Text("Untracked")
+                    Text("\(untrackedCount) files, \(ByteCountFormatter.fileSizeString(untrackedBytes))")
+                        .foregroundStyle(untrackedCount == 0 ? SciFiTheme.secondaryText : SciFiTheme.amber)
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(SciFiTheme.secondaryText)
+        }
+        .padding(14)
+        .sciFiPanel(isHighlighted: readyCount > 0)
+    }
+}
+
+private struct UntrackedModelFileRow: View {
+    let file: UntrackedModelFile
+    let importFile: () -> Void
+    let delete: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(file.filename)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(SciFiTheme.primaryText)
+                    .lineLimit(1)
+                Text(ByteCountFormatter.fileSizeString(file.bytes))
+                    .font(.caption)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+            }
+            Spacer()
+            Button(action: importFile) {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+            Button(role: .destructive, action: delete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        }
+        .padding(12)
+        .sciFiPanel()
+    }
+}
+
+private struct UntrackedModelImportEditor: View {
+    let file: UntrackedModelFile
+    let onImport: (String, ModelFamily) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var name: String
+    @State private var family: ModelFamily
+
+    init(file: UntrackedModelFile, onImport: @escaping (String, ModelFamily) -> Void) {
+        self.file = file
+        self.onImport = onImport
+        let defaultName = file.filename.replacingOccurrences(
+            of: ".gguf",
+            with: "",
+            options: [.caseInsensitive]
+        )
+        _name = State(initialValue: defaultName)
+        _family = State(initialValue: ModelFamily.inferred(from: file.filename))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("File") {
+                    LabeledContent("Name", value: file.filename)
+                    LabeledContent("Size", value: ByteCountFormatter.fileSizeString(file.bytes))
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Model") {
+                    TextField("Display name", text: $name)
+                    Picker("Family", selection: $family) {
+                        ForEach(ModelFamily.allCases) { family in
+                            Text(family.rawValue).tag(family)
+                        }
+                    }
+                }
+                .listRowBackground(SciFiTheme.panel)
+            }
+            .navigationTitle("Import Model")
+            .sciFiScreen()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Import") {
+                        onImport(name, family)
+                        dismiss()
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+private struct ModelRow: View {
+    let model: LocalModel
+    let progress: ModelDownloadProgress
+    let startOrResume: () -> Void
+    let pause: () -> Void
+    let cancel: () -> Void
+    let delete: () -> Void
+    let details: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.name)
+                        .font(.headline)
+                        .foregroundStyle(SciFiTheme.primaryText)
+                    Text("\(model.family.rawValue) | \(model.sourceFilename)")
+                        .font(.subheadline)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                        .lineLimit(1)
+                }
+                Spacer()
+                SciFiStatusPill(title: statusText, systemImage: statusIcon, color: statusColor)
+            }
+
+            ProgressView(value: progress.fraction)
+                .tint(statusColor)
+
+            HStack {
+                Text(sizeText)
+                    .font(.caption)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+                Spacer()
+                controls
+            }
+
+            if let message = progress.message, !message.isEmpty {
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(12)
+        .sciFiPanel(isHighlighted: progress.status == .downloading || progress.status == .ready)
+    }
+
+    private var controls: some View {
+        HStack {
+            Button(action: details) {
+                Image(systemName: "info.circle")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle())
+
+            switch progress.status {
+            case .ready:
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(SciFiTheme.mint)
+                    .accessibilityLabel("Ready")
+                Button(role: .destructive, action: delete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            case .downloading:
+                Button(action: pause) {
+                    Image(systemName: "pause.fill")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+                Button(role: .destructive, action: cancel) {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                Button(role: .destructive, action: delete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            case .paused:
+                Button(action: startOrResume) {
+                    Image(systemName: "play.fill")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                Button(role: .destructive, action: delete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            case .queued, .failed:
+                Button(action: startOrResume) {
+                    Image(systemName: "arrow.down")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle())
+                Button(role: .destructive, action: delete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            }
+        }
+        .labelStyle(.iconOnly)
+    }
+
+    private var statusText: String {
+        switch progress.status {
+        case .queued:
+            "Queued"
+        case .downloading:
+            progress.percentageText
+        case .paused:
+            "Paused"
+        case .ready:
+            "Ready"
+        case .failed:
+            "Failed"
+        }
+    }
+
+    private var sizeText: String {
+        let downloaded = ByteCountFormatter.fileSizeString(progress.downloadedBytes)
+        let total = progress.totalBytes > 0 ? ByteCountFormatter.fileSizeString(progress.totalBytes) : "Unknown size"
+        return "\(downloaded) / \(total)"
+    }
+
+    private var statusColor: Color {
+        switch progress.status {
+        case .ready:
+            SciFiTheme.mint
+        case .failed:
+            SciFiTheme.danger
+        case .paused:
+            SciFiTheme.amber
+        case .downloading:
+            SciFiTheme.cyan
+        default:
+            SciFiTheme.secondaryText
+        }
+    }
+
+    private var statusIcon: String {
+        switch progress.status {
+        case .queued:
+            "clock"
+        case .downloading:
+            "arrow.down.circle"
+        case .paused:
+            "pause.circle"
+        case .ready:
+            "checkmark.circle"
+        case .failed:
+            "exclamationmark.triangle"
+        }
+    }
+}
+
+private struct ModelDetailView: View {
+    let model: LocalModel
+    let progress: ModelDownloadProgress
+    let localURL: URL
+    let fileExists: Bool
+    let diskBytes: Int64
+    let availableModelFilenames: [String]
+    let startOrResume: () -> Void
+    let pause: () -> Void
+    let cancel: () -> Void
+    let delete: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Status") {
+                    LabeledContent("State", value: statusText)
+                    ProgressView(value: progress.fraction)
+                        .tint(detailStatusColor)
+                    LabeledContent("Downloaded", value: sizeText)
+
+                    if let message = progress.message, !message.isEmpty {
+                        DetailTextRow(title: "Message", value: message)
+                            .foregroundStyle(SciFiTheme.amber)
+                    }
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Model") {
+                    DetailTextRow(title: "Name", value: model.name)
+                    LabeledContent("Family", value: model.family.rawValue)
+                    DetailTextRow(title: "Source File", value: model.sourceFilename)
+                    LabeledContent("Created", value: model.createdAt.formatted(date: .abbreviated, time: .shortened))
+                    LabeledContent("Updated", value: model.updatedAt.formatted(date: .abbreviated, time: .shortened))
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Native Loading") {
+                    Picker("Mode", selection: nativeLoadModeBinding) {
+                        ForEach(NativeModelLoadMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+
+                    DetailTextRow(title: "Mode", value: nativeLoadModeDescription)
+
+                    auxiliaryModelPicker("CLIP-L", selection: auxiliaryFilenameBinding(\.clipLFilename))
+                    auxiliaryModelPicker("CLIP-G", selection: auxiliaryFilenameBinding(\.clipGFilename))
+                    auxiliaryModelPicker("T5XXL", selection: auxiliaryFilenameBinding(\.t5xxlFilename))
+                    auxiliaryModelPicker("VAE", selection: auxiliaryFilenameBinding(\.vaeFilename))
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Source") {
+                    DetailTextRow(title: "Repository", value: model.sourceRepository.isEmpty ? "Direct URL" : model.sourceRepository)
+                    DetailTextRow(title: "Revision", value: model.sourceRevision.isEmpty ? "None" : model.sourceRevision)
+                    DetailTextRow(title: "URL", value: model.sourceURLString)
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Storage") {
+                    DetailTextRow(title: "Local File", value: model.localFilename)
+                    LabeledContent("File Present", value: fileExists ? "Yes" : "No")
+                    LabeledContent("Disk Size", value: ByteCountFormatter.fileSizeString(diskBytes))
+                    DetailTextRow(title: "Path", value: localURL.path)
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section {
+                    detailControls
+                }
+                .listRowBackground(SciFiTheme.panel)
+            }
+            .textSelection(.enabled)
+            .navigationTitle("Model Details")
+            .sciFiScreen()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func auxiliaryModelPicker(
+        _ title: String,
+        selection: Binding<String?>
+    ) -> some View {
+        Picker(title, selection: selection) {
+            Text("None").tag(Optional<String>.none)
+            ForEach(availableModelFilenames, id: \.self) { filename in
+                Text(filename).tag(Optional(filename))
+            }
+        }
+    }
+
+    private var nativeLoadModeBinding: Binding<NativeModelLoadMode> {
+        Binding(
+            get: { model.nativeLoadMode },
+            set: { newValue in
+                model.nativeLoadMode = newValue
+                try? modelContext.save()
+            }
+        )
+    }
+
+    private func auxiliaryFilenameBinding(
+        _ keyPath: ReferenceWritableKeyPath<LocalModel, String?>
+    ) -> Binding<String?> {
+        Binding(
+            get: { model[keyPath: keyPath].flatMap(Self.nonEmptyFilename) },
+            set: { filename in
+                model[keyPath: keyPath] = Self.nonEmptyFilename(filename)
+                try? modelContext.save()
+            }
+        )
+    }
+
+    private static func nonEmptyFilename(_ filename: String?) -> String? {
+        let trimmed = filename?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private var nativeLoadModeDescription: String {
+        switch model.nativeLoadMode {
+        case .fullModel:
+            return "Use the selected file as a complete stable-diffusion.cpp model."
+        case .standaloneDiffusion:
+            return "Use the selected file as the diffusion model and load optional CLIP/T5/VAE files below."
+        }
+    }
+
+    @ViewBuilder
+    private var detailControls: some View {
+        switch progress.status {
+        case .ready:
+            Button(role: .destructive) {
+                dismiss()
+                delete()
+            } label: {
+                Label("Delete Model", systemImage: "trash")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        case .downloading:
+            Button {
+                pause()
+            } label: {
+                Label("Pause Download", systemImage: "pause.fill")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+            Button(role: .destructive) {
+                cancel()
+            } label: {
+                Label("Cancel Download", systemImage: "xmark")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            Button(role: .destructive) {
+                dismiss()
+                delete()
+            } label: {
+                Label("Delete Model", systemImage: "trash")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        case .paused:
+            Button {
+                startOrResume()
+            } label: {
+                Label("Resume Download", systemImage: "play.fill")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+            Button(role: .destructive) {
+                dismiss()
+                delete()
+            } label: {
+                Label("Delete Model", systemImage: "trash")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        case .queued, .failed:
+            Button {
+                startOrResume()
+            } label: {
+                Label("Download Model", systemImage: "arrow.down")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle())
+            Button(role: .destructive) {
+                dismiss()
+                delete()
+            } label: {
+                Label("Delete Model", systemImage: "trash")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        }
+    }
+
+    private var statusText: String {
+        switch progress.status {
+        case .queued:
+            "Queued"
+        case .downloading:
+            "Downloading \(progress.percentageText)"
+        case .paused:
+            "Paused"
+        case .ready:
+            "Ready"
+        case .failed:
+            "Failed"
+        }
+    }
+
+    private var sizeText: String {
+        let downloaded = ByteCountFormatter.fileSizeString(progress.downloadedBytes)
+        let total = progress.totalBytes > 0 ? ByteCountFormatter.fileSizeString(progress.totalBytes) : "Unknown size"
+        return "\(downloaded) / \(total)"
+    }
+
+    private var detailStatusColor: Color {
+        switch progress.status {
+        case .ready:
+            SciFiTheme.mint
+        case .downloading:
+            SciFiTheme.cyan
+        case .paused:
+            SciFiTheme.amber
+        case .failed:
+            SciFiTheme.danger
+        case .queued:
+            SciFiTheme.secondaryText
+        }
+    }
+}
+
+private struct DetailTextRow: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
+            Text(value.isEmpty ? "None" : value)
+                .font(.body)
+                .foregroundStyle(SciFiTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+private struct AddModelView: View {
+    let fileStore: AppFileStore
+    let existingModels: [LocalModel]
+    let onAdd: (LocalModel) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var repository = ""
+    @State private var filename = ""
+    @State private var revision = "main"
+    @State private var family: ModelFamily = .sdxl
+    @State private var huggingFaceURL = ""
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Paste URL") {
+                    TextField("huggingface.co/.../resolve/.../*.gguf", text: $huggingFaceURL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button {
+                        applyHuggingFaceURL()
+                    } label: {
+                        Label("Parse Hugging Face URL", systemImage: "link")
+                    }
+                    .disabled(huggingFaceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .buttonStyle(SciFiSecondaryButtonStyle())
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Hugging Face") {
+                    TextField("Display name", text: $name)
+                    TextField("Repository, e.g. owner/repo", text: $repository)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("GGUF file path or direct URL", text: $filename)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("Revision", text: $revision)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Picker("Family", selection: $family) {
+                        ForEach(ModelFamily.allCases) { family in
+                            Text(family.rawValue).tag(family)
+                        }
+                    }
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(SciFiTheme.danger)
+                    }
+                    .listRowBackground(SciFiTheme.panel)
+                }
+            }
+            .navigationTitle("Add Model")
+            .sciFiScreen()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Download") {
+                        addModel()
+                    }
+                    .disabled(!canSubmit)
+                }
+            }
+        }
+    }
+
+    private var canSubmit: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func applyHuggingFaceURL() {
+        guard let parsedURL = ParsedHuggingFaceFileURL(string: huggingFaceURL) else {
+            errorMessage = "Paste a Hugging Face file URL that contains /resolve/ or /blob/ and ends in .gguf."
+            return
+        }
+
+        repository = parsedURL.repository
+        filename = parsedURL.filename
+        revision = parsedURL.revision
+        name = parsedURL.displayName
+        family = parsedURL.family
+        errorMessage = nil
+    }
+
+    private func addModel() {
+        guard let sourceURL = HuggingFaceURLBuilder.downloadURL(
+            repository: repository,
+            filename: filename,
+            revision: revision
+        ) else {
+            errorMessage = "Enter a repository and file path, or a direct Hugging Face URL."
+            return
+        }
+
+        let repositoryPart = repository.isEmpty ? sourceURL.host ?? "model" : repository
+        let filenamePart = sourceURL.lastPathComponent.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard filenamePart.lowercased().hasSuffix(".gguf") else {
+            errorMessage = "Model source must resolve to a .gguf file."
+            return
+        }
+
+        let localFilename = fileStore.makeModelFilename(repository: repositoryPart, filename: filenamePart)
+        let normalizedSource = sourceURL.absoluteString
+        let normalizedLocalFilename = localFilename.lowercased()
+
+        if existingModels.contains(where: { $0.sourceURLString == normalizedSource }) {
+            errorMessage = "This source URL is already in your model library."
+            return
+        }
+
+        if existingModels.contains(where: { $0.localFilename.lowercased() == normalizedLocalFilename }) {
+            errorMessage = "A model with the same local filename already exists."
+            return
+        }
+
+        if fileStore.fileExists(at: fileStore.modelURL(for: localFilename)) {
+            errorMessage = "A model file with this name already exists on disk."
+            return
+        }
+
+        let model = LocalModel(
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            family: family,
+            sourceRepository: repository.trimmingCharacters(in: .whitespacesAndNewlines),
+            sourceFilename: filename.trimmingCharacters(in: .whitespacesAndNewlines),
+            sourceRevision: revision.trimmingCharacters(in: .whitespacesAndNewlines),
+            sourceURLString: sourceURL.absoluteString,
+            localFilename: localFilename
+        )
+
+        onAdd(model)
+        dismiss()
+    }
+}
+
+private struct ParsedHuggingFaceFileURL {
+    let repository: String
+    let filename: String
+    let revision: String
+    let displayName: String
+    let family: ModelFamily
+
+    init?(string: String) {
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed),
+              url.host?.lowercased().contains("huggingface.co") == true else {
+            return nil
+        }
+
+        let components = url.pathComponents.filter { $0 != "/" }
+        guard components.count >= 5,
+              let markerIndex = components.firstIndex(where: { $0 == "resolve" || $0 == "blob" }),
+              markerIndex >= 2,
+              markerIndex + 2 < components.count else {
+            return nil
+        }
+
+        let repositoryParts = components[..<markerIndex]
+        let revisionIndex = components.index(after: markerIndex)
+        let filenameStartIndex = components.index(after: revisionIndex)
+        let filenameParts = components[filenameStartIndex...]
+
+        let path = filenameParts.joined(separator: "/")
+        guard path.lowercased().hasSuffix(".gguf") else { return nil }
+
+        self.repository = repositoryParts.joined(separator: "/")
+        self.filename = path
+        self.revision = components[revisionIndex]
+        self.displayName = ParsedHuggingFaceFileURL.makeDisplayName(
+            repository: repository,
+            filename: path
+        )
+        self.family = ModelFamily.inferred(from: "\(repository) \(path)")
+    }
+
+    private static func makeDisplayName(repository: String, filename: String) -> String {
+        let rawName = URL(fileURLWithPath: filename).deletingPathExtension().lastPathComponent
+        let fallbackName = repository.split(separator: "/").last.map(String.init) ?? rawName
+        return rawName.isEmpty ? fallbackName : rawName
+    }
+
+}
+
+private extension ModelFamily {
+    static func inferred(from value: String) -> ModelFamily {
+        let value = value.lowercased()
+        if value.contains("flux") {
+            return .flux
+        }
+        if value.contains("sdxl") || value.contains("xl") {
+            return .sdxl
+        }
+        return .stableDiffusion
+    }
+}

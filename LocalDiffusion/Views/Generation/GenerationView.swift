@@ -1,0 +1,420 @@
+import SwiftData
+import SwiftUI
+import UIKit
+
+struct GenerationView: View {
+    let fileStore: AppFileStore
+    let onShowGallery: () -> Void
+    let onShowModels: () -> Void
+
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var viewModel: GenerationViewModel
+    @Query(sort: \LocalModel.name) private var models: [LocalModel]
+    @State private var showingSaveTemplate = false
+    @FocusState private var focusedPrompt: PromptField?
+
+    private var readyModels: [LocalModel] {
+        models.filter(\.isReady)
+    }
+
+    private var selectedModel: LocalModel? {
+        readyModels.first(where: { $0.id == viewModel.selectedModelID }) ?? readyModels.first
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 28, weight: .semibold))
+                                .foregroundStyle(SciFiTheme.cyan)
+                                .frame(width: 54, height: 54)
+                                .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
+                                }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Local Render Console")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(SciFiTheme.primaryText)
+                                Text("GGUF model loaded locally. Tune prompts and fire the native backend from this device.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(SciFiTheme.secondaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+
+                        HStack {
+                            SciFiStatusPill(
+                                title: viewModel.backendStatus.isReady ? "Backend Online" : "Backend Offline",
+                                systemImage: viewModel.backendStatus.isReady ? "cpu" : "exclamationmark.triangle",
+                                color: viewModel.backendStatus.isReady ? SciFiTheme.mint : SciFiTheme.amber
+                            )
+                            SciFiStatusPill(
+                                title: selectedModel?.family.rawValue ?? "No Model",
+                                systemImage: "shippingbox",
+                                color: selectedModel == nil ? SciFiTheme.amber : SciFiTheme.cyan
+                            )
+                        }
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                            SciFiMetric(title: "Steps", value: "\(viewModel.parameters.steps)", systemImage: "number")
+                            SciFiMetric(
+                                title: "Canvas",
+                                value: "\(viewModel.parameters.width)x\(viewModel.parameters.height)",
+                                systemImage: "aspectratio",
+                                color: SciFiTheme.magenta
+                            )
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
+
+                Section("Model") {
+                    if readyModels.isEmpty {
+                        VStack(spacing: 12) {
+                            EmptyStateView(
+                                systemImage: "shippingbox",
+                                title: "No local model",
+                                message: "Download or import a GGUF model before starting generation."
+                            )
+
+                            Button {
+                                onShowModels()
+                            } label: {
+                                Label("Open Models", systemImage: "shippingbox")
+                            }
+                            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                        }
+                    } else {
+                        Picker("Model", selection: selectedModelBinding) {
+                            ForEach(readyModels) { model in
+                                Text(model.name).tag(Optional(model.id))
+                            }
+                        }
+                    }
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                Section("Prompts") {
+                    promptEditor(
+                        title: "Positive Signal",
+                        placeholder: "Describe the image to synthesize",
+                        text: $viewModel.parameters.prompt,
+                        field: .positive,
+                        minHeight: 112,
+                        accent: SciFiTheme.cyan
+                    )
+
+                    promptEditor(
+                        title: "Negative Mask",
+                        placeholder: "Artifacts, style, or details to avoid",
+                        text: $viewModel.parameters.negativePrompt,
+                        field: .negative,
+                        minHeight: 84,
+                        accent: SciFiTheme.magenta
+                    )
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                ParameterEditor(parameters: $viewModel.parameters)
+
+                Section("Run") {
+                    let gate = generationGate
+                    GenerationGatePanel(gate: gate)
+
+                    if viewModel.isGenerating {
+                        ProgressView(value: viewModel.progress.fraction) {
+                            Text(viewModel.progress.stage)
+                                .foregroundStyle(SciFiTheme.primaryText)
+                        }
+                        .tint(SciFiTheme.cyan)
+                        Button(role: .destructive) {
+                            viewModel.cancel()
+                        } label: {
+                            Label("Cancel", systemImage: "xmark.circle")
+                        }
+                        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                        .disabled(viewModel.isCancelling)
+                    } else {
+                        Button {
+                            viewModel.generate(using: selectedModel, modelContext: modelContext)
+                        } label: {
+                            Label(gate.primaryActionTitle, systemImage: gate.primaryActionImage)
+                        }
+                        .buttonStyle(SciFiPrimaryButtonStyle())
+                        .disabled(!canGenerate)
+
+                        switch gate.secondaryAction {
+                        case .openModels:
+                            Button {
+                                onShowModels()
+                            } label: {
+                                Label("Open Models", systemImage: "shippingbox")
+                            }
+                            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                        case .focusPrompt:
+                            Button {
+                                focusedPrompt = .positive
+                            } label: {
+                                Label("Edit Prompt", systemImage: "text.cursor")
+                            }
+                            .buttonStyle(SciFiSecondaryButtonStyle())
+                        case .none:
+                            EmptyView()
+                        }
+                    }
+                }
+                .listRowBackground(SciFiTheme.panel)
+
+                if let imageData = viewModel.generatedImageData,
+                   let image = UIImage(data: imageData) {
+                    Section("Result") {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(SciFiTheme.cyan.opacity(0.28), lineWidth: 1)
+                            }
+
+                        Button {
+                            onShowGallery()
+                        } label: {
+                            Label("View in Gallery", systemImage: "square.grid.2x2")
+                        }
+                        .buttonStyle(SciFiSecondaryButtonStyle())
+                        .disabled(viewModel.latestGeneratedImageID == nil)
+                    }
+                    .listRowBackground(SciFiTheme.panel)
+                }
+            }
+            .navigationTitle("Generate")
+            .sciFiScreen()
+            .bottomTabBarClearance()
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingSaveTemplate = true
+                    } label: {
+                        Label("Save Template", systemImage: "bookmark")
+                    }
+                    .disabled(viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .sheet(isPresented: $showingSaveTemplate) {
+                PromptTemplateEditor(
+                    title: "Save Template",
+                    initialName: "",
+                    initialCategory: "",
+                    initialParameters: viewModel.parameters
+                ) { name, category, parameters in
+                    modelContext.insert(PromptTemplate(
+                        name: name,
+                        category: category,
+                        parameters: parameters
+                    ))
+                    try? modelContext.save()
+                }
+            }
+            .alert("Generation", isPresented: alertBinding) {
+                Button("OK", role: .cancel) {
+                    viewModel.alertMessage = nil
+                }
+            } message: {
+                Text(viewModel.alertMessage ?? "")
+            }
+            .onAppear {
+                if viewModel.selectedModelID == nil {
+                    viewModel.selectedModelID = readyModels.first?.id
+                }
+            }
+        }
+    }
+
+    private func promptEditor(
+        title: String,
+        placeholder: String,
+        text: Binding<String>,
+        field: PromptField,
+        minHeight: CGFloat,
+        accent: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(accent)
+                Spacer()
+                Text("\(text.wrappedValue.count)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(SciFiTheme.secondaryText)
+                if !text.wrappedValue.isEmpty {
+                    Button {
+                        text.wrappedValue = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(SciFiTheme.secondaryText)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear \(title)")
+                }
+            }
+
+            TextEditor(text: text)
+                .focused($focusedPrompt, equals: field)
+                .scrollContentBackground(.hidden)
+                .foregroundStyle(SciFiTheme.primaryText)
+                .frame(minHeight: minHeight)
+                .padding(8)
+                .background(SciFiTheme.panelSoft, in: RoundedRectangle(cornerRadius: 8))
+                .overlay(alignment: .topLeading) {
+                    if text.wrappedValue.isEmpty {
+                        Text(placeholder)
+                            .font(.body)
+                            .foregroundStyle(SciFiTheme.secondaryText.opacity(0.72))
+                            .padding(.top, 16)
+                            .padding(.leading, 14)
+                    }
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(accent.opacity(0.26), lineWidth: 1)
+                }
+        }
+    }
+
+    private var selectedModelBinding: Binding<UUID?> {
+        Binding(
+            get: { selectedModel?.id },
+            set: { viewModel.selectedModelID = $0 }
+        )
+    }
+
+    private var canGenerate: Bool {
+        selectedModel != nil &&
+        viewModel.backendStatus.isReady &&
+        !viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var generationGate: GenerationGate {
+        if !viewModel.backendStatus.isReady {
+            return GenerationGate(
+                title: "Backend Offline",
+                message: viewModel.backendStatus.message,
+                systemImage: "exclamationmark.triangle",
+                color: SciFiTheme.amber,
+                primaryActionTitle: "Generate",
+                primaryActionImage: "play.slash",
+                secondaryAction: .none
+            )
+        }
+
+        if selectedModel == nil {
+            return GenerationGate(
+                title: "Model Required",
+                message: "No ready model is selected.",
+                systemImage: "shippingbox",
+                color: SciFiTheme.amber,
+                primaryActionTitle: "Select Model First",
+                primaryActionImage: "play.slash",
+                secondaryAction: .openModels
+            )
+        }
+
+        if viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return GenerationGate(
+                title: "Prompt Required",
+                message: "Positive prompt is empty.",
+                systemImage: "text.cursor",
+                color: SciFiTheme.amber,
+                primaryActionTitle: "Add Prompt First",
+                primaryActionImage: "play.slash",
+                secondaryAction: .focusPrompt
+            )
+        }
+
+        let title = viewModel.backendStatus.title == "Debug Mock Inference" ? "Mock Backend Ready" : "Ready to Render"
+        return GenerationGate(
+            title: title,
+            message: "\(selectedModel?.name ?? "Model") is ready.",
+            systemImage: "checkmark.seal",
+            color: SciFiTheme.mint,
+            primaryActionTitle: "Generate",
+            primaryActionImage: "play.fill",
+            secondaryAction: .none
+        )
+    }
+
+    private var alertBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.alertMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    viewModel.alertMessage = nil
+                }
+            }
+        )
+    }
+}
+
+private enum PromptField: Hashable {
+    case positive
+    case negative
+}
+
+private enum GenerationGateSecondaryAction {
+    case none
+    case openModels
+    case focusPrompt
+}
+
+private struct GenerationGate {
+    let title: String
+    let message: String
+    let systemImage: String
+    let color: Color
+    let primaryActionTitle: String
+    let primaryActionImage: String
+    let secondaryAction: GenerationGateSecondaryAction
+}
+
+private struct GenerationGatePanel: View {
+    let gate: GenerationGate
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: gate.systemImage)
+                .font(.headline)
+                .foregroundStyle(gate.color)
+                .frame(width: 32, height: 32)
+                .background(gate.color.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(gate.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(SciFiTheme.primaryText)
+                Text(gate.message)
+                    .font(.caption)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(SciFiTheme.panelSoft, in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(gate.color.opacity(0.22), lineWidth: 1)
+        }
+    }
+}

@@ -1,0 +1,534 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9B0000010000000000000101 /* LocalDiffusionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000001 /* LocalDiffusionApp.swift */; };
+		9B0000010000000000000102 /* AppModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000002 /* AppModels.swift */; };
+		9B0000010000000000000103 /* AppFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000003 /* AppFileStore.swift */; };
+		9B0000010000000000000104 /* HuggingFaceDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000004 /* HuggingFaceDownloadManager.swift */; };
+		9B0000010000000000000105 /* ImageGenerationBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000005 /* ImageGenerationBackend.swift */; };
+		9B0000010000000000000106 /* GenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000006 /* GenerationViewModel.swift */; };
+		9B0000010000000000000107 /* RootContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000007 /* RootContentView.swift */; };
+		9B0000010000000000000108 /* ParameterEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000008 /* ParameterEditor.swift */; };
+		9B0000010000000000000109 /* GenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000009 /* GenerationView.swift */; };
+		9B0000010000000000000110 /* ModelLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000010 /* ModelLibraryView.swift */; };
+		9B0000010000000000000111 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000011 /* GalleryView.swift */; };
+		9B0000010000000000000112 /* PromptLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000012 /* PromptLibraryView.swift */; };
+		9B0000010000000000000113 /* LocalDiffusionNative.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B000001000000000000001D /* LocalDiffusionNative.xcframework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9B0000010000000000000001 /* LocalDiffusionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDiffusionApp.swift; sourceTree = "<group>"; };
+		9B0000010000000000000002 /* AppModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModels.swift; sourceTree = "<group>"; };
+		9B0000010000000000000003 /* AppFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFileStore.swift; sourceTree = "<group>"; };
+		9B0000010000000000000004 /* HuggingFaceDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuggingFaceDownloadManager.swift; sourceTree = "<group>"; };
+		9B0000010000000000000005 /* ImageGenerationBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGenerationBackend.swift; sourceTree = "<group>"; };
+		9B0000010000000000000006 /* GenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationViewModel.swift; sourceTree = "<group>"; };
+		9B0000010000000000000007 /* RootContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootContentView.swift; sourceTree = "<group>"; };
+		9B0000010000000000000008 /* ParameterEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParameterEditor.swift; sourceTree = "<group>"; };
+		9B0000010000000000000009 /* GenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationView.swift; sourceTree = "<group>"; };
+		9B0000010000000000000010 /* ModelLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLibraryView.swift; sourceTree = "<group>"; };
+		9B0000010000000000000011 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		9B0000010000000000000012 /* PromptLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptLibraryView.swift; sourceTree = "<group>"; };
+		9B0000010000000000000013 /* LocalDiffusion-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LocalDiffusion-Bridging-Header.h"; sourceTree = "<group>"; };
+		9B0000010000000000000014 /* NativeStableDiffusionBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeStableDiffusionBridge.h; sourceTree = "<group>"; };
+		9B0000010000000000000015 /* NativeBackend.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = NativeBackend.xcconfig; sourceTree = "<group>"; };
+		9B0000010000000000000016 /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
+		9B000001000000000000001D /* LocalDiffusionNative.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LocalDiffusionNative.xcframework; sourceTree = "<group>"; };
+		9B0000010000000000000017 /* StableDiffusionCppBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StableDiffusionCppBridge.mm; sourceTree = "<group>"; };
+		9B0000010000000000000018 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		9B0000010000000000000019 /* build-stable-diffusion-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-stable-diffusion-xcframework.sh"; sourceTree = "<group>"; };
+		9B000001000000000000001A /* install-native-backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-native-backend.sh"; sourceTree = "<group>"; };
+		9B000001000000000000001B /* check-native-backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "check-native-backend.sh"; sourceTree = "<group>"; };
+		9B000001000000000000001C /* enable-native-backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "enable-native-backend.sh"; sourceTree = "<group>"; };
+		9B0000010000000000000200 /* LocalDiffusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocalDiffusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9B0000010000000000000300 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B0000010000000000000113 /* LocalDiffusionNative.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9B0000010000000000000400 = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000410 /* LocalDiffusion */,
+				9B0000010000000000000480 /* NativeBackend */,
+				9B0000010000000000000490 /* Scripts */,
+				9B0000010000000000000401 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000401 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000200 /* LocalDiffusion.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000410 /* LocalDiffusion */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000420 /* App */,
+				9B0000010000000000000421 /* Config */,
+				9B0000010000000000000422 /* Frameworks */,
+				9B0000010000000000000430 /* Models */,
+				9B0000010000000000000440 /* Services */,
+				9B0000010000000000000450 /* Inference */,
+				9B0000010000000000000460 /* ViewModels */,
+				9B0000010000000000000470 /* Views */,
+			);
+			path = LocalDiffusion;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000421 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000015 /* NativeBackend.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000422 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000016 /* .gitkeep */,
+				9B000001000000000000001D /* LocalDiffusionNative.xcframework */,
+			);
+			path = Frameworks;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000420 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000001 /* LocalDiffusionApp.swift */,
+				9B0000010000000000000013 /* LocalDiffusion-Bridging-Header.h */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000430 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000002 /* AppModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000440 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000003 /* AppFileStore.swift */,
+				9B0000010000000000000004 /* HuggingFaceDownloadManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000450 /* Inference */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000005 /* ImageGenerationBackend.swift */,
+				9B0000010000000000000014 /* NativeStableDiffusionBridge.h */,
+			);
+			path = Inference;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000460 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000006 /* GenerationViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000470 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000007 /* RootContentView.swift */,
+				9B0000010000000000000471 /* Shared */,
+				9B0000010000000000000472 /* Generation */,
+				9B0000010000000000000473 /* Models */,
+				9B0000010000000000000474 /* Gallery */,
+				9B0000010000000000000475 /* Prompts */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000471 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000008 /* ParameterEditor.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000472 /* Generation */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000009 /* GenerationView.swift */,
+			);
+			path = Generation;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000473 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000010 /* ModelLibraryView.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000474 /* Gallery */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000011 /* GalleryView.swift */,
+			);
+			path = Gallery;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000475 /* Prompts */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000012 /* PromptLibraryView.swift */,
+			);
+			path = Prompts;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000480 /* NativeBackend */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000481 /* StableDiffusionCpp */,
+			);
+			path = NativeBackend;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000481 /* StableDiffusionCpp */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000018 /* README.md */,
+				9B0000010000000000000017 /* StableDiffusionCppBridge.mm */,
+			);
+			path = StableDiffusionCpp;
+			sourceTree = "<group>";
+		};
+		9B0000010000000000000490 /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				9B0000010000000000000019 /* build-stable-diffusion-xcframework.sh */,
+				9B000001000000000000001B /* check-native-backend.sh */,
+				9B000001000000000000001C /* enable-native-backend.sh */,
+				9B000001000000000000001A /* install-native-backend.sh */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9B0000010000000000000500 /* LocalDiffusion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B0000010000000000000900 /* Build configuration list for PBXNativeTarget "LocalDiffusion" */;
+			buildPhases = (
+				9B0000010000000000000600 /* Sources */,
+				9B0000010000000000000300 /* Frameworks */,
+				9B0000010000000000000700 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LocalDiffusion;
+			productName = LocalDiffusion;
+			productReference = 9B0000010000000000000200 /* LocalDiffusion.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9B0000010000000000000800 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					9B0000010000000000000500 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 9B0000010000000000000801 /* Build configuration list for PBXProject "LocalDiffusion" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 9B0000010000000000000400;
+			productRefGroup = 9B0000010000000000000401 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9B0000010000000000000500 /* LocalDiffusion */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9B0000010000000000000700 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9B0000010000000000000600 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B0000010000000000000101 /* LocalDiffusionApp.swift in Sources */,
+				9B0000010000000000000102 /* AppModels.swift in Sources */,
+				9B0000010000000000000103 /* AppFileStore.swift in Sources */,
+				9B0000010000000000000104 /* HuggingFaceDownloadManager.swift in Sources */,
+				9B0000010000000000000105 /* ImageGenerationBackend.swift in Sources */,
+				9B0000010000000000000106 /* GenerationViewModel.swift in Sources */,
+				9B0000010000000000000107 /* RootContentView.swift in Sources */,
+				9B0000010000000000000108 /* ParameterEditor.swift in Sources */,
+				9B0000010000000000000109 /* GenerationView.swift in Sources */,
+				9B0000010000000000000110 /* ModelLibraryView.swift in Sources */,
+				9B0000010000000000000111 /* GalleryView.swift in Sources */,
+				9B0000010000000000000112 /* PromptLibraryView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9B0000010000000000000802 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		9B0000010000000000000803 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		9B0000010000000000000901 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9B0000010000000000000015 /* NativeBackend.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Local Diffusion";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.LocalDiffusion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "LocalDiffusion/App/LocalDiffusion-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B0000010000000000000902 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9B0000010000000000000015 /* NativeBackend.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Local Diffusion";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.LocalDiffusion;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "LocalDiffusion/App/LocalDiffusion-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9B0000010000000000000801 /* Build configuration list for PBXProject "LocalDiffusion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B0000010000000000000802 /* Debug */,
+				9B0000010000000000000803 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B0000010000000000000900 /* Build configuration list for PBXNativeTarget "LocalDiffusion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B0000010000000000000901 /* Debug */,
+				9B0000010000000000000902 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9B0000010000000000000800 /* Project object */;
+}
