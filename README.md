@@ -46,3 +46,21 @@ Run a simulator build, install, launch, and screenshot smoke test with:
 ```
 
 Set `DEVICE_NAME` or `DEVICE_ID` to target a different simulator. This smoke test verifies build, installation, SwiftData startup, and first-screen rendering. Final local-inference acceptance still requires running the app on a device with a real GGUF model and completing one image generation.
+
+## Agent handoff and maintenance
+
+Future Codex agents should read `agent.md` before changing code. That file is the project handoff prompt, development rulebook, UI direction, validation checklist, and documentation-update policy.
+
+After every meaningful coding task:
+
+- Update this README when behavior, setup, verification, or completion status changes.
+- Update `agent.md` when the development or testing rules change.
+- Record what was completed, what was verified, and what remains risky.
+
+## Maintenance log
+
+### 2026-06-27
+
+- Completed: Added `agent.md` as the structured project summary, Codex system prompt, coding rules, UI direction, validation checklist, and ongoing documentation policy.
+- Verified: Read current README, git status/log, project scripts, and current file layout. Current git HEAD observed as `499f450 (main) 1` at the time of writing.
+- Risk: This documentation records the current local repository state only; future agents must re-check git status and build outputs before acting.
