@@ -49,15 +49,28 @@ Set `DEVICE_NAME` or `DEVICE_ID` to target a different simulator. This smoke tes
 
 ## Agent handoff and maintenance
 
-Future Codex agents should read `agent.md` before changing code. That file is the project handoff prompt, development rulebook, UI direction, validation checklist, and documentation-update policy.
+Future Codex agents should read `AGENTS.md` before changing code. The project now uses a structured Agent workflow:
+
+- `AGENTS.md`: project entry memory, rules, architecture boundaries, Agent A/B/C workflow.
+- `update_log.md`: version history, decisions, completed work, known leftovers.
+- `md/flow/flow.md`: current core logic and runtime flow.
+- `md/flow/flowchart.md`: Mermaid diagrams for data flow, execution flow, and Agent iteration flow.
+- `md/test/test.md`: test layers, commands, triggers, and current baselines.
+- `md/prompt/`: versioned Agent A prompts for Agent B implementation.
 
 After every meaningful coding task:
 
 - Update this README when behavior, setup, verification, or completion status changes.
-- Update `agent.md` when the development or testing rules change.
+- Update `AGENTS.md`, `md/test/test.md`, or `md/flow/**` when development rules, test rules, or core logic change.
 - Record what was completed, what was verified, and what remains risky.
 
 ## Maintenance log
+
+### 2026-06-28
+
+- Completed: Replaced the old single-file `agent.md` handoff with the standard `AGENTS.md` + `update_log.md` + `md/prompt` + `md/test` + `md/flow` multi-Agent iteration system.
+- Verified: Read current README, git status/log, key scripts, App entry, navigation, generation view model, and backend boundary before writing the docs.
+- Risk: Documentation-only change; business build/smoke tests are not required unless source code changes.
 
 ### 2026-06-27
 
