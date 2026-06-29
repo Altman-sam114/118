@@ -9,6 +9,7 @@
 - 文档整理、目录迁移、回滚、打捞等不伪装成新功能版本，可写入“历史维护记录”。
 - 若核心逻辑、测试规范或项目行为变化，必须同步更新本日志。
 - Agent C 负责在验收阶段判断是否需要追加或修正本文件。
+- Agent C 最终验收通过后必须按版本号创建 git 提交；验收不通过时记录问题并退回 Agent B，不创建提交。
 
 ## 当前状态
 
@@ -48,8 +49,23 @@
   - `md/flow/flow.md`
   - `md/flow/flowchart.md`
   - `README.md`
-- 验证结果：文档-only 修改，要求至少运行 `git diff --check`。
+- 验证结果：文档-only 修改，已运行 `git diff --check`，通过。
 - 遗留事项：后续每个实现版本都应由 Agent A 创建具体实现提示词，并由 Agent B/C 完成实现与验收闭环。
+
+### v0.3 / Agent C 验收后版本提交工作流
+
+- 日期：2026-06-29
+- 核心变更：明确 Agent C 最终验收通过后必须按版本号创建 git 提交；验收不通过时必须列出问题并退回 Agent B 修复，不得提交失败版本。
+- 关键文件：
+  - `AGENTS.md`
+  - `update_log.md`
+  - `README.md`
+  - `md/prompt/README.md`
+  - `md/prompt/v0（项目治理）/v0.3（AgentC通过后版本提交）.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+- 验证结果：文档-only 修改，已运行 `git diff --check`，通过。
+- 遗留事项：后续 Agent C 若因权限或环境无法执行 git 提交，必须说明阻塞原因和待人工执行命令。
 
 ## 历史维护记录
 

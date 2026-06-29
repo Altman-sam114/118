@@ -250,6 +250,19 @@
   -> 用户可基于旧参数再次生成
 ```
 
+### 2.5 Agent 版本迭代流程
+
+```text
+人工提出目标
+  -> Agent A 阅读上下文并写版本提示词
+  -> Agent B 按提示词实现、测试、更新必要文档
+  -> Agent C 查看实际 diff、测试结果和文档同步情况
+  -> 若不通过：输出问题清单并退回 Agent B 修复
+  -> 若通过：更新 flow / update_log 等核心文档
+  -> Agent C 按版本号创建 git 提交
+  -> 人工复核提交、报告和下一轮目标
+```
+
 ## 3. 架构边界
 
 - SwiftUI View 不能直接处理文件系统细节，必须经过 `AppFileStore` 或 manager。
@@ -258,6 +271,7 @@
 - `HuggingFaceDownloadManager` 可以更新模型下载状态，但不负责生成图片。
 - SwiftData 只保存元数据，图片和模型大文件保存在 Application Support。
 - native backend 只能通过 `ImageGenerationBackend` 暴露给上层。
+- 版本提交只能发生在 Agent C 明确验收通过之后；不通过时必须退回 Agent B，不能提交失败版本。
 
 ## 4. 测试映射
 
@@ -282,6 +296,7 @@
 - 模型文件不存在时必须把模型状态标记为 failed 或提示用户恢复。
 - 图片文件保存失败时不能留下 SwiftData 孤立记录。
 - 每次核心流程变化必须同步更新 `flow.md` 与 `flowchart.md`。
+- Agent C 通过后必须按版本号创建 git 提交，提交信息简要说明该版本完成内容、验证和遗留风险。
 
 ## 7. 未来扩展点
 
@@ -300,3 +315,4 @@
 - Gallery 复用参数不能丢失 prompt、seed、尺寸和 sampler。
 - 取消生成不能保存半成品。
 - `Scripts/check-native-backend.sh` 必须能发现 native linkage/ABI 包装问题。
+- 验收不通过的 Agent B 结果不能进入版本提交。

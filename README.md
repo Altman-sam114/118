@@ -63,8 +63,15 @@ After every meaningful coding task:
 - Update this README when behavior, setup, verification, or completion status changes.
 - Update `AGENTS.md`, `md/test/test.md`, or `md/flow/**` when development rules, test rules, or core logic change.
 - Record what was completed, what was verified, and what remains risky.
+- After Agent C accepts a version, create a git commit using the version number, for example `v0.3: Agent C version commit workflow`; if Agent C rejects the work, return it to Agent B without committing.
 
 ## Maintenance log
+
+### 2026-06-29
+
+- Completed: Added the Agent C acceptance gate for version commits. Accepted versions must be committed with a concise versioned message; rejected versions return to Agent B without a commit.
+- Verified: Documentation-only change; `git diff --check` passed.
+- Risk: This changes governance only and does not validate business runtime behavior.
 
 ### 2026-06-28
 
