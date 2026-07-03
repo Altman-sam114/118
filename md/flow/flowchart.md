@@ -94,7 +94,34 @@ flowchart TD
   H2 --> H
 ```
 
-## 5. CI 结果包数据流
+## 5. Agent X 主控循环流程图
+
+读图说明：人工用 `agentx:` 给出总目标后，Agent X 只负责拆分轮次和判断下一步。每一轮仍必须经过 Agent A 提示词、Agent B 实现并 push、GitHub Actions artifact、Agent C 下载复判。Agent X 只能基于 Agent C 的最新结果决定继续、退回、暂停或完成。
+
+```mermaid
+flowchart TD
+  H["人工用 agentx: / x: / X: 提供总目标 X"] --> X0["Agent X：读取上下文、git 状态和已有 Agent 结果"]
+  X0 --> X1["Agent X：拆分当前轮次目标、非目标和验收边界"]
+  X1 --> NEED{"需要权限、账号、密钥、付费服务或人工决策？"}
+  NEED -- "是" --> PAUSE["暂停：等待人工确认"]
+  NEED -- "否" --> A["Agent A：写当前轮次版本化提示词"]
+  A --> P["md/prompt/vX（阶段）/vX.Y（任务）.md"]
+  P --> B["Agent B：实现、更新文档、跑本地轻量检查"]
+  B --> PUSH["Agent B：版本 commit 并 git push origin main"]
+  PUSH --> ACT["GitHub Actions：main push 触发 ci-results"]
+  ACT --> ART["未加密 artifact：manifest / JUnit / log / failure summary"]
+  ART --> C["Agent C：下载最新 artifact 并核对 commit / run / attempt"]
+  C --> X2["Agent X：读取 Agent C 验收结论"]
+  X2 --> D{"Agent X 判断"}
+  D -- "通过且总目标未完成" --> NEXT["继续：拆分下一轮目标"]
+  NEXT --> A
+  D -- "不通过且可修复" --> BACK["退回：Agent B 在 main 追加修复 commit"]
+  BACK --> B
+  D -- "阻塞或触发停止条件" --> PAUSE
+  D -- "通过且总目标完成" --> DONE["完成：输出总目标完成结论"]
+```
+
+## 6. CI 结果包数据流
 
 读图说明：这张图只看 `main` push 后云端产物如何形成。Agent C 后续只核对此结果包，不把旧 artifact、旧输出或 Agent B 文字汇报当作验收依据。
 
@@ -119,7 +146,7 @@ flowchart TD
   I --> J["Agent C 下载并核对 branch / commitSha / runId / runAttempt"]
 ```
 
-## 6. 测试分层选择图
+## 7. 测试分层选择图
 
 读图说明：默认本地只做轻量检查，完整构建和可追溯结果包交给 GitHub Actions。只有人工明确要求本机 build、simulator 或 native 重验证时，才把这些作为本机默认路径。
 

@@ -267,7 +267,36 @@
   -> 人工复核云端报告和下一轮目标
 ```
 
-### 2.6 CI 结果包流程
+### 2.6 Agent X 主控循环流程
+
+```text
+人工用 agentx: / x: / X: 提供总目标 X
+  -> Agent X 阅读必读文件、git 状态、已有提示词和最近 Agent 结果
+  -> Agent X 将总目标拆成小轮次目标
+  -> Agent A 为当前轮次写版本化提示词
+  -> Agent B 按提示词实现、轻量检查、版本 commit、push origin main
+  -> GitHub Actions 生成未加密 CI 结果包
+  -> Agent C 下载并核对最新 artifact、manifest、JUnit/摘要、日志和 failure summary
+  -> Agent X 读取 Agent C 结论
+  -> 若通过且总目标未完成：拆分下一轮目标并继续 Agent A
+  -> 若不通过且可修复：退回 Agent B 在 main 上追加修复 commit
+  -> 若需要人工权限/决策或触发停止条件：暂停等待人工
+  -> 若通过且总目标完成：宣布总目标完成
+```
+
+Agent X 只负责主控调度和轮次判断，不直接替代 Agent A、Agent B 或 Agent C。Agent X 不得跳过 Agent C 的云端 artifact 验收，也不得把旧 run、旧 artifact、本地输出或文字汇报当作最新验收依据。
+
+Agent X 必须停止或暂停的情况：
+
+- 总目标已完成。
+- 连续 3 轮遇到同一阻塞。
+- 连续 2 轮没有产生有效 diff。
+- CI 连续失败且原因相同。
+- 需要账号、权限、密钥、付费服务或人工决策。
+- 当前工作区存在无法判断归属的冲突。
+- 用户要求停止或改变方向。
+
+### 2.7 CI 结果包流程
 
 ```text
 git push origin main
@@ -293,11 +322,14 @@ git push origin main
 - Agent C 只能验收 `origin/main` 最新 commit 对应的 Actions run 和未加密结果包。
 - Agent C 不通过时必须退回 Agent B 追加修复 commit，不能用旧 run、旧 artifact 或本地未推送状态验收。
 - 若 Agent C 需要补齐核心文档，必须在 `main` 上追加文档 commit、push 并等待对应云端结果包。
+- Agent X 只能调度 `Agent A -> Agent B -> Agent C` 多轮迭代，不能替代任何一环的职责或验收。
+- Agent X 判断继续下一轮必须基于 Agent C 对最新 `origin/main` run 和 artifact 的明确结论。
 
 ## 4. 测试映射
 
 - 默认：本地轻量检查 + push `origin/main` 云端重验证。
 - 文档-only：本地 `git diff --check`、YAML/Plist 解析；云端 workflow 仍负责结果包。
+- Agent X 循环：每一轮仍按 Agent B 本地轻量检查、GitHub Actions artifact、Agent C 下载复判执行；失败轮次不能被 Agent X 当作成功继续。
 - Swift 源码变更：本地 Swift parse；云端运行 Swift parse 和 Xcode build。
 - UI/导航/启动变更：人工明确本机 smoke 时运行 simulator；默认云端构建验证。
 - native bridge / project / XCFramework 变更：本地或云端 `Scripts/check-native-backend.sh`，接口变化还要重建 XCFramework。
@@ -319,6 +351,7 @@ git push origin main
 - 图片文件保存失败时不能留下 SwiftData 孤立记录。
 - 每次核心流程变化必须同步更新 `flow.md` 与 `flowchart.md`。
 - Agent C 通过必须基于 `origin/main` 最新 commit 的云端 run 和结果包，不能只基于本地提交或文字说明。
+- Agent X 不得无条件无限循环；触发停止条件时必须暂停、退回或宣布完成。
 
 ## 7. 未来扩展点
 
@@ -339,3 +372,4 @@ git push origin main
 - `Scripts/check-native-backend.sh` 必须能发现 native linkage/ABI 包装问题，并纳入云端结果包日志。
 - 验收不通过的 Agent B 结果不能被 Agent C 宣布为正式通过；修复应在 `main` 上追加 commit 并重新触发云端 run。
 - Agent C 不能只看文字汇报，必须核对 `ci-artifact-manifest.json`、JUnit/等价摘要、主日志和 failure summary。
+- Agent X 不能绕过 Agent C artifact 验收进入下一轮，也不能用旧 artifact 或本地输出宣称总目标完成。

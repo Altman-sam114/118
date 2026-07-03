@@ -14,10 +14,12 @@
 - 用户消息以 `agenta`、`a:` 或 `A:` 开头，表示召唤 Agent A。
 - 用户消息以 `agentb`、`b:` 或 `B:` 开头，表示召唤 Agent B。
 - 用户消息以 `agentc`、`c:` 或 `C:` 开头，表示召唤 Agent C。
-- 没有这些前缀时，按普通 Codex 任务处理；若任务需要 A/B/C 边界，先提醒用户指定角色或说明本轮按普通任务执行。
+- 用户消息以 `agentx`、`x:` 或 `X:` 开头，表示召唤 Agent X。
+- 没有这些前缀时，按普通 Codex 任务处理；若任务需要 A/B/C/X 边界，先提醒用户指定角色或说明本轮按普通任务执行。
 - Agent A 最终回复第一行必须写：`我是 Agent A。`
 - Agent B 最终回复第一行必须写：`我是 Agent B。`
 - Agent C 最终回复第一行必须写：`我是 Agent C。`
+- Agent X 最终回复第一行必须写：`我是 Agent X。`
 - Agent A 每次写提示词都必须写入版本号。
 - 人工指定版本时，以人工指定为准。
 - 人工未指定版本时，Agent A 自动判断版本，从 `v0.1` 开始。
@@ -28,6 +30,18 @@
 - Agent B 默认在 `main` 上创建同一版本号的 git commit，并 `git push origin main` 触发 GitHub Actions。
 - Agent C 默认下载并核对 `origin/main` 最新 commit 对应的未加密 CI 结果包；验收不通过时退回 Agent B 在 `main` 上追加修复 commit。
 - 版本提交主题使用 `vX.Y: 简要任务名`，正文简要说明完成内容、本地轻量检查、云端 run 和遗留风险。
+
+## Agent X 提示词管理规则
+
+Agent X 可以要求 Agent A 为总目标 X 的每个小轮次生成版本化提示词，但 Agent X 不直接替代 Agent A 提示词、Agent B 实现或 Agent C 验收。
+
+Agent X 拆分轮次时必须保证：
+
+- 每轮都有明确版本号、轮次目标和非目标。
+- 每轮提示词写入 `md/prompt/vX（阶段）/vX.Y（任务）.md` 或人工指定的等价目录。
+- 每轮提示词包含本轮目标、非目标、验证命令、CI 触发方式、artifact 内容、Agent C 下载和验收要求。
+- 每轮提示词说明 Agent B 是否需要提交并 push 到 `origin/main`，以及不能夹带无关改动。
+- 每轮失败时必须回到 Agent B 修复或暂停等待人工，不能让 Agent X 以“继续循环”为由跳过验收。
 
 ## 云端阶段要求
 

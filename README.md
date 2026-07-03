@@ -35,6 +35,8 @@ The native build scripts require CMake and full Xcode. If the active developer d
 
 Agent workflow now defaults to `main` direct push and GitHub Actions revalidation. Agent B runs local lightweight checks, commits the versioned change on `main`, and pushes to `origin/main`. Agent C must download the unencrypted CI results artifact, check its manifest, logs, JUnit summary, run id, and commit SHA, then accept the latest `origin/main` run or return the work for an additional fix commit.
 
+Use `agentx:`, `x:`, or `X:` to start the future controller loop for a larger goal. Agent X does not replace Agent A, Agent B, or Agent C; it splits the larger goal into small rounds and schedules the normal A -> B -> C flow until the goal is complete, blocked, paused, or returned for a fix.
+
 The CI results workflow is `.github/workflows/ci-results.yml`. It is triggered by `main` pushes and manual dispatch, and is expected to upload a traceable artifact containing `ci-artifact-manifest.json`, `ci-failure-summary.md`, `junit.xml`, Xcode logs, native preflight logs, and the result bundle when available.
 
 The generated native XCFramework is not committed to git. CI restores it from the GitHub Release tag `native-backend-current`, asset `LocalDiffusionNative.xcframework.zip`, before running native preflight and `xcodebuild`.
@@ -59,7 +61,7 @@ Set `DEVICE_NAME` or `DEVICE_ID` to target a different simulator. This smoke tes
 
 Future Codex agents should read `AGENTS.md` before changing code. The project now uses a structured Agent workflow:
 
-- `AGENTS.md`: project entry memory, rules, architecture boundaries, Agent A/B/C workflow.
+- `AGENTS.md`: project entry memory, rules, architecture boundaries, Agent A/B/C/X workflow.
 - `update_log.md`: version history, decisions, completed work, known leftovers.
 - `md/flow/flow.md`: current core logic and runtime flow.
 - `md/flow/flowchart.md`: Mermaid diagrams for data flow, execution flow, and Agent iteration flow.
@@ -75,6 +77,12 @@ After every meaningful coding task:
 - By default, Agent B commits the versioned change on `main` and pushes to `origin/main`; Agent C accepts only the latest matching GitHub Actions run and results artifact.
 
 ## Maintenance log
+
+### 2026-07-04
+
+- Completed: Added the Agent X documentation baseline for future controller-loop iteration. Agent X can be summoned with `agentx:`, but it must still schedule Agent A prompts, Agent B implementation pushes, and Agent C artifact review rather than replacing them.
+- Verified: Documentation-only change; `git diff --check` is the required local validation for this version.
+- Risk: This prepares the workflow only. It does not start an actual Agent X loop or change app behavior.
 
 ### 2026-07-03
 
