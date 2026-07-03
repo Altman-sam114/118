@@ -18,7 +18,7 @@
 - 当前 UI：简洁暗色科幻风，核心共享样式集中在 `LocalDiffusion/Views/Shared/ParameterEditor.swift`。
 - 当前 native 路径：`ImageGenerationBackend` 协议隔离，`USE_STABLE_DIFFUSION_CPP` 启用 stable-diffusion.cpp XCFramework。
 - 当前验证入口：本地轻量检查、Swift 解析、native bridge 解析、`plutil`、`Scripts/check-native-backend.sh`、GitHub Actions `ci-results` 结果包、人工明确要求时的 `Scripts/smoke-test-simulator.sh` 和沙箱外 `xcodebuild`。
-- 当前分支事实：本轮开始读取时在 `main`，最新提交为 `3f2e4e2`，`git remote -v` 为空；配置 `origin` 前无法完成真实 `origin/main` push、Actions run 和 artifact 下载验收。
+- 当前分支事实：当前使用 `main` 跟踪 `origin/main`；云端 CI 通过 GitHub Actions `Local Diffusion CI Results` 运行，Agent C 结果包缓存默认在 `/private/tmp/localdiffusion-c-review-<run_id>/`。
 
 ## 历史记录
 
@@ -81,7 +81,22 @@
   - `md/flow/flowchart.md`
   - `.github/workflows/ci-results.yml`
 - 验证结果：本轮是治理流程和 CI 骨架改造，需运行 `git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、workflow YAML 解析；真实云端 run 需在配置 `origin` 后执行。
-- 遗留事项：当前仓库没有 git remote，无法完成 `origin/main` 直推、GitHub Actions run 和 Agent C artifact 下载核对；人工需要先配置远端并授予 `gh` 访问权限。
+- 遗留事项：首次云端 run 暴露出 `LocalDiffusionNative.xcframework` 被 `.gitignore` 排除，远端 checkout 缺少 native binary，需用 Release asset 或等价机制恢复。
+
+### v0.5 / CI 恢复 native XCFramework 资产
+
+- 日期：2026-07-03
+- 核心变更：让 `ci-results` workflow 在云端构建前从 GitHub Release `native-backend-current` 下载 `LocalDiffusionNative.xcframework.zip`，解压到 `LocalDiffusion/Frameworks`，再执行 native preflight 和 Xcode build。
+- 关键文件：
+  - `.github/workflows/ci-results.yml`
+  - `md/test/test.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `README.md`
+  - `update_log.md`
+  - `md/prompt/v0（项目治理）/v0.5（CI恢复Native资产）.md`
+- 验证结果：需要重新运行本地轻量检查、上传 Release asset、push `main` 并下载新 CI 结果包核对。
+- 遗留事项：Release asset 必须在 native bridge ABI 或 stable-diffusion.cpp 包装变化后刷新；若 asset 缺失或过旧，CI 会在结果包中暴露 native preflight 或 build 失败。
 
 ## 历史维护记录
 

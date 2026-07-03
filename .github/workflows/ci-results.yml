@@ -20,6 +20,8 @@ jobs:
       SCHEME: LocalDiffusion
       CONFIGURATION: Debug
       DESTINATION: generic/platform=iOS
+      NATIVE_BACKEND_RELEASE_TAG: native-backend-current
+      NATIVE_BACKEND_ASSET: LocalDiffusionNative.xcframework.zip
       DERIVED_DATA_PATH: .derivedData-ci
       RESULT_BUNDLE_PATH: ci-results/LocalDiffusion.xcresult
       BUILD_LOG_PATH: ci-results/xcodebuild.log
@@ -49,6 +51,25 @@ jobs:
             echo "SHORT_SHA=${short_sha}"
           } >> "${GITHUB_ENV}"
           xcodebuild -version > ci-results/xcode-version.txt 2>&1 || true
+
+      - name: Restore native backend XCFramework
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ -d "LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework" ]]; then
+            echo "Native backend XCFramework already exists in checkout." | tee ci-results/native-backend-restore.log
+            exit 0
+          fi
+
+          mkdir -p /tmp/localdiffusion-native-backend LocalDiffusion/Frameworks
+          gh release download "${NATIVE_BACKEND_RELEASE_TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "${NATIVE_BACKEND_ASSET}" \
+            --dir /tmp/localdiffusion-native-backend > ci-results/native-backend-restore.log 2>&1
+          unzip -q "/tmp/localdiffusion-native-backend/${NATIVE_BACKEND_ASSET}" -d LocalDiffusion/Frameworks >> ci-results/native-backend-restore.log 2>&1
+          test -d "LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework"
 
       - name: Run validation commands
         id: validate
@@ -168,6 +189,7 @@ jobs:
                   "ci-results/swift-parse.log",
                   "ci-results/swift-parse-native.log",
                   "ci-results/native-backend.log",
+                  "ci-results/native-backend-restore.log",
                   "ci-results/xcode-version.txt",
               ],
               "checks": [

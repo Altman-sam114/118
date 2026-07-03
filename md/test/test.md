@@ -67,6 +67,13 @@ localdiffusion-ci-vX.Y-main-<short_sha>-run<run_id>-attempt<run_attempt>
 
 其中 `vX.Y` 由最新提交主题的 `vX.Y:` 前缀提取；没有版本前缀时 workflow 会写入 `unversioned`，Agent C 必须把这视为版本提交格式问题。
 
+云端 native backend 恢复：
+
+- `LocalDiffusionNative.xcframework` 是 170MB 级生成物，不纳入普通 git 跟踪。
+- GitHub Actions 会从 GitHub Release `native-backend-current` 下载 `LocalDiffusionNative.xcframework.zip`。
+- 下载和解压日志写入 `ci-results/native-backend-restore.log`。
+- 若 Release asset 缺失，native preflight 和 xcodebuild 预期失败；Agent C 必须把这判定为云端依赖缺失，而不是 Swift 业务代码失败。
+
 Agent C 下载缓存：
 
 ```text
@@ -205,6 +212,7 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `ci-results/plutil.log`
 - `ci-results/swift-parse.log`
 - `ci-results/swift-parse-native.log`
+- `ci-results/native-backend-restore.log`
 - `ci-results/native-backend.log`
 - `ci-results/xcode-version.txt`
 

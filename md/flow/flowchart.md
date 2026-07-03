@@ -101,10 +101,11 @@ flowchart TD
 ```mermaid
 flowchart TD
   A["git push origin main"] --> B["GitHub Actions：ci-results.yml"]
-  B --> C["静态检查：git diff --check / YAML / Plist"]
+  B --> R["恢复 native backend：下载 Release asset"]
+  R --> C["静态检查：git diff --check / YAML / Plist"]
   B --> D["Swift parse：普通路径和 native bridge 路径"]
-  B --> E["Native preflight：Scripts/check-native-backend.sh"]
-  B --> F["Xcode build：Debug iPhoneOS + .xcresult"]
+  R --> E["Native preflight：Scripts/check-native-backend.sh"]
+  R --> F["Xcode build：Debug iPhoneOS + .xcresult"]
   C --> G["ci-artifact-manifest.json"]
   D --> G
   E --> G

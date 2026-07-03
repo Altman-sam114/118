@@ -272,6 +272,7 @@
 ```text
 git push origin main
   -> .github/workflows/ci-results.yml
+  -> 从 GitHub Release native-backend-current 下载 LocalDiffusionNative.xcframework.zip
   -> git diff --check / plutil / Swift parse / native preflight / xcodebuild
   -> 写入 ci-artifact-manifest.json
   -> 写入 ci-failure-summary.md

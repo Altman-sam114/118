@@ -37,6 +37,8 @@ Agent workflow now defaults to `main` direct push and GitHub Actions revalidatio
 
 The CI results workflow is `.github/workflows/ci-results.yml`. It is triggered by `main` pushes and manual dispatch, and is expected to upload a traceable artifact containing `ci-artifact-manifest.json`, `ci-failure-summary.md`, `junit.xml`, Xcode logs, native preflight logs, and the result bundle when available.
 
+The generated native XCFramework is not committed to git. CI restores it from the GitHub Release tag `native-backend-current`, asset `LocalDiffusionNative.xcframework.zip`, before running native preflight and `xcodebuild`.
+
 ## Verification
 
 Run the native preflight after installing or refreshing the XCFramework:
@@ -78,7 +80,8 @@ After every meaningful coding task:
 
 - Completed: Upgraded the collaboration workflow to local lightweight checks, `main` direct push, GitHub Actions cloud validation, and Agent C artifact review.
 - Verified: Governance and CI scaffold change; local lightweight checks are required for this version.
-- Risk: The local repository currently has no `origin`, so the first real cloud run requires configuring the remote and GitHub Actions access.
+- Risk: Cloud CI depends on the `native-backend-current` Release asset staying present and matching the checked-in bridge ABI.
+- Completed: Adjusted cloud CI to restore the ignored native XCFramework from a GitHub Release asset before native preflight and Xcode build.
 
 ### 2026-06-29
 
