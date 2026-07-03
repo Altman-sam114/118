@@ -129,11 +129,15 @@ flowchart TD
 flowchart TD
   A["git push origin main"] --> B["GitHub Actions：ci-results.yml"]
   B --> R["恢复 native backend：下载 Release asset"]
-  R --> C["静态检查：git diff --check / YAML / Plist"]
+  R --> SHA["校验 SHA-256：native-backend-asset.json"]
+  SHA --> UNZIP["校验通过后解压 XCFramework"]
+  SHA --> ASSETLOG["native-backend-asset.log + manifest 摘要字段"]
+  UNZIP --> C["静态检查：git diff --check / YAML / Plist"]
   B --> D["Swift parse：普通路径和 native bridge 路径"]
-  R --> E["Native preflight：Scripts/check-native-backend.sh"]
-  R --> F["Xcode build：Debug iPhoneOS + .xcresult"]
+  UNZIP --> E["Native preflight：Scripts/check-native-backend.sh"]
+  UNZIP --> F["Xcode build：Debug iPhoneOS + .xcresult"]
   C --> G["ci-artifact-manifest.json"]
+  ASSETLOG --> G
   D --> G
   E --> G
   F --> G

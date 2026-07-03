@@ -17,6 +17,12 @@ It is intentionally not part of the Swift app target. The build script compiles 
 
 `install-native-backend.sh` builds `LocalDiffusionNative.xcframework`, installs it under `LocalDiffusion/Frameworks`, links it in the Xcode target's Frameworks phase, and assigns `LocalDiffusion/Config/NativeBackend.xcconfig` so Swift compiles with `USE_STABLE_DIFFUSION_CPP`.
 
+## Release asset metadata
+
+CI restores `LocalDiffusionNative.xcframework.zip` from the GitHub Release tag `native-backend-current`. The expected asset name and SHA-256 digest are tracked in `native-backend-asset.json`.
+
+When the XCFramework zip is rebuilt or replaced, refresh `native-backend-asset.json` in the same change as the Release asset update. CI downloads the asset, checks its SHA-256 before unzip, writes `ci-results/native-backend-asset.log`, and skips native preflight/build if the digest does not match.
+
 The generated static library exports:
    - `ldi_sd_generate_png`
    - `ldi_sd_free_result`

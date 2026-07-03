@@ -1,0 +1,18 @@
+{
+  "releaseTag": "native-backend-current",
+  "assetName": "LocalDiffusionNative.xcframework.zip",
+  "sha256": "a1446f367c518155fac0ac268f8ee30b882961776fbbe721588d64db00b1e8d8",
+  "assetSizeBytes": 70481463,
+  "generatedAt": "2026-07-03T16:03:27Z",
+  "assetCreatedAt": "2026-07-03T16:03:06Z",
+  "assetUpdatedAt": "2026-07-03T16:03:26Z",
+  "metadataVerifiedAt": "2026-07-03T20:30:51Z",
+  "sourceDescription": "GitHub Release asset Altman-sam114/118 native-backend-current/LocalDiffusionNative.xcframework.zip; digest read from gh release view.",
+  "refreshRequiredWhen": [
+    "NativeStableDiffusionBridge.h changes",
+    "StableDiffusionCppBridge.mm changes",
+    "stable-diffusion.cpp headers or linked static libraries change",
+    "LocalDiffusionNative.xcframework is rebuilt or repackaged",
+    "GitHub Release asset native-backend-current is replaced"
+  ]
+}

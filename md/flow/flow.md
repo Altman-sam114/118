@@ -302,10 +302,12 @@ Agent X 必须停止或暂停的情况：
 git push origin main
   -> .github/workflows/ci-results.yml
   -> 从 GitHub Release native-backend-current 下载 LocalDiffusionNative.xcframework.zip
+  -> 按 NativeBackend/StableDiffusionCpp/native-backend-asset.json 校验 SHA-256
+  -> 校验通过后解压 LocalDiffusionNative.xcframework
   -> git diff --check / plutil / Swift parse / native preflight / xcodebuild
   -> 写入 ci-artifact-manifest.json
   -> 写入 ci-failure-summary.md
-  -> 写入 junit.xml 和主构建日志
+  -> 写入 junit.xml、native asset 校验日志和主构建日志
   -> upload-artifact 未加密结果包
   -> Agent C 下载并核对
 ```
@@ -318,6 +320,7 @@ git push origin main
 - `HuggingFaceDownloadManager` 可以更新模型下载状态，但不负责生成图片。
 - SwiftData 只保存元数据，图片和模型大文件保存在 Application Support。
 - native backend 只能通过 `ImageGenerationBackend` 暴露给上层。
+- CI 使用 `native-backend-asset.json` 约束 Release asset 摘要，摘要不一致时不能继续 native preflight 或 build。
 - 版本提交默认由 Agent B 在 `main` 上完成并 push 到 `origin/main` 触发云端验证。
 - Agent C 只能验收 `origin/main` 最新 commit 对应的 Actions run 和未加密结果包。
 - Agent C 不通过时必须退回 Agent B 追加修复 commit，不能用旧 run、旧 artifact 或本地未推送状态验收。
@@ -370,6 +373,7 @@ git push origin main
 - Gallery 复用参数不能丢失 prompt、seed、尺寸和 sampler。
 - 取消生成不能保存半成品。
 - `Scripts/check-native-backend.sh` 必须能发现 native linkage/ABI 包装问题，并纳入云端结果包日志。
+- native Release asset 校验失败时必须在结果包中暴露 `native-backend-asset.log`，不能把后续 native/build 结果当作资产可用证据。
 - 验收不通过的 Agent B 结果不能被 Agent C 宣布为正式通过；修复应在 `main` 上追加 commit 并重新触发云端 run。
 - Agent C 不能只看文字汇报，必须核对 `ci-artifact-manifest.json`、JUnit/等价摘要、主日志和 failure summary。
 - Agent X 不能绕过 Agent C artifact 验收进入下一轮，也不能用旧 artifact 或本地输出宣称总目标完成。

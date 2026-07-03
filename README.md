@@ -39,7 +39,7 @@ Use `agentx:`, `x:`, or `X:` to start the future controller loop for a larger go
 
 The CI results workflow is `.github/workflows/ci-results.yml`. It is triggered by `main` pushes and manual dispatch, and is expected to upload a traceable artifact containing `ci-artifact-manifest.json`, `ci-failure-summary.md`, `junit.xml`, Xcode logs, native preflight logs, and the result bundle when available.
 
-The generated native XCFramework is not committed to git. CI restores it from the GitHub Release tag `native-backend-current`, asset `LocalDiffusionNative.xcframework.zip`, before running native preflight and `xcodebuild`.
+The generated native XCFramework is not committed to git. CI restores it from the GitHub Release tag `native-backend-current`, asset `LocalDiffusionNative.xcframework.zip`, checks the SHA-256 recorded in `NativeBackend/StableDiffusionCpp/native-backend-asset.json`, and only then runs native preflight and `xcodebuild`.
 
 ## Verification
 
@@ -47,6 +47,12 @@ Run the native preflight after installing or refreshing the XCFramework:
 
 ```bash
 ./Scripts/check-native-backend.sh
+```
+
+After replacing the Release asset, refresh and validate its tracked metadata:
+
+```bash
+python3 -m json.tool NativeBackend/StableDiffusionCpp/native-backend-asset.json >/dev/null
 ```
 
 Run a simulator build, install, launch, and screenshot smoke test with:
@@ -83,6 +89,9 @@ After every meaningful coding task:
 - Completed: Added the Agent X documentation baseline for future controller-loop iteration. Agent X can be summoned with `agentx:`, but it must still schedule Agent A prompts, Agent B implementation pushes, and Agent C artifact review rather than replacing them.
 - Verified: Documentation-only change; `git diff --check` is the required local validation for this version.
 - Risk: This prepares the workflow only. It does not start an actual Agent X loop or change app behavior.
+- Completed: Added native Release asset checksum metadata and CI verification before XCFramework unzip.
+- Verified: Local lightweight checks are required; cloud CI must expose `native-backend-asset.log` in the result artifact.
+- Risk: The metadata must be refreshed whenever the Release asset is replaced.
 
 ### 2026-07-03
 

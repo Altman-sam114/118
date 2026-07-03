@@ -28,6 +28,8 @@ jobs:
       JUNIT_PATH: ci-results/junit.xml
       FAILURE_SUMMARY_PATH: ci-results/ci-failure-summary.md
       MANIFEST_PATH: ci-results/ci-artifact-manifest.json
+      NATIVE_BACKEND_ASSET_METADATA: NativeBackend/StableDiffusionCpp/native-backend-asset.json
+      NATIVE_BACKEND_ASSET_LOG_PATH: ci-results/native-backend-asset.log
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       CLANG_MODULE_CACHE_PATH: /tmp/localdiffusion-clang-cache
 
@@ -53,13 +55,51 @@ jobs:
           xcodebuild -version > ci-results/xcode-version.txt 2>&1 || true
 
       - name: Restore native backend XCFramework
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set +e
+          mkdir -p ci-results
+          asset_outcome="failure"
+          asset_expected_sha=""
+          asset_actual_sha=""
+          asset_env_path="ci-results/native-backend-asset.env"
+
+          write_asset_env() {
+            {
+              echo "NATIVE_BACKEND_ASSET_OUTCOME=${asset_outcome}"
+              echo "NATIVE_BACKEND_ASSET_EXPECTED_SHA=${asset_expected_sha}"
+              echo "NATIVE_BACKEND_ASSET_ACTUAL_SHA=${asset_actual_sha}"
+            } > "${asset_env_path}"
+          }
+
+          {
+            echo "Native backend asset metadata: ${NATIVE_BACKEND_ASSET_METADATA}"
+            echo "Release tag: ${NATIVE_BACKEND_RELEASE_TAG}"
+            echo "Asset name: ${NATIVE_BACKEND_ASSET}"
+          } > "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+
+          if [[ ! -f "${NATIVE_BACKEND_ASSET_METADATA}" ]]; then
+            echo "Missing native backend asset metadata file." | tee ci-results/native-backend-restore.log
+            echo "FAIL: metadata file is missing." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+            write_asset_env
+            exit 0
+          fi
+
+          asset_expected_sha="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["sha256"])' "${NATIVE_BACKEND_ASSET_METADATA}" 2>>"${NATIVE_BACKEND_ASSET_LOG_PATH}")"
+          if [[ -z "${asset_expected_sha}" ]]; then
+            echo "Could not read expected SHA-256 from metadata." | tee ci-results/native-backend-restore.log
+            echo "FAIL: expected SHA-256 is empty." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+            write_asset_env
+            exit 0
+          fi
+          echo "Expected SHA-256: ${asset_expected_sha}" >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+
           if [[ -d "LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework" ]]; then
+            asset_outcome="skipped-existing-xcframework"
             echo "Native backend XCFramework already exists in checkout." | tee ci-results/native-backend-restore.log
+            echo "SKIP: existing XCFramework found; no zip downloaded." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+            write_asset_env
             exit 0
           fi
 
@@ -68,8 +108,31 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --pattern "${NATIVE_BACKEND_ASSET}" \
             --dir /tmp/localdiffusion-native-backend > ci-results/native-backend-restore.log 2>&1
-          unzip -q "/tmp/localdiffusion-native-backend/${NATIVE_BACKEND_ASSET}" -d LocalDiffusion/Frameworks >> ci-results/native-backend-restore.log 2>&1
-          test -d "LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework"
+          download_status=$?
+          asset_path="/tmp/localdiffusion-native-backend/${NATIVE_BACKEND_ASSET}"
+          if [[ "${download_status}" -ne 0 || ! -f "${asset_path}" ]]; then
+            echo "FAIL: release asset download failed with exit ${download_status}." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+            write_asset_env
+            exit 0
+          fi
+
+          asset_actual_sha="$(shasum -a 256 "${asset_path}" | awk '{print $1}')"
+          echo "Actual SHA-256: ${asset_actual_sha}" >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+          if [[ "${asset_actual_sha}" != "${asset_expected_sha}" ]]; then
+            echo "FAIL: SHA-256 mismatch; not unpacking native backend." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+            write_asset_env
+            exit 0
+          fi
+
+          unzip -q "${asset_path}" -d LocalDiffusion/Frameworks >> ci-results/native-backend-restore.log 2>&1
+          unzip_status=$?
+          if [[ "${unzip_status}" -eq 0 && -d "LocalDiffusion/Frameworks/LocalDiffusionNative.xcframework" ]]; then
+            asset_outcome="success"
+            echo "PASS: release asset SHA-256 matched metadata." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+          else
+            echo "FAIL: unzip failed with exit ${unzip_status} or XCFramework was not produced." >> "${NATIVE_BACKEND_ASSET_LOG_PATH}"
+          fi
+          write_asset_env
 
       - name: Run validation commands
         id: validate
@@ -105,6 +168,20 @@ jobs:
           plutil -lint LocalDiffusion.xcodeproj/project.pbxproj > ci-results/plutil.log 2>&1
           status_plutil=$?
 
+          status_native_backend_asset=1
+          export NATIVE_BACKEND_ASSET_OUTCOME="missing-log"
+          export NATIVE_BACKEND_ASSET_EXPECTED_SHA=""
+          export NATIVE_BACKEND_ASSET_ACTUAL_SHA=""
+          if [[ -f "ci-results/native-backend-asset.env" ]]; then
+            source ci-results/native-backend-asset.env
+            export NATIVE_BACKEND_ASSET_OUTCOME
+            export NATIVE_BACKEND_ASSET_EXPECTED_SHA
+            export NATIVE_BACKEND_ASSET_ACTUAL_SHA
+          fi
+          if [[ "${NATIVE_BACKEND_ASSET_OUTCOME}" == "success" || "${NATIVE_BACKEND_ASSET_OUTCOME}" == "skipped-existing-xcframework" ]]; then
+            status_native_backend_asset=0
+          fi
+
           "${swiftc_bin}" -parse \
             -target arm64-apple-ios17.0 \
             -sdk "${iphoneos_sdk}" \
@@ -119,26 +196,34 @@ jobs:
             "${swift_sources[@]}" > ci-results/swift-parse-native.log 2>&1
           status_swift_parse_native=$?
 
-          ./Scripts/check-native-backend.sh > ci-results/native-backend.log 2>&1
-          status_native_backend=$?
+          if [[ "${status_native_backend_asset}" -eq 0 ]]; then
+            ./Scripts/check-native-backend.sh > ci-results/native-backend.log 2>&1
+            status_native_backend=$?
 
-          rm -rf "${RESULT_BUNDLE_PATH}"
-          xcodebuild \
-            -project "${PROJECT}" \
-            -scheme "${SCHEME}" \
-            -configuration "${CONFIGURATION}" \
-            -sdk iphoneos \
-            -destination "${DESTINATION}" \
-            -derivedDataPath "${DERIVED_DATA_PATH}" \
-            -resultBundlePath "${RESULT_BUNDLE_PATH}" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY= \
-            build > "${BUILD_LOG_PATH}" 2>&1
-          status_build=$?
+            rm -rf "${RESULT_BUNDLE_PATH}"
+            xcodebuild \
+              -project "${PROJECT}" \
+              -scheme "${SCHEME}" \
+              -configuration "${CONFIGURATION}" \
+              -sdk iphoneos \
+              -destination "${DESTINATION}" \
+              -derivedDataPath "${DERIVED_DATA_PATH}" \
+              -resultBundlePath "${RESULT_BUNDLE_PATH}" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY= \
+              build > "${BUILD_LOG_PATH}" 2>&1
+            status_build=$?
+          else
+            echo "Skipped native backend preflight because native asset validation outcome was ${NATIVE_BACKEND_ASSET_OUTCOME}." > ci-results/native-backend.log
+            echo "Skipped xcodebuild because native asset validation outcome was ${NATIVE_BACKEND_ASSET_OUTCOME}." > "${BUILD_LOG_PATH}"
+            status_native_backend=1
+            status_build=1
+          fi
 
           export STATUS_GIT_DIFF="${status_git_diff}"
           export STATUS_PLUTIL="${status_plutil}"
+          export STATUS_NATIVE_BACKEND_ASSET="${status_native_backend_asset}"
           export STATUS_SWIFT_PARSE="${status_swift_parse}"
           export STATUS_SWIFT_PARSE_NATIVE="${status_swift_parse_native}"
           export STATUS_NATIVE_BACKEND="${status_native_backend}"
@@ -155,6 +240,7 @@ jobs:
           results = [
               ("git-diff-check", "ci-results/git-diff-check.log", int(os.environ["STATUS_GIT_DIFF"])),
               ("plutil", "ci-results/plutil.log", int(os.environ["STATUS_PLUTIL"])),
+              ("native-backend-asset", os.environ["NATIVE_BACKEND_ASSET_LOG_PATH"], int(os.environ["STATUS_NATIVE_BACKEND_ASSET"])),
               ("swift-parse", "ci-results/swift-parse.log", int(os.environ["STATUS_SWIFT_PARSE"])),
               ("swift-parse-native", "ci-results/swift-parse-native.log", int(os.environ["STATUS_SWIFT_PARSE_NATIVE"])),
               ("native-backend", "ci-results/native-backend.log", int(os.environ["STATUS_NATIVE_BACKEND"])),
@@ -180,12 +266,18 @@ jobs:
               "junitPath": os.environ["JUNIT_PATH"],
               "buildLogPath": os.environ["BUILD_LOG_PATH"],
               "failureSummaryPath": os.environ["FAILURE_SUMMARY_PATH"],
+              "nativeBackendAssetMetadataPath": os.environ["NATIVE_BACKEND_ASSET_METADATA"],
+              "nativeBackendAssetLogPath": os.environ["NATIVE_BACKEND_ASSET_LOG_PATH"],
+              "nativeBackendAssetOutcome": os.environ["NATIVE_BACKEND_ASSET_OUTCOME"],
+              "nativeBackendAssetExpectedSha256": os.environ["NATIVE_BACKEND_ASSET_EXPECTED_SHA"],
+              "nativeBackendAssetActualSha256": os.environ["NATIVE_BACKEND_ASSET_ACTUAL_SHA"],
               "staticChecksOutcome": "failure" if static_failed else "success",
               "buildOutcome": "failure" if build_failed else "success",
               "testOutcome": "skipped",
               "projectSpecificReports": [
                   "ci-results/git-diff-check.log",
                   "ci-results/plutil.log",
+                  "ci-results/native-backend-asset.log",
                   "ci-results/swift-parse.log",
                   "ci-results/swift-parse-native.log",
                   "ci-results/native-backend.log",
@@ -246,7 +338,7 @@ jobs:
           )
           PY
 
-          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
+          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
             exit 1
           fi
 

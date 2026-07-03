@@ -120,6 +120,27 @@
   - 后续人工可用 `agentx:` 提供总目标 X，启动 Agent X 主控循环。
   - Agent X 真正执行循环时，仍必须经过 Agent A 提示词、Agent B 实现 push、Agent C 云端 artifact 验收。
 
+### v0.6 / CI 资产完整性校验
+
+- 日期：2026-07-04
+- 核心变更：
+  - 新增 `NativeBackend/StableDiffusionCpp/native-backend-asset.json`，记录 native Release asset 的 tag、文件名、SHA-256、大小和刷新条件。
+  - CI 下载 `LocalDiffusionNative.xcframework.zip` 后先校验 SHA-256，匹配后才解压并运行 native preflight 与 `xcodebuild`。
+  - 结果包新增 `native-backend-asset.log`，manifest 记录期望摘要、实际摘要和校验结果。
+  - 同步 README、测试规范和核心流程，明确 Release asset 替换后必须刷新元数据。
+- 关键文件：
+  - `.github/workflows/ci-results.yml`
+  - `NativeBackend/StableDiffusionCpp/native-backend-asset.json`
+  - `NativeBackend/StableDiffusionCpp/README.md`
+  - `md/test/test.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `README.md`
+  - `md/prompt/v0（项目治理）/v0.6（CI资产完整性校验）.md`
+  - `update_log.md`
+- 验证结果：需要运行 `git diff --check`、`plutil`、workflow YAML 解析和 `native-backend-asset.json` JSON 解析；push `main` 后由 Agent C 下载最新 CI 结果包核对。
+- 遗留事项：Release asset 被替换、native bridge ABI 改变或 stable-diffusion.cpp 包装刷新时，必须同步更新 `native-backend-asset.json` 的 SHA-256。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
