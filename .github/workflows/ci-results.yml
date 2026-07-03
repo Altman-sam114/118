@@ -1,0 +1,238 @@
+name: Local Diffusion CI Results
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-results:
+    name: Build and package CI results
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      PROJECT_NAME: LocalDiffusion
+      PROJECT: LocalDiffusion.xcodeproj
+      SCHEME: LocalDiffusion
+      CONFIGURATION: Debug
+      DESTINATION: generic/platform=iOS
+      DERIVED_DATA_PATH: .derivedData-ci
+      RESULT_BUNDLE_PATH: ci-results/LocalDiffusion.xcresult
+      BUILD_LOG_PATH: ci-results/xcodebuild.log
+      JUNIT_PATH: ci-results/junit.xml
+      FAILURE_SUMMARY_PATH: ci-results/ci-failure-summary.md
+      MANIFEST_PATH: ci-results/ci-artifact-manifest.json
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      CLANG_MODULE_CACHE_PATH: /tmp/localdiffusion-clang-cache
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact metadata
+        run: |
+          mkdir -p ci-results
+          branch_slug="${GITHUB_REF_NAME//\//-}"
+          short_sha="${GITHUB_SHA:0:7}"
+          subject="$(git log -1 --pretty=%s)"
+          version="unversioned"
+          if [[ "${subject}" =~ ^(v[0-9]+(\.[0-9]+)*): ]]; then
+            version="${BASH_REMATCH[1]}"
+          fi
+          {
+            echo "VERSION=${version}"
+            echo "BRANCH_SLUG=${branch_slug}"
+            echo "SHORT_SHA=${short_sha}"
+          } >> "${GITHUB_ENV}"
+          xcodebuild -version > ci-results/xcode-version.txt 2>&1 || true
+
+      - name: Run validation commands
+        id: validate
+        shell: bash
+        run: |
+          set +e
+
+          swift_sources=(
+            LocalDiffusion/App/LocalDiffusionApp.swift
+            LocalDiffusion/Inference/ImageGenerationBackend.swift
+            LocalDiffusion/Models/AppModels.swift
+            LocalDiffusion/Services/AppFileStore.swift
+            LocalDiffusion/Services/HuggingFaceDownloadManager.swift
+            LocalDiffusion/ViewModels/GenerationViewModel.swift
+            LocalDiffusion/Views/Gallery/GalleryView.swift
+            LocalDiffusion/Views/Generation/GenerationView.swift
+            LocalDiffusion/Views/Models/ModelLibraryView.swift
+            LocalDiffusion/Views/Prompts/PromptLibraryView.swift
+            LocalDiffusion/Views/RootContentView.swift
+            LocalDiffusion/Views/Shared/ParameterEditor.swift
+          )
+
+          swiftc_bin="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+          iphoneos_sdk="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
+
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD > ci-results/git-diff-check.log 2>&1
+          else
+            git diff --check > ci-results/git-diff-check.log 2>&1
+          fi
+          status_git_diff=$?
+
+          plutil -lint LocalDiffusion.xcodeproj/project.pbxproj > ci-results/plutil.log 2>&1
+          status_plutil=$?
+
+          "${swiftc_bin}" -parse \
+            -target arm64-apple-ios17.0 \
+            -sdk "${iphoneos_sdk}" \
+            "${swift_sources[@]}" > ci-results/swift-parse.log 2>&1
+          status_swift_parse=$?
+
+          "${swiftc_bin}" -parse \
+            -D USE_STABLE_DIFFUSION_CPP \
+            -import-objc-header LocalDiffusion/App/LocalDiffusion-Bridging-Header.h \
+            -target arm64-apple-ios17.0 \
+            -sdk "${iphoneos_sdk}" \
+            "${swift_sources[@]}" > ci-results/swift-parse-native.log 2>&1
+          status_swift_parse_native=$?
+
+          ./Scripts/check-native-backend.sh > ci-results/native-backend.log 2>&1
+          status_native_backend=$?
+
+          rm -rf "${RESULT_BUNDLE_PATH}"
+          xcodebuild \
+            -project "${PROJECT}" \
+            -scheme "${SCHEME}" \
+            -configuration "${CONFIGURATION}" \
+            -sdk iphoneos \
+            -destination "${DESTINATION}" \
+            -derivedDataPath "${DERIVED_DATA_PATH}" \
+            -resultBundlePath "${RESULT_BUNDLE_PATH}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY= \
+            build > "${BUILD_LOG_PATH}" 2>&1
+          status_build=$?
+
+          export STATUS_GIT_DIFF="${status_git_diff}"
+          export STATUS_PLUTIL="${status_plutil}"
+          export STATUS_SWIFT_PARSE="${status_swift_parse}"
+          export STATUS_SWIFT_PARSE_NATIVE="${status_swift_parse_native}"
+          export STATUS_NATIVE_BACKEND="${status_native_backend}"
+          export STATUS_BUILD="${status_build}"
+
+          python3 - <<'PY'
+          import datetime
+          import html
+          import json
+          import os
+          import pathlib
+          import xml.etree.ElementTree as ET
+
+          results = [
+              ("git-diff-check", "ci-results/git-diff-check.log", int(os.environ["STATUS_GIT_DIFF"])),
+              ("plutil", "ci-results/plutil.log", int(os.environ["STATUS_PLUTIL"])),
+              ("swift-parse", "ci-results/swift-parse.log", int(os.environ["STATUS_SWIFT_PARSE"])),
+              ("swift-parse-native", "ci-results/swift-parse-native.log", int(os.environ["STATUS_SWIFT_PARSE_NATIVE"])),
+              ("native-backend", "ci-results/native-backend.log", int(os.environ["STATUS_NATIVE_BACKEND"])),
+              ("xcodebuild", os.environ["BUILD_LOG_PATH"], int(os.environ["STATUS_BUILD"])),
+          ]
+
+          static_failed = any(status != 0 for name, _, status in results if name != "xcodebuild")
+          build_failed = int(os.environ["STATUS_BUILD"]) != 0
+
+          manifest = {
+              "version": os.environ["VERSION"],
+              "branch": os.environ["GITHUB_REF_NAME"],
+              "commitSha": os.environ["GITHUB_SHA"],
+              "shortSha": os.environ["SHORT_SHA"],
+              "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "workflowName": os.environ["GITHUB_WORKFLOW"],
+              "createdAt": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+              "projectName": os.environ["PROJECT_NAME"],
+              "scheme": os.environ["SCHEME"],
+              "destination": os.environ["DESTINATION"],
+              "resultBundlePath": os.environ["RESULT_BUNDLE_PATH"],
+              "junitPath": os.environ["JUNIT_PATH"],
+              "buildLogPath": os.environ["BUILD_LOG_PATH"],
+              "failureSummaryPath": os.environ["FAILURE_SUMMARY_PATH"],
+              "staticChecksOutcome": "failure" if static_failed else "success",
+              "buildOutcome": "failure" if build_failed else "success",
+              "testOutcome": "skipped",
+              "projectSpecificReports": [
+                  "ci-results/git-diff-check.log",
+                  "ci-results/plutil.log",
+                  "ci-results/swift-parse.log",
+                  "ci-results/swift-parse-native.log",
+                  "ci-results/native-backend.log",
+                  "ci-results/xcode-version.txt",
+              ],
+              "checks": [
+                  {"name": name, "logPath": log_path, "exitCode": status}
+                  for name, log_path, status in results
+              ],
+          }
+          pathlib.Path(os.environ["MANIFEST_PATH"]).write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+
+          testsuite = ET.Element(
+              "testsuite",
+              {
+                  "name": "LocalDiffusion CI",
+                  "tests": str(len(results)),
+                  "failures": str(sum(1 for _, _, status in results if status != 0)),
+                  "skipped": "0",
+              },
+          )
+          for name, log_path, status in results:
+              testcase = ET.SubElement(testsuite, "testcase", {"name": name})
+              if status != 0:
+                  failure = ET.SubElement(testcase, "failure", {"message": f"exit {status}"})
+                  failure.text = f"{name} failed with exit {status}; see {log_path}"
+          ET.ElementTree(testsuite).write(
+              os.environ["JUNIT_PATH"],
+              encoding="utf-8",
+              xml_declaration=True,
+          )
+
+          summary_lines = [
+              "# CI Failure Summary",
+              "",
+              f"- Version: `{html.escape(os.environ['VERSION'])}`",
+              f"- Branch: `{html.escape(os.environ['GITHUB_REF_NAME'])}`",
+              f"- Commit: `{html.escape(os.environ['GITHUB_SHA'])}`",
+              f"- Run: `{html.escape(os.environ['GITHUB_RUN_ID'])}` attempt `{html.escape(os.environ['GITHUB_RUN_ATTEMPT'])}`",
+              "",
+              "## Checks",
+              "",
+          ]
+          for name, log_path, status in results:
+              state = "PASS" if status == 0 else "FAIL"
+              summary_lines.append(f"- {state}: `{name}` exit `{status}`; log `{log_path}`")
+          if all(status == 0 for _, _, status in results):
+              summary_lines.extend(["", "All configured checks passed."])
+          else:
+              summary_lines.extend(["", "One or more checks failed. Review the logs listed above."])
+          pathlib.Path(os.environ["FAILURE_SUMMARY_PATH"]).write_text(
+              "\n".join(summary_lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
+            exit 1
+          fi
+
+      - name: Upload CI results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: localdiffusion-ci-${{ env.VERSION }}-${{ env.BRANCH_SLUG }}-${{ env.SHORT_SHA }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ci-results
+          if-no-files-found: error
+          retention-days: 14

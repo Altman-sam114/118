@@ -24,6 +24,64 @@ Codex 沙箱注意：
 - 沙箱内完整 `xcodebuild` 可能因 SwiftData macro/plugin server 失败。
 - 沙箱内 `simctl` 可能无法访问 CoreSimulatorService。
 - 遇到上述情况，不要判断为代码错误；需要请求沙箱外执行并记录原因。
+- 默认重验证迁移到 GitHub Actions；本机完整 build、simulator smoke 或 native 重验证只在人工明确要求，或定位云端失败必须复现时执行。
+
+## 默认验证策略
+
+默认流程：
+
+```text
+本地轻量检查
+  -> main 上创建版本 commit
+  -> git push origin main
+  -> GitHub Actions 云端重验证
+  -> 上传未加密 CI 结果包
+  -> Agent C 下载并核对结果包
+```
+
+本地默认只跑轻量检查：
+
+```bash
+git diff --check
+plutil -lint LocalDiffusion.xcodeproj/project.pbxproj
+ruby -e 'require "yaml"; YAML.load_file(".github/workflows/ci-results.yml"); puts "yaml ok"'
+```
+
+Swift 源码或 bridge 相关改动时，本地增加 Swift parse；命令见 Probe / Fast。
+
+云端重验证由 `.github/workflows/ci-results.yml` 执行，触发条件：
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+```
+
+结果包命名：
+
+```text
+localdiffusion-ci-vX.Y-main-<short_sha>-run<run_id>-attempt<run_attempt>
+```
+
+其中 `vX.Y` 由最新提交主题的 `vX.Y:` 前缀提取；没有版本前缀时 workflow 会写入 `unversioned`，Agent C 必须把这视为版本提交格式问题。
+
+Agent C 下载缓存：
+
+```text
+/private/tmp/localdiffusion-c-review-<run_id>/
+```
+
+Agent C 必须先 `gh auth login`，再用 `gh run download` 下载 artifact。必须核对：
+
+- `ci-artifact-manifest.json` 的 `branch=main`。
+- `commitSha` 等于 `origin/main` 最新 commit。
+- `runId` 和 `runAttempt` 等于下载的 Actions run。
+- `junit.xml` 或等价摘要。
+- `xcodebuild.log`、`ci-failure-summary.md`、native preflight 和 Swift parse 日志。
+
+若当前仓库没有 `origin`，或没有权限访问 GitHub Actions，必须记录云端验证阻塞；不得伪造 push、run id 或 artifact 核对。
 
 ## 测试分层
 
@@ -50,6 +108,7 @@ CLANG_MODULE_CACHE_PATH=/private/tmp/localdiffusion-clang-cache /Applications/Xc
 当前基线：
 
 - 两条 Swift parse 命令应返回 0。
+- 本地只在 Swift 源码、bridge 相关文档规则或人工要求时运行；云端 workflow 每次 `main` push 默认运行。
 
 ### 2. Smoke
 
@@ -72,6 +131,7 @@ CLANG_MODULE_CACHE_PATH=/private/tmp/localdiffusion-clang-cache /Applications/Xc
 - app 安装成功。
 - `simctl launch` 返回进程号。
 - 生成截图，且首屏不是黑屏。
+- 迁移到云端验证后，Smoke 不再是默认本机步骤；人工明确要求本机 UI 验证或需要截图目检时再运行。
 
 ### 3. Stage Regression
 
@@ -96,6 +156,7 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - project plist lint 为 OK。
 - native backend preflight 全部 PASS。
 - iPhoneOS Debug 构建 `BUILD SUCCEEDED`。
+- 云端 workflow 每次 `main` push 默认运行 plist lint、native preflight 和 iPhoneOS Debug build，并把日志和 `.xcresult` 写入结果包。
 
 ### 4. Full
 
@@ -127,6 +188,47 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 
 - 构建、安装、启动和截图 smoke 可通过。
 - 真实 GGUF 端到端生成仍待人工或后续版本确认。
+- 云端不能替代真机真实 GGUF 端到端验收；涉及真实推理质量或发布前仍需人工或真机环境确认。
+
+## GitHub Actions 结果包
+
+`.github/workflows/ci-results.yml` 必须上传未加密 artifact，不复用任何带密码发布包。
+
+最低结果包内容：
+
+- `ci-results/ci-artifact-manifest.json`
+- `ci-results/ci-failure-summary.md`
+- `ci-results/junit.xml`
+- `ci-results/xcodebuild.log`
+- `ci-results/LocalDiffusion.xcresult`（存在时）
+- `ci-results/git-diff-check.log`
+- `ci-results/plutil.log`
+- `ci-results/swift-parse.log`
+- `ci-results/swift-parse-native.log`
+- `ci-results/native-backend.log`
+- `ci-results/xcode-version.txt`
+
+`ci-artifact-manifest.json` 至少记录：
+
+- `version`
+- `branch`
+- `commitSha`
+- `shortSha`
+- `runId`
+- `runAttempt`
+- `workflowName`
+- `createdAt`
+- `projectName`
+- `scheme`
+- `destination`
+- `resultBundlePath`
+- `junitPath`
+- `buildLogPath`
+- `failureSummaryPath`
+- `staticChecksOutcome`
+- `buildOutcome`
+- `testOutcome`
+- `projectSpecificReports`
 
 ## 静态检查
 

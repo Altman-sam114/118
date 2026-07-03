@@ -250,17 +250,34 @@
   -> 用户可基于旧参数再次生成
 ```
 
-### 2.5 Agent 版本迭代流程
+### 2.5 Agent 云端版本迭代流程
 
 ```text
 人工提出目标
   -> Agent A 阅读上下文并写版本提示词
-  -> Agent B 按提示词实现、测试、更新必要文档
-  -> Agent C 查看实际 diff、测试结果和文档同步情况
-  -> 若不通过：输出问题清单并退回 Agent B 修复
-  -> 若通过：更新 flow / update_log 等核心文档
-  -> Agent C 按版本号创建 git 提交
-  -> 人工复核提交、报告和下一轮目标
+  -> Agent B 同步 origin/main，确认在 main 且无无关改动
+  -> Agent B 按提示词实现、更新文档、跑本地轻量检查
+  -> Agent B 创建版本 commit 并 push origin main
+  -> GitHub Actions 在 main push 上运行云端重验证
+  -> GitHub Actions 上传未加密 CI 结果包
+  -> Agent C gh auth login 后下载结果包到 /private/tmp/localdiffusion-c-review-<run_id>/
+  -> Agent C 核对 origin/main 最新 commit、run id、run attempt、manifest、JUnit、日志和 failure summary
+  -> 若不通过：退回 Agent B 在 main 上追加修复 commit，再 push 触发新 run
+  -> 若通过：确认 main 最新 run 通过并输出验收结论
+  -> 人工复核云端报告和下一轮目标
+```
+
+### 2.6 CI 结果包流程
+
+```text
+git push origin main
+  -> .github/workflows/ci-results.yml
+  -> git diff --check / plutil / Swift parse / native preflight / xcodebuild
+  -> 写入 ci-artifact-manifest.json
+  -> 写入 ci-failure-summary.md
+  -> 写入 junit.xml 和主构建日志
+  -> upload-artifact 未加密结果包
+  -> Agent C 下载并核对
 ```
 
 ## 3. 架构边界
@@ -271,15 +288,19 @@
 - `HuggingFaceDownloadManager` 可以更新模型下载状态，但不负责生成图片。
 - SwiftData 只保存元数据，图片和模型大文件保存在 Application Support。
 - native backend 只能通过 `ImageGenerationBackend` 暴露给上层。
-- 版本提交只能发生在 Agent C 明确验收通过之后；不通过时必须退回 Agent B，不能提交失败版本。
+- 版本提交默认由 Agent B 在 `main` 上完成并 push 到 `origin/main` 触发云端验证。
+- Agent C 只能验收 `origin/main` 最新 commit 对应的 Actions run 和未加密结果包。
+- Agent C 不通过时必须退回 Agent B 追加修复 commit，不能用旧 run、旧 artifact 或本地未推送状态验收。
+- 若 Agent C 需要补齐核心文档，必须在 `main` 上追加文档 commit、push 并等待对应云端结果包。
 
 ## 4. 测试映射
 
-- Swift 源码变更：Probe / Fast。
-- UI/导航/启动变更：Smoke。
-- native bridge / project / XCFramework 变更：Stage Regression。
-- release 或真实生成链路变更：Full。
-- 文档-only：`git diff --check`，并说明未跑业务测试。
+- 默认：本地轻量检查 + push `origin/main` 云端重验证。
+- 文档-only：本地 `git diff --check`、YAML/Plist 解析；云端 workflow 仍负责结果包。
+- Swift 源码变更：本地 Swift parse；云端运行 Swift parse 和 Xcode build。
+- UI/导航/启动变更：人工明确本机 smoke 时运行 simulator；默认云端构建验证。
+- native bridge / project / XCFramework 变更：本地或云端 `Scripts/check-native-backend.sh`，接口变化还要重建 XCFramework。
+- release 或真实生成链路变更：除云端验证外，仍需要真机真实 GGUF 生成验收。
 
 ## 5. 用户入口
 
@@ -296,7 +317,7 @@
 - 模型文件不存在时必须把模型状态标记为 failed 或提示用户恢复。
 - 图片文件保存失败时不能留下 SwiftData 孤立记录。
 - 每次核心流程变化必须同步更新 `flow.md` 与 `flowchart.md`。
-- Agent C 通过后必须按版本号创建 git 提交，提交信息简要说明该版本完成内容、验证和遗留风险。
+- Agent C 通过必须基于 `origin/main` 最新 commit 的云端 run 和结果包，不能只基于本地提交或文字说明。
 
 ## 7. 未来扩展点
 
@@ -314,5 +335,6 @@
 - Prompt Library 模板能加载回 Generate。
 - Gallery 复用参数不能丢失 prompt、seed、尺寸和 sampler。
 - 取消生成不能保存半成品。
-- `Scripts/check-native-backend.sh` 必须能发现 native linkage/ABI 包装问题。
-- 验收不通过的 Agent B 结果不能进入版本提交。
+- `Scripts/check-native-backend.sh` 必须能发现 native linkage/ABI 包装问题，并纳入云端结果包日志。
+- 验收不通过的 Agent B 结果不能被 Agent C 宣布为正式通过；修复应在 `main` 上追加 commit 并重新触发云端 run。
+- Agent C 不能只看文字汇报，必须核对 `ci-artifact-manifest.json`、JUnit/等价摘要、主日志和 failure summary。

@@ -31,6 +31,12 @@ For manual packaging, `./Scripts/build-stable-diffusion-xcframework.sh /path/to/
 
 The native build scripts require CMake and full Xcode. If the active developer directory points at Command Line Tools, the scripts automatically use `/Applications/Xcode.app` when it is present.
 
+## Collaboration and cloud validation
+
+Agent workflow now defaults to `main` direct push and GitHub Actions revalidation. Agent B runs local lightweight checks, commits the versioned change on `main`, and pushes to `origin/main`. Agent C must download the unencrypted CI results artifact, check its manifest, logs, JUnit summary, run id, and commit SHA, then accept the latest `origin/main` run or return the work for an additional fix commit.
+
+The CI results workflow is `.github/workflows/ci-results.yml`. It is triggered by `main` pushes and manual dispatch, and is expected to upload a traceable artifact containing `ci-artifact-manifest.json`, `ci-failure-summary.md`, `junit.xml`, Xcode logs, native preflight logs, and the result bundle when available.
+
 ## Verification
 
 Run the native preflight after installing or refreshing the XCFramework:
@@ -57,15 +63,22 @@ Future Codex agents should read `AGENTS.md` before changing code. The project no
 - `md/flow/flowchart.md`: Mermaid diagrams for data flow, execution flow, and Agent iteration flow.
 - `md/test/test.md`: test layers, commands, triggers, and current baselines.
 - `md/prompt/`: versioned Agent A prompts for Agent B implementation.
+- `.github/workflows/ci-results.yml`: cloud validation and unencrypted Agent C results artifact.
 
 After every meaningful coding task:
 
 - Update this README when behavior, setup, verification, or completion status changes.
 - Update `AGENTS.md`, `md/test/test.md`, or `md/flow/**` when development rules, test rules, or core logic change.
 - Record what was completed, what was verified, and what remains risky.
-- After Agent C accepts a version, create a git commit using the version number, for example `v0.3: Agent C version commit workflow`; if Agent C rejects the work, return it to Agent B without committing.
+- By default, Agent B commits the versioned change on `main` and pushes to `origin/main`; Agent C accepts only the latest matching GitHub Actions run and results artifact.
 
 ## Maintenance log
+
+### 2026-07-03
+
+- Completed: Upgraded the collaboration workflow to local lightweight checks, `main` direct push, GitHub Actions cloud validation, and Agent C artifact review.
+- Verified: Governance and CI scaffold change; local lightweight checks are required for this version.
+- Risk: The local repository currently has no `origin`, so the first real cloud run requires configuring the remote and GitHub Actions access.
 
 ### 2026-06-29
 

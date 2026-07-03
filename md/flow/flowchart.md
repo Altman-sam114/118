@@ -69,46 +69,77 @@ flowchart TD
   K --> L["ready 模型出现在 Generate Picker"]
 ```
 
-## 4. Agent 迭代流程图
+## 4. Agent 云端迭代流程图
 
-读图说明：人工先提出目标，Agent A 只负责分析和写实现提示词；Agent B 才实现和测试；Agent C 查看真实 diff、测试和文档后做通过/不通过判断。不通过就退回 Agent B 修复；通过才更新核心文档并按版本号创建 git 提交，然后交给人工复核。
+读图说明：人工先提出目标，Agent A 只负责分析和写实现提示词；Agent B 在 `main` 上实现、轻量检查、提交并 push；GitHub Actions 生成未加密结果包；Agent C 下载结果包并核对最新 `origin/main` 的 commit、run 和日志。不通过就退回 Agent B 在 `main` 上追加修复 commit；通过才交给人工复核。
 
 ```mermaid
 flowchart TD
   H["人工提出目标：功能、限制、验收、测试要求"] --> A1["Agent A：阅读上下文，分析目标，设计方案"]
   A1 --> P["写入版本提示词：md/prompt/vX（阶段）/vX.Y（任务）.md"]
-  P --> B1["Agent B：按提示词实现，小步修改，运行测试"]
-  B1 --> R["Agent B 输出：改动、关键文件、测试结果、风险"]
-  R --> C1["Agent C：查看 diff，核对测试，验收实现"]
-  C1 --> D{"Agent C 验收是否通过？"}
-  D -- "不通过：列问题和缺失项" --> FB["退回 Agent B 修复，不创建提交"]
+  P --> B0["Agent B：同步 origin/main，确认当前分支是 main"]
+  B0 --> B1["Agent B：按提示词实现，更新必要文档"]
+  B1 --> T["本地轻量检查：git diff / YAML / Plist / Swift parse"]
+  T --> G1["创建版本 commit：vX.Y: 简要任务名"]
+  G1 --> PUSH["git push origin main"]
+  PUSH --> ACT["GitHub Actions：ci-results workflow"]
+  ACT --> PKG["上传未加密 CI 结果包：manifest / JUnit / log / failure summary"]
+  PKG --> C0["Agent C：gh auth login，下载 artifact 到 /private/tmp/localdiffusion-c-review-<run_id>/"]
+  C0 --> C1["Agent C：核对 origin/main 最新 commit、run id、run attempt 和结果文件"]
+  C1 --> D{"Agent C 云端验收是否通过？"}
+  D -- "不通过：列问题和缺失项" --> FB["退回 Agent B，在 main 上追加修复 commit"]
   FB --> B1
-  D -- "通过：确认版本完成" --> F["更新 flow.md / flowchart.md / update_log.md"]
-  F --> G["按版本号创建 git commit：vX.Y: 简要任务名"]
-  G --> S["输出提交哈希、版本概括、验证结果、遗留风险"]
-  S --> H2["人工复核：确认提交或提出下一轮目标"]
+  D -- "通过：确认 origin/main 最新 run 通过" --> S["输出提交哈希、run id、artifact 名称、验证结果、遗留风险"]
+  S --> H2["人工复核：确认 main 最新版本或提出下一轮目标"]
   H2 --> H
 ```
 
-## 5. 测试分层选择图
+## 5. CI 结果包数据流
 
-读图说明：按改动风险从小到大选择测试。文档-only 可以只做静态检查；代码、UI、native、发布前逐级加大验证范围。
+读图说明：这张图只看 `main` push 后云端产物如何形成。Agent C 后续只核对此结果包，不把旧 artifact、旧输出或 Agent B 文字汇报当作验收依据。
 
 ```mermaid
 flowchart TD
-  A["本轮改动"] --> B{"只改文档？"}
-  B -- "是" --> C["git diff --check"]
-  B -- "否" --> D{"Swift 源码变更？"}
-  D -- "是" --> E["Probe / Fast：Swift parse + native bridge parse"]
-  D -- "否" --> C
-  E --> F{"UI / 启动 / 导航变化？"}
-  F -- "是" --> G["Smoke：simulator build + install + launch + screenshot"]
-  F -- "否" --> H{"native / Xcode project / 存储主链路变化？"}
-  G --> H
-  H -- "是" --> I["Stage Regression：plutil + check-native-backend + iPhoneOS build"]
-  H -- "否" --> J["记录测试结果"]
-  I --> K{"发布前或真实生成主链路大改？"}
-  K -- "是" --> L["Full：smoke + iPhoneOS build + 真机真实 GGUF 生成"]
-  K -- "否" --> J
-  L --> J
+  A["git push origin main"] --> B["GitHub Actions：ci-results.yml"]
+  B --> C["静态检查：git diff --check / YAML / Plist"]
+  B --> D["Swift parse：普通路径和 native bridge 路径"]
+  B --> E["Native preflight：Scripts/check-native-backend.sh"]
+  B --> F["Xcode build：Debug iPhoneOS + .xcresult"]
+  C --> G["ci-artifact-manifest.json"]
+  D --> G
+  E --> G
+  F --> G
+  C --> H["junit.xml + ci-failure-summary.md + 主日志"]
+  D --> H
+  E --> H
+  F --> H
+  G --> I["未加密 artifact"]
+  H --> I
+  I --> J["Agent C 下载并核对 branch / commitSha / runId / runAttempt"]
+```
+
+## 6. 测试分层选择图
+
+读图说明：默认本地只做轻量检查，完整构建和可追溯结果包交给 GitHub Actions。只有人工明确要求本机 build、simulator 或 native 重验证时，才把这些作为本机默认路径。
+
+```mermaid
+flowchart TD
+  A["本轮改动"] --> B["本地轻量检查：git diff --check"]
+  B --> C{"涉及 workflow / plist / Swift？"}
+  C -- "workflow / plist" --> D["YAML / Plist 解析"]
+  C -- "Swift 源码" --> E["Swift parse + native bridge parse"]
+  C -- "否" --> F["创建版本 commit"]
+  D --> F
+  E --> F
+  F --> G["git push origin main"]
+  G --> H["GitHub Actions 云端重验证"]
+  H --> I["上传未加密 CI 结果包"]
+  I --> J["Agent C 下载核对"]
+  J --> K{"是否通过？"}
+  K -- "否" --> L["Agent B main 追加修复 commit"]
+  L --> G
+  K -- "是" --> M["人工复核"]
+  A --> N{"人工明确要求本机完整测试？"}
+  N -- "是" --> O["按风险运行 smoke / native preflight / xcodebuild / 真机 GGUF"]
+  O --> F
 ```

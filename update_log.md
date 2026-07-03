@@ -17,8 +17,8 @@
 - 目标能力：管理 GGUF 模型，调用 stable-diffusion.cpp native backend，在本机完成图片生成、图库管理和提示词模板复用。
 - 当前 UI：简洁暗色科幻风，核心共享样式集中在 `LocalDiffusion/Views/Shared/ParameterEditor.swift`。
 - 当前 native 路径：`ImageGenerationBackend` 协议隔离，`USE_STABLE_DIFFUSION_CPP` 启用 stable-diffusion.cpp XCFramework。
-- 当前验证入口：Swift 解析、native bridge 解析、`plutil`、`Scripts/check-native-backend.sh`、`Scripts/smoke-test-simulator.sh`、沙箱外 `xcodebuild`。
-- 当前分支事实：读取时在 `main`，最新提交为 `d7c9258`，工作树包含文档体系迁移改动。
+- 当前验证入口：本地轻量检查、Swift 解析、native bridge 解析、`plutil`、`Scripts/check-native-backend.sh`、GitHub Actions `ci-results` 结果包、人工明确要求时的 `Scripts/smoke-test-simulator.sh` 和沙箱外 `xcodebuild`。
+- 当前分支事实：本轮开始读取时在 `main`，最新提交为 `3f2e4e2`，`git remote -v` 为空；配置 `origin` 前无法完成真实 `origin/main` push、Actions run 和 artifact 下载验收。
 
 ## 历史记录
 
@@ -66,6 +66,22 @@
   - `md/flow/flowchart.md`
 - 验证结果：文档-only 修改，已运行 `git diff --check`，通过。
 - 遗留事项：后续 Agent C 若因权限或环境无法执行 git 提交，必须说明阻塞原因和待人工执行命令。
+
+### v0.4 / 云端验证与 main 直推协作流程
+
+- 日期：2026-07-03
+- 核心变更：将默认协作制度从本地提交验收升级为本地轻量检查、`main` 版本提交、`git push origin main`、GitHub Actions 云端重验证、未加密 CI 结果包上传、Agent C 下载复判的闭环。
+- 关键文件：
+  - `AGENTS.md`
+  - `README.md`
+  - `md/prompt/README.md`
+  - `md/prompt/v0（项目治理）/v0.4（云端验证main直推流程）.md`
+  - `md/test/test.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `.github/workflows/ci-results.yml`
+- 验证结果：本轮是治理流程和 CI 骨架改造，需运行 `git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、workflow YAML 解析；真实云端 run 需在配置 `origin` 后执行。
+- 遗留事项：当前仓库没有 git remote，无法完成 `origin/main` 直推、GitHub Actions run 和 Agent C artifact 下载核对；人工需要先配置远端并授予 `gh` 访问权限。
 
 ## 历史维护记录
 
