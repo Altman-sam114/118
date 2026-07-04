@@ -488,6 +488,26 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.18 / Plan 可访问性语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Plan overview 合并为明确辅助功能元素，朗读 Local Plan、StoreKit 未配置、未保存 purchase state/entitlement、未请求 App Store product。
+  - `PlanStatusSummaryRow` 显式提供 accessibility label/value，状态值由父 row 负责表达。
+  - `PlanStatusRow` 显式提供包含 title/detail 的 accessibility label，并把状态写入 accessibility value。
+  - `PlanStatusBadge` 保持视觉样式不变，但在父 row 已提供状态 value 时不再重复暴露给辅助技术。
+  - 保持 Current Build、Platform Status、Mac Readiness、Capability Matrix、Entitlement Rules 和 Availability 事实内容不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或生成参数语义。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.18（Plan可访问性语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

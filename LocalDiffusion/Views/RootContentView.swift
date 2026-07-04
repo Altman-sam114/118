@@ -635,6 +635,9 @@ private struct PlanView: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Local Plan")
+        .accessibilityValue(planOverviewAccessibilityValue)
     }
 
     private var planOverviewIcon: some View {
@@ -661,6 +664,10 @@ private struct PlanView: View {
                 .foregroundStyle(SciFiTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private var planOverviewAccessibilityValue: String {
+        "Local-first image generation app. Paid capability planning is visible, but StoreKit is not configured. No purchase state is stored, no entitlement is granted, and no App Store product is requested."
     }
 }
 
@@ -718,6 +725,7 @@ private struct PlanStatusBadge: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(status.color.opacity(0.35), lineWidth: 1)
         }
+        .accessibilityHidden(true)
     }
 }
 
@@ -740,7 +748,9 @@ private struct PlanStatusSummaryRow: View {
             PlanStatusBadge(status: status)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(status.title)
     }
 }
 
@@ -769,7 +779,9 @@ private struct PlanStatusRow: View {
             PlanStatusBadge(status: status)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(detail)")
+        .accessibilityValue(status.title)
     }
 }
 
