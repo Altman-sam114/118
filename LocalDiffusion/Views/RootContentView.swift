@@ -194,6 +194,49 @@ private struct PlanCapabilityItem: Identifiable {
     var id: String { title }
 }
 
+private enum PlanEntitlementRuleStatus {
+    case protected
+    case candidate
+    case requiresConfiguration
+    case notImplemented
+
+    var title: String {
+        switch self {
+        case .protected: "Protected"
+        case .candidate: "Candidate"
+        case .requiresConfiguration: "Requires configuration"
+        case .notImplemented: "Not implemented"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .protected: "lock.open"
+        case .candidate: "sparkles"
+        case .requiresConfiguration: "wrench.and.screwdriver"
+        case .notImplemented: "xmark.circle"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .protected: SciFiTheme.mint
+        case .candidate: SciFiTheme.cyan
+        case .requiresConfiguration: SciFiTheme.amber
+        case .notImplemented: SciFiTheme.magenta
+        }
+    }
+}
+
+private struct PlanEntitlementRuleItem: Identifiable {
+    let title: String
+    let detail: String
+    let status: PlanEntitlementRuleStatus
+    let systemImage: String
+
+    var id: String { title }
+}
+
 private enum MacReadinessStatus {
     case requiresConfiguration
     case requiresNativeBuild
@@ -265,8 +308,8 @@ private struct PlanView: View {
             systemImage: "list.bullet.rectangle"
         ),
         PlanCapabilityItem(
-            title: "Pro prompt packs",
-            detail: "Curated prompt presets and reusable style systems.",
+            title: "Curated prompt packs",
+            detail: "Future paid candidate for reusable style systems.",
             status: .planned,
             systemImage: "text.book.closed"
         ),
@@ -281,6 +324,33 @@ private struct PlanView: View {
             detail: "Requires product IDs, entitlement rules, and App Store Connect.",
             status: .requiresConfiguration,
             systemImage: "cart"
+        )
+    ]
+
+    private let entitlementRuleItems = [
+        PlanEntitlementRuleItem(
+            title: "Core local tools",
+            detail: "Generate, Models, Gallery, and Prompts stay available in the current Local plan.",
+            status: .protected,
+            systemImage: "lock.open"
+        ),
+        PlanEntitlementRuleItem(
+            title: "Paid feature candidates",
+            detail: "Batch queue, curated prompt packs, and workflow export still need product decisions.",
+            status: .candidate,
+            systemImage: "sparkles"
+        ),
+        PlanEntitlementRuleItem(
+            title: "StoreKit purchase gate",
+            detail: "Requires product IDs, entitlement mapping, restore flow, receipts, and App Store Connect.",
+            status: .requiresConfiguration,
+            systemImage: "cart"
+        ),
+        PlanEntitlementRuleItem(
+            title: "Entitlement persistence",
+            detail: "No purchase state is stored, no entitlement is granted, and no App Store product is requested.",
+            status: .notImplemented,
+            systemImage: "xmark.seal"
         )
     ]
 
@@ -338,6 +408,7 @@ private struct PlanView: View {
             platformStatusSection
             macReadinessSection
             capabilityMatrixSection
+            entitlementRulesSection
             availabilitySection
         }
     }
@@ -388,6 +459,10 @@ private struct PlanView: View {
                 capabilityMatrixContent
             }
 
+            PlanPanel("Entitlement Rules", footer: "These rules are a planning baseline only. This build does not enforce paid access.") {
+                entitlementRulesContent
+            }
+
             PlanPanel("Availability") {
                 availabilityContent
             }
@@ -423,6 +498,16 @@ private struct PlanView: View {
             Text("Capability Matrix")
         } footer: {
             Text("Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.")
+        }
+    }
+
+    private var entitlementRulesSection: some View {
+        Section {
+            entitlementRulesContent
+        } header: {
+            Text("Entitlement Rules")
+        } footer: {
+            Text("These rules are a planning baseline only. This build does not enforce paid access.")
         }
     }
 
@@ -487,9 +572,16 @@ private struct PlanView: View {
     }
 
     @ViewBuilder
+    private var entitlementRulesContent: some View {
+        ForEach(entitlementRuleItems) { item in
+            EntitlementRuleRow(item: item)
+        }
+    }
+
+    @ViewBuilder
     private var availabilityContent: some View {
         Label("Generate, Models, Gallery, and Prompts remain available in the Local plan.", systemImage: "lock.open")
-        Label("StoreKit integration requires product IDs, entitlement rules, and App Store Connect configuration before any purchase UI is added.", systemImage: "wrench.and.screwdriver")
+        Label("Purchase UI should only be added after StoreKit products and entitlement mapping exist.", systemImage: "wrench.and.screwdriver")
     }
 
     private var planOverview: some View {
@@ -593,6 +685,34 @@ private struct MacReadinessRow: View {
 
 private struct CapabilityRow: View {
     let item: PlanCapabilityItem
+
+    var body: some View {
+        LabeledContent {
+            Label(item.status.title, systemImage: item.status.systemImage)
+                .foregroundStyle(item.status.color)
+                .font(.callout)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .multilineTextAlignment(.trailing)
+        } label: {
+            Label {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
+                        .foregroundStyle(SciFiTheme.primaryText)
+                    Text(item.detail)
+                        .font(.callout)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            } icon: {
+                Image(systemName: item.systemImage)
+                    .foregroundStyle(SciFiTheme.cyan)
+            }
+        }
+    }
+}
+
+private struct EntitlementRuleRow: View {
+    let item: PlanEntitlementRuleItem
 
     var body: some View {
         LabeledContent {

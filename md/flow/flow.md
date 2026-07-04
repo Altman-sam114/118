@@ -181,7 +181,7 @@
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
-- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、平台状态和 Mac readiness checklist；compact 使用单列 Form，iPad regular 使用双栏阅读布局；能力矩阵区分 Available、Planned、Requires configuration，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
+- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、entitlement rules、平台状态和 Mac readiness checklist；compact 使用单列 Form，iPad regular 使用双栏阅读布局；能力矩阵区分 Available、Planned、Requires configuration，权益规则明确当前本地工具保持可用、付费候选仍未售卖且未持久化 entitlement，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 
 输入：
@@ -348,7 +348,7 @@ git push origin main
 - Models：模型下载、导入、删除、状态恢复入口。
 - Gallery：生成结果查看、过滤、复用入口。
 - Prompts：提示词模板维护入口。
-- Plan：当前 Local plan、付费能力规划和平台可用性状态入口。
+- Plan：当前 Local plan、付费能力规划、entitlement rules 和平台可用性状态入口。
 - StartupFailureView：SwiftData store 无法打开时的错误入口。
 
 ## 6. 已确认铁律
@@ -367,6 +367,7 @@ git push origin main
 - SwiftData migration 和 store 修复工具。
 - 更细的 native 错误分类。
 - 图片生成队列和历史任务恢复。
+- StoreKit 接入：需要 product IDs、entitlement mapping、restore/receipt flow、App Store Connect 配置和不锁定当前 Local tools 的规则确认。
 - 更严格的截图 smoke test：像素检查或 UI 文本检查。
 - ModelLibraryView 拆分为更小的 feature files。
 - Mac Catalyst 支持：需要 Xcode 平台设置、native backend Mac/Catalyst slice、窗口/sidebar QA、签名/分发配置和专门 UI 验证；Plan 仅展示 readiness checklist，不表示 Mac 已可用。

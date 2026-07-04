@@ -12,7 +12,7 @@ flowchart TD
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 嵌入式 filter rail"]
-  NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 能力矩阵 / Mac readiness"]
+  NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 能力矩阵 / entitlement rules / Mac readiness"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
   GALUI --> VM

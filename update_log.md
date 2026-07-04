@@ -268,6 +268,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮只优化展示密度；真实付费、Mac Catalyst 和截图/Dynamic Type 目检仍需后续专门轮次。
 
+### v1.7 / 付费权益规则基线
+
+- 日期：2026-07-04
+- 核心变更：
+  - Plan 页面新增 Entitlement Rules 区，明确当前 Local plan 的 Generate、Models、Gallery、Prompts 保持可用。
+  - 将 batch queue、curated prompt packs、workflow export 标记为未来付费候选，仍需产品决策且当前不售卖。
+  - 明确 StoreKit purchase gate 需要 product IDs、entitlement mapping、restore/receipt flow 和 App Store Connect 配置。
+  - 明确当前不保存购买状态、不授予 entitlement、不请求 App Store 产品。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData、文件存储或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.7（付费权益规则基线）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍是 UI/文档基线；真实 StoreKit 接入、产品 ID、购买恢复、receipt 校验、entitlement 持久化和付费门禁仍需后续人工决策与专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
