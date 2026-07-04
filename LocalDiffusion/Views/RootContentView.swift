@@ -191,10 +191,12 @@ private struct PlanView: View {
                         .foregroundStyle(SciFiTheme.secondaryText)
                 }
 
-                Section("Future Paid Capabilities") {
+                Section {
                     ForEach(futureCapabilities, id: \.self) { capability in
                         Label(capability, systemImage: "sparkles")
                     }
+                } header: {
+                    Text("Future Paid Capabilities")
                 } footer: {
                     Text("These are planning candidates only. No feature is locked, purchased, or activated by this screen.")
                 }
