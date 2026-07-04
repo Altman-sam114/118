@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ParameterEditor: View {
     @Binding var parameters: GenerationParameters
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private let sizePresets: [(String, Int, Int)] = [
         ("512 x 512", 512, 512),
@@ -24,81 +25,181 @@ struct ParameterEditor: View {
             }
             .buttonStyle(SciFiSecondaryButtonStyle())
 
-            Stepper(
-                "Steps: \(parameters.steps)",
-                value: $parameters.steps,
-                in: GenerationParameters.minimumSteps...GenerationParameters.maximumSteps
+            stepsControl
+            cfgControl
+            seedControl
+            sizePresetControl
+            widthControl
+            heightControl
+            samplerControl
+        }
+        .listRowBackground(SciFiTheme.panel)
+    }
+
+    private var stepsControl: some View {
+        Stepper(
+            "Steps: \(parameters.steps)",
+            value: $parameters.steps,
+            in: GenerationParameters.minimumSteps...GenerationParameters.maximumSteps
+        )
+        .foregroundStyle(SciFiTheme.primaryText)
+        .accessibilityLabel("Steps")
+        .accessibilityValue("\(parameters.steps)")
+    }
+
+    private var cfgControl: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            parameterHeader(title: "CFG", value: cfgValueText)
+            Slider(
+                value: $parameters.cfgScale,
+                in: GenerationParameters.minimumCFGScale...GenerationParameters.maximumCFGScale,
+                step: 0.5
             )
-            .foregroundStyle(SciFiTheme.primaryText)
+            .tint(SciFiTheme.cyan)
+            .accessibilityLabel("CFG Scale")
+            .accessibilityValue(cfgValueText)
+        }
+        .foregroundStyle(SciFiTheme.primaryText)
+    }
 
-            VStack(alignment: .leading) {
-                HStack {
-                    Text("CFG")
-                    Spacer()
-                    Text(parameters.cfgScale.formatted(.number.precision(.fractionLength(1))))
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-                Slider(
-                    value: $parameters.cfgScale,
-                    in: GenerationParameters.minimumCFGScale...GenerationParameters.maximumCFGScale,
-                    step: 0.5
-                )
-                .tint(SciFiTheme.cyan)
+    @ViewBuilder
+    private var seedControl: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                seedField
+                randomizeSeedButton
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(SciFiTheme.primaryText)
-
+        } else {
             HStack {
-                TextField("Seed", value: $parameters.seed, format: .number)
-                    .keyboardType(.numberPad)
-                Button {
-                    parameters.seed = Int.random(in: 0...Int(Int32.max))
-                } label: {
-                    Image(systemName: "dice")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
-                .tint(SciFiTheme.amber)
-                .accessibilityLabel("Randomize seed")
+                seedField
+                randomizeSeedButton
             }
             .foregroundStyle(SciFiTheme.primaryText)
+        }
+    }
 
+    private var seedField: some View {
+        TextField("Seed", value: $parameters.seed, format: .number)
+            .keyboardType(.numberPad)
+            .accessibilityLabel("Seed")
+            .accessibilityValue("\(parameters.seed)")
+    }
+
+    @ViewBuilder
+    private var randomizeSeedButton: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            Button(action: randomizeSeed) {
+                Label("Randomize Seed", systemImage: "dice")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+            .tint(SciFiTheme.amber)
+            .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+        } else {
+            Button(action: randomizeSeed) {
+                Label("Randomize Seed", systemImage: "dice")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+            .tint(SciFiTheme.amber)
+            .frame(minWidth: 44, minHeight: 44)
+        }
+    }
+
+    @ViewBuilder
+    private var sizePresetControl: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Size")
+                sizePresetMenu
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .foregroundStyle(SciFiTheme.primaryText)
+        } else {
             HStack {
                 Text("Size")
                 Spacer()
-                Menu(currentSizeText) {
-                    ForEach(sizePresets, id: \.0) { preset in
-                        Button(preset.0) {
-                            parameters.width = preset.1
-                            parameters.height = preset.2
-                        }
-                    }
-                }
-                .tint(SciFiTheme.cyan)
+                sizePresetMenu
             }
             .foregroundStyle(SciFiTheme.primaryText)
-
-            Stepper(
-                "Width: \(parameters.width)",
-                value: widthBinding,
-                in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
-                step: GenerationParameters.dimensionStep
-            )
-            .foregroundStyle(SciFiTheme.primaryText)
-            Stepper(
-                "Height: \(parameters.height)",
-                value: heightBinding,
-                in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
-                step: GenerationParameters.dimensionStep
-            )
-            .foregroundStyle(SciFiTheme.primaryText)
-
-            Picker("Sampler", selection: samplerBinding) {
-                ForEach(Sampler.allCases) { sampler in
-                    Text(sampler.rawValue).tag(sampler.rawValue)
-                }
-            }
-            .tint(SciFiTheme.cyan)
         }
-        .listRowBackground(SciFiTheme.panel)
+    }
+
+    private var sizePresetMenu: some View {
+        Menu(currentSizeText) {
+            ForEach(sizePresets, id: \.0) { preset in
+                Button(preset.0) {
+                    parameters.width = preset.1
+                    parameters.height = preset.2
+                }
+            }
+        }
+        .tint(SciFiTheme.cyan)
+        .frame(minHeight: 44, alignment: .leading)
+        .accessibilityLabel("Canvas size preset")
+        .accessibilityValue(currentSizeText)
+    }
+
+    private var widthControl: some View {
+        Stepper(
+            "Width: \(parameters.width)",
+            value: widthBinding,
+            in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
+            step: GenerationParameters.dimensionStep
+        )
+        .foregroundStyle(SciFiTheme.primaryText)
+        .accessibilityLabel("Width")
+        .accessibilityValue("\(parameters.width)")
+    }
+
+    private var heightControl: some View {
+        Stepper(
+            "Height: \(parameters.height)",
+            value: heightBinding,
+            in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
+            step: GenerationParameters.dimensionStep
+        )
+        .foregroundStyle(SciFiTheme.primaryText)
+        .accessibilityLabel("Height")
+        .accessibilityValue("\(parameters.height)")
+    }
+
+    private var samplerControl: some View {
+        Picker("Sampler", selection: samplerBinding) {
+            ForEach(Sampler.allCases) { sampler in
+                Text(sampler.rawValue).tag(sampler.rawValue)
+            }
+        }
+        .tint(SciFiTheme.cyan)
+        .accessibilityLabel("Sampler")
+        .accessibilityValue(parameters.samplerRawValue)
+    }
+
+    @ViewBuilder
+    private func parameterHeader(title: String, value: String) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                Text(value)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+            }
+        } else {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(value)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+            }
+        }
+    }
+
+    private var cfgValueText: String {
+        parameters.cfgScale.formatted(.number.precision(.fractionLength(1)))
+    }
+
+    private func randomizeSeed() {
+        parameters.seed = Int.random(in: 0...Int(Int32.max))
     }
 
     private var currentSizeText: String {
@@ -330,18 +431,25 @@ struct SciFiStatusPill: View {
     var systemImage: String
     var color: Color = SciFiTheme.cyan
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         Label(title, systemImage: systemImage)
             .font(.caption.weight(.semibold))
             .foregroundStyle(color)
-            .lineLimit(1)
-            .minimumScaleFactor(0.82)
+            .lineLimit(titleLineLimit)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(color.opacity(0.12), in: Capsule())
             .overlay {
                 Capsule().stroke(color.opacity(0.35), lineWidth: 1)
             }
+            .accessibilityElement(children: .combine)
+    }
+
+    private var titleLineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
 }
 
@@ -351,22 +459,20 @@ struct SciFiMetric: View {
     var systemImage: String
     var color: Color = SciFiTheme.cyan
 
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.headline)
-                .foregroundStyle(color)
-                .frame(width: 30, height: 30)
-                .background(color.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(SciFiTheme.secondaryText)
-                Text(value)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(SciFiTheme.primaryText)
-                    .lineLimit(1)
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 8) {
+                    metricIcon
+                    metricCopy
+                }
+            } else {
+                HStack(spacing: 10) {
+                    metricIcon
+                    metricCopy
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -376,6 +482,35 @@ struct SciFiMetric: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(color.opacity(0.18), lineWidth: 1)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(value)
+    }
+
+    private var metricIcon: some View {
+        Image(systemName: systemImage)
+            .font(.headline)
+            .foregroundStyle(color)
+            .frame(width: 30, height: 30)
+            .background(color.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+            .accessibilityHidden(true)
+    }
+
+    private var metricCopy: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(SciFiTheme.primaryText)
+                .lineLimit(valueLineLimit)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var valueLineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
 }
 

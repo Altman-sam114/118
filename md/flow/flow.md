@@ -175,14 +175,14 @@
 
 职责：
 
-- Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果。
+- Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果；共享参数控件提供明确可访问标签和值，并在 accessibility Dynamic Type 下减少横向挤压。
 - Generate 在 compact 下保持单列表单；在 iPad regular 普通 Dynamic Type 下使用双栏创作台，左侧放模型/prompt/参数，右侧放状态、运行和结果；accessibility Dynamic Type 下回退单列，控制台 header、状态 pill 和 metrics 纵向/单列排列以保持可读。
 - Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件；行内控制按钮提供可访问文本 label 和 44pt 命中区，storage/model/untracked rows 在 accessibility Dynamic Type 下改为纵向堆叠以保持可读。
 - Gallery：查看、过滤、排序、复用参数、删除图片；图块在 accessibility Dynamic Type 下使用更宽网格、纵向元数据和清晰辅助功能摘要以保持可读。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
-- Prompts：保存、分类、编辑、加载模板；分类菜单、模板编辑和加载控件提供可访问文本 label 和 44pt 命中区，模板行在 accessibility Dynamic Type 下纵向堆叠以保持可读。
+- Prompts：保存、分类、编辑、加载模板；分类菜单、模板编辑和加载控件提供可访问文本 label 和 44pt 命中区，模板行和共享参数编辑控件在 accessibility Dynamic Type 下纵向堆叠以保持可读。
 - Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、entitlement rules、平台状态和 Mac readiness checklist；compact 使用单列 Form，iPad regular 使用双栏阅读布局，accessibility Dynamic Type 下回退单列；Current Build、Platform Status、Mac readiness、能力矩阵和权益规则使用文字、图标、颜色和描边共同表达的状态徽章，避免只靠颜色或尾部压缩标签表达状态；权益规则明确当前本地工具保持可用、付费候选仍未售卖且未持久化 entitlement，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
-- Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
+- Shared：Sci-Fi theme、面板、按钮、空状态、底部留白、共享参数编辑器、状态 pill 和 metric 卡片；共享参数/状态控件在 accessibility Dynamic Type 下避免单行压缩并提供明确辅助功能语义。
 
 输入：
 
@@ -347,7 +347,7 @@ git push origin main
 - Generate：主要生成入口。
 - Models：模型下载、导入、删除、状态恢复入口，行内控制支持可访问 label 和大字号堆叠。
 - Gallery：生成结果查看、过滤、复用入口，图块支持大字号可读元数据和 VoiceOver 摘要。
-- Prompts：提示词模板维护入口，分类/模板行控制支持可访问 label 和大字号堆叠。
+- Prompts：提示词模板维护入口，分类/模板行控制和共享参数编辑支持可访问 label 和大字号堆叠。
 - Plan：当前 Local plan、付费能力规划、entitlement rules 和平台可用性状态入口。
 - StartupFailureView：SwiftData store 无法打开时的错误入口。
 

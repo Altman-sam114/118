@@ -9,9 +9,9 @@
 ```mermaid
 flowchart TD
   U["用户操作：下载模型、输入 Prompt、点击生成、查看 Plan"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts / Plan"]
-  UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / Dynamic Type 单列回退"]
+  UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / Dynamic Type 单列回退 / 可读参数控件"]
   UI --> MODELUI["Models：下载 / 导入 / 删除 / 可访问 controls / Dynamic Type 堆叠"]
-  UI --> PROMPTUI["Prompts：模板分类 / 编辑加载 / 可访问 controls / Dynamic Type 堆叠"]
+  UI --> PROMPTUI["Prompts：模板分类 / 编辑加载 / 可访问 controls / 共享参数编辑"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail / 可读图块"]
   NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 状态徽章 / 能力矩阵 / entitlement rules / Mac readiness"]

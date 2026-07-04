@@ -384,6 +384,27 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.13 / 共享参数控件可读性
+
+- 日期：2026-07-04
+- 核心变更：
+  - ParameterEditor 为 Steps、CFG、Seed、Size、Width、Height、Sampler 补足明确 accessibility label/value。
+  - Seed 随机按钮改为带文本的 `Label`，普通字号保持 icon-only 视觉，并补足 44pt 命中区。
+  - CFG、Seed 和 Size 行读取 Dynamic Type size，在 accessibility 字号下使用纵向布局，减少横向挤压。
+  - SciFiStatusPill 移除 `minimumScaleFactor`，在 accessibility Dynamic Type 下允许长状态文字换行。
+  - SciFiMetric 在 accessibility Dynamic Type 下改为纵向图标/文本布局，value 不再只能单行截断，并提供组合后的辅助功能语义。
+  - 保持 Reset defaults、steps、CFG slider、seed field/randomize、size presets、width/height steppers、sampler picker 行为不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或生成参数语义。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.13（共享参数控件可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
