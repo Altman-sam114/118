@@ -232,6 +232,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：能力矩阵仍是信息架构；真实付费功能仍需 StoreKit 产品、entitlement 规则、App Store Connect 和购买恢复流程。
 
+### v1.5 / Mac 就绪清单
+
+- 日期：2026-07-04
+- 核心变更：
+  - Plan 页面新增 Mac readiness checklist，将 Mac 支持拆成 Xcode target 平台、native backend Mac/Catalyst slice、窗口/sidebar QA、分发和签名决策四类准备项。
+  - 清单使用文字、图标和状态标签表达 Requires configuration、Requires native build、Planned、Requires decision，避免只靠颜色传达状态。
+  - 继续明确当前 iPhone/iPad 可用，Mac Catalyst 未启用，不能把当前 iOS/iPadOS target 或 iPad regular 布局误称为 Mac 版本。
+  - 不修改 Xcode project、native XCFramework、StoreKit、SwiftData、文件存储、native bridge 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.5（Mac就绪清单）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：真正启用 Mac Catalyst 前仍需 native backend Mac/Catalyst slice、平台设置、签名/分发决策和 Mac UI smoke 验证。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

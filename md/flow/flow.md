@@ -181,7 +181,7 @@
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
-- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵和平台状态；能力矩阵区分 Available、Planned、Requires configuration，当前 iPhone/iPad 可用，Mac Catalyst 未启用。
+- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、平台状态和 Mac readiness checklist；能力矩阵区分 Available、Planned、Requires configuration，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 
 输入：
@@ -369,7 +369,7 @@ git push origin main
 - 图片生成队列和历史任务恢复。
 - 更严格的截图 smoke test：像素检查或 UI 文本检查。
 - ModelLibraryView 拆分为更小的 feature files。
-- Mac Catalyst 支持：需要 Xcode 平台设置、native backend Mac/Catalyst slice、签名/分发配置和专门 UI 验证。
+- Mac Catalyst 支持：需要 Xcode 平台设置、native backend Mac/Catalyst slice、窗口/sidebar QA、签名/分发配置和专门 UI 验证；Plan 仅展示 readiness checklist，不表示 Mac 已可用。
 
 ## 8. 不允许破坏的行为
 

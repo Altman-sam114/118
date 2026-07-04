@@ -194,6 +194,48 @@ private struct PlanCapabilityItem: Identifiable {
     var id: String { title }
 }
 
+private enum MacReadinessStatus {
+    case requiresConfiguration
+    case requiresNativeBuild
+    case planned
+    case requiresDecision
+
+    var title: String {
+        switch self {
+        case .requiresConfiguration: "Requires configuration"
+        case .requiresNativeBuild: "Requires native build"
+        case .planned: "Planned"
+        case .requiresDecision: "Requires decision"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .requiresConfiguration: "wrench.and.screwdriver"
+        case .requiresNativeBuild: "cpu"
+        case .planned: "clock"
+        case .requiresDecision: "questionmark.circle"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .requiresConfiguration, .requiresDecision: SciFiTheme.amber
+        case .requiresNativeBuild: SciFiTheme.magenta
+        case .planned: SciFiTheme.cyan
+        }
+    }
+}
+
+private struct MacReadinessItem: Identifiable {
+    let title: String
+    let detail: String
+    let status: MacReadinessStatus
+    let systemImage: String
+
+    var id: String { title }
+}
+
 private struct PlanView: View {
     private let capabilityItems = [
         PlanCapabilityItem(
@@ -237,6 +279,33 @@ private struct PlanView: View {
             detail: "Requires product IDs, entitlement rules, and App Store Connect.",
             status: .requiresConfiguration,
             systemImage: "cart"
+        )
+    ]
+
+    private let macReadinessItems = [
+        MacReadinessItem(
+            title: "Xcode target platform",
+            detail: "Project still targets iPhoneOS and iPhone Simulator only.",
+            status: .requiresConfiguration,
+            systemImage: "desktopcomputer"
+        ),
+        MacReadinessItem(
+            title: "Native backend slice",
+            detail: "XCFramework needs a Mac or Catalyst library before Mac builds.",
+            status: .requiresNativeBuild,
+            systemImage: "cpu"
+        ),
+        MacReadinessItem(
+            title: "Window and sidebar QA",
+            detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need smoke coverage.",
+            status: .planned,
+            systemImage: "rectangle.split.2x1"
+        ),
+        MacReadinessItem(
+            title: "Distribution and signing",
+            detail: "Developer ID, sandboxing, notarization, and App Store path require a product decision.",
+            status: .requiresDecision,
+            systemImage: "person.badge.key"
         )
     ]
 
@@ -285,6 +354,16 @@ private struct PlanView: View {
 
                     Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
                         .foregroundStyle(SciFiTheme.secondaryText)
+                }
+
+                Section {
+                    ForEach(macReadinessItems) { item in
+                        MacReadinessRow(item: item)
+                    }
+                } header: {
+                    Text("Mac Readiness")
+                } footer: {
+                    Text("These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.")
                 }
 
                 Section {
@@ -342,6 +421,34 @@ private struct PlanView: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
+    }
+}
+
+private struct MacReadinessRow: View {
+    let item: MacReadinessItem
+
+    var body: some View {
+        LabeledContent {
+            Label(item.status.title, systemImage: item.status.systemImage)
+                .foregroundStyle(item.status.color)
+                .font(.callout)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .multilineTextAlignment(.trailing)
+        } label: {
+            Label {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
+                        .foregroundStyle(SciFiTheme.primaryText)
+                    Text(item.detail)
+                        .font(.callout)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            } icon: {
+                Image(systemName: item.systemImage)
+                    .foregroundStyle(SciFiTheme.cyan)
+            }
+        }
     }
 }
 
