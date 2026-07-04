@@ -16,9 +16,15 @@ enum GalleryFilter: Hashable {
     case tag(String)
 }
 
+enum GalleryLayoutMode {
+    case standalone
+    case embeddedWide
+}
+
 struct GalleryView: View {
     let fileStore: AppFileStore
     @Binding var focusedImageID: UUID?
+    let layoutMode: GalleryLayoutMode
     let onReuse: () -> Void
 
     @Environment(\.modelContext) private var modelContext
@@ -33,6 +39,18 @@ struct GalleryView: View {
     @State private var editingFolder: FolderEditorState?
     @State private var pendingFolderDeletion: FolderEditorState?
     @State private var detailPath: [UUID] = []
+
+    init(
+        fileStore: AppFileStore,
+        focusedImageID: Binding<UUID?>,
+        layoutMode: GalleryLayoutMode = .standalone,
+        onReuse: @escaping () -> Void
+    ) {
+        self.fileStore = fileStore
+        _focusedImageID = focusedImageID
+        self.layoutMode = layoutMode
+        self.onReuse = onReuse
+    }
 
     private var allTags: [String] {
         images.flatMap(\.tags).normalizedTags()
@@ -66,177 +84,274 @@ struct GalleryView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
-            List(selection: filterBinding) {
-                Label("All Images", systemImage: "square.grid.2x2")
-                    .tag(GalleryFilter.all)
-                    .sciFiListRow()
-
-                Section("Folders") {
-                    ForEach(folders) { folder in
-                        Label(folder.name, systemImage: "folder")
-                            .tag(GalleryFilter.folder(folder.id))
-                            .sciFiListRow()
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    pendingFolderDeletion = FolderEditorState(folder: folder)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-
-                                Button {
-                                    editingFolder = FolderEditorState(folder: folder)
-                                } label: {
-                                    Label("Rename", systemImage: "pencil")
-                                }
-                                .tint(.blue)
-                            }
-                            .contextMenu {
-                                Button {
-                                    editingFolder = FolderEditorState(folder: folder)
-                                } label: {
-                                    Label("Rename", systemImage: "pencil")
-                                }
-
-                                Button(role: .destructive) {
-                                    pendingFolderDeletion = FolderEditorState(folder: folder)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                    }
-                }
-
-                Section("Tags") {
-                    ForEach(allTags, id: \.self) { tag in
-                        Label(tag, systemImage: "tag")
-                            .tag(GalleryFilter.tag(tag))
-                            .sciFiListRow()
-                    }
-                }
+        Group {
+            switch layoutMode {
+            case .standalone:
+                standaloneLayout
+            case .embeddedWide:
+                embeddedWideLayout
             }
+        }
+        .sheet(isPresented: $showingAddFolder) {
+            FolderNameEditor(title: "New Folder", initialName: "") { folderName in
+                modelContext.insert(GalleryFolder(name: folderName))
+                try? modelContext.save()
+            }
+        }
+        .sheet(item: $editingFolder) { folderState in
+            FolderNameEditor(title: "Rename Folder", initialName: folderState.name) { newName in
+                renameFolder(id: folderState.id, name: newName)
+                editingFolder = nil
+            }
+        }
+        .confirmationDialog("Delete folder?", isPresented: folderDeleteBinding) {
+            Button("Delete Folder", role: .destructive) {
+                if let pendingFolderDeletion {
+                    deleteFolder(id: pendingFolderDeletion.id)
+                }
+                pendingFolderDeletion = nil
+            }
+            Button("Cancel", role: .cancel) {
+                pendingFolderDeletion = nil
+            }
+        } message: {
+            Text("Images in this folder will remain in the gallery and move back to All Images.")
+        }
+    }
+
+    private var standaloneLayout: some View {
+        NavigationSplitView {
+            filterList
             .navigationTitle("Gallery")
             .sciFiScreen()
             .bottomTabBarClearance()
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingAddFolder = true
-                    } label: {
-                        Label("New Folder", systemImage: "folder.badge.plus")
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddFolder) {
-                FolderNameEditor(title: "New Folder", initialName: "") { folderName in
-                    modelContext.insert(GalleryFolder(name: folderName))
-                    try? modelContext.save()
-                }
-            }
-            .sheet(item: $editingFolder) { folderState in
-                FolderNameEditor(title: "Rename Folder", initialName: folderState.name) { newName in
-                    renameFolder(id: folderState.id, name: newName)
-                    editingFolder = nil
-                }
-            }
-            .confirmationDialog("Delete folder?", isPresented: folderDeleteBinding) {
-                Button("Delete Folder", role: .destructive) {
-                    if let pendingFolderDeletion {
-                        deleteFolder(id: pendingFolderDeletion.id)
-                    }
-                    pendingFolderDeletion = nil
-                }
-                Button("Cancel", role: .cancel) {
-                    pendingFolderDeletion = nil
-                }
-            } message: {
-                Text("Images in this folder will remain in the gallery and move back to All Images.")
+                newFolderToolbarItem
             }
         } detail: {
             NavigationStack(path: $detailPath) {
-                Group {
-                    if visibleImages.isEmpty {
-                        EmptyStateView(
-                            systemImage: "photo.on.rectangle",
-                            title: "No images",
-                            message: "Generated images will appear here."
-                        )
-                        .padding()
-                    } else {
-                        ScrollView {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                                ForEach(visibleImages) { image in
-                                    NavigationLink(value: image.id) {
-                                        ImageTile(image: image, fileStore: fileStore)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding()
-                            .padding(.bottom, 20)
+                galleryNavigationBehavior(
+                    imageGrid
+                        .navigationTitle("Images")
+                        .sciFiScreen()
+                        .bottomTabBarClearance()
+                        .toolbar {
+                            imageGridToolbar()
                         }
-                    }
+                )
+            }
+        }
+    }
+
+    private var embeddedWideLayout: some View {
+        NavigationStack(path: $detailPath) {
+            galleryNavigationBehavior(
+                HStack(spacing: 0) {
+                    filterList
+                        .scrollContentBackground(.hidden)
+                        .background(SciFiTheme.panelSoft)
+                        .frame(width: 280)
+
+                    Rectangle()
+                        .fill(SciFiTheme.stroke)
+                        .frame(width: 1)
+                        .accessibilityHidden(true)
+
+                    imageGrid
                 }
-                .navigationTitle("Images")
+                .navigationTitle("Gallery")
                 .sciFiScreen()
-                .bottomTabBarClearance()
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            reconcileImageFiles()
-                        } label: {
-                            Label("Refresh Gallery", systemImage: "arrow.clockwise")
-                        }
+                        selectedFilterLabel
                     }
+                    imageGridToolbar(refreshPlacement: .primaryAction)
+                    newFolderToolbarItem
+                }
+            )
+        }
+    }
 
-                    ToolbarItem(placement: .primaryAction) {
-                        Picker("Sort", selection: $sort) {
-                            ForEach(GallerySort.allCases) { sort in
-                                Text(sort.rawValue).tag(sort)
+    private var filterList: some View {
+        List(selection: filterBinding) {
+            Label("All Images", systemImage: "square.grid.2x2")
+                .tag(GalleryFilter.all)
+                .sciFiListRow()
+
+            Section("Folders") {
+                ForEach(folders) { folder in
+                    Label(folder.name, systemImage: "folder")
+                        .tag(GalleryFilter.folder(folder.id))
+                        .sciFiListRow()
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                pendingFolderDeletion = FolderEditorState(folder: folder)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+
+                            Button {
+                                editingFolder = FolderEditorState(folder: folder)
+                            } label: {
+                                Label("Rename", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
+                        .contextMenu {
+                            Button {
+                                editingFolder = FolderEditorState(folder: folder)
+                            } label: {
+                                Label("Rename", systemImage: "pencil")
+                            }
+
+                            Button(role: .destructive) {
+                                pendingFolderDeletion = FolderEditorState(folder: folder)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
-                        .pickerStyle(.menu)
-                    }
                 }
-                .onAppear {
-                    reconcileImageFiles()
-                    openFocusedImageIfAvailable()
-                }
-                .onChange(of: focusedImageID) {
-                    openFocusedImageIfAvailable()
-                }
-                .onChange(of: images.map(\.id)) {
-                    openFocusedImageIfAvailable()
-                }
-                .navigationDestination(for: UUID.self) { imageID in
-                    if let image = images.first(where: { $0.id == imageID }) {
-                        ImageDetailView(
-                            image: image,
-                            folders: folders,
-                            fileStore: fileStore
-                        ) {
-                            generation.load(image: image)
-                            onReuse()
-                        } onRegenerate: {
-                            generation.load(image: image)
-                            let readyModels = models.filter(\.isReady)
-                            let model = readyModels.first(where: { $0.id == image.modelID }) ?? readyModels.first
-                            generation.selectedModelID = model?.id
-                            generation.generate(using: model, modelContext: modelContext)
-                            onReuse()
-                        } onDelete: {
-                            deleteImage(image)
-                        }
-                    } else {
-                        EmptyStateView(
-                            systemImage: "photo.badge.exclamationmark",
-                            title: "Image unavailable",
-                            message: "This generated image is no longer in the gallery."
-                        )
-                    }
+            }
+
+            Section("Tags") {
+                ForEach(allTags, id: \.self) { tag in
+                    Label(tag, systemImage: "tag")
+                        .tag(GalleryFilter.tag(tag))
+                        .sciFiListRow()
                 }
             }
         }
+    }
+
+    private var imageGrid: some View {
+        Group {
+            if visibleImages.isEmpty {
+                EmptyStateView(
+                    systemImage: "photo.on.rectangle",
+                    title: "No images",
+                    message: "Generated images will appear here."
+                )
+                .padding()
+            } else {
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+                        ForEach(visibleImages) { image in
+                            NavigationLink(value: image.id) {
+                                ImageTile(image: image, fileStore: fileStore)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding()
+                    .padding(.bottom, 20)
+                }
+            }
+        }
+    }
+
+    private var selectedFilterLabel: some View {
+        Label(selectedFilterTitle, systemImage: selectedFilterSystemImage)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(SciFiTheme.cyan)
+    }
+
+    private var selectedFilterTitle: String {
+        switch filter {
+        case .all:
+            return "All Images"
+        case .folder(let id):
+            return folders.first(where: { $0.id == id })?.name ?? "Folder"
+        case .tag(let tag):
+            return tag
+        }
+    }
+
+    private var selectedFilterSystemImage: String {
+        switch filter {
+        case .all:
+            return "square.grid.2x2"
+        case .folder:
+            return "folder"
+        case .tag:
+            return "tag"
+        }
+    }
+
+    @ToolbarContentBuilder
+    private func imageGridToolbar(refreshPlacement: ToolbarItemPlacement = .topBarLeading) -> some ToolbarContent {
+        ToolbarItem(placement: refreshPlacement) {
+            Button {
+                reconcileImageFiles()
+            } label: {
+                Label("Refresh Gallery", systemImage: "arrow.clockwise")
+            }
+        }
+
+        ToolbarItem(placement: .primaryAction) {
+            Picker("Sort", selection: $sort) {
+                ForEach(GallerySort.allCases) { sort in
+                    Text(sort.rawValue).tag(sort)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var newFolderToolbarItem: some ToolbarContent {
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                showingAddFolder = true
+            } label: {
+                Label("New Folder", systemImage: "folder.badge.plus")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func imageDetail(for imageID: UUID) -> some View {
+        if let image = images.first(where: { $0.id == imageID }) {
+            ImageDetailView(
+                image: image,
+                folders: folders,
+                fileStore: fileStore
+            ) {
+                generation.load(image: image)
+                onReuse()
+            } onRegenerate: {
+                generation.load(image: image)
+                let readyModels = models.filter(\.isReady)
+                let model = readyModels.first(where: { $0.id == image.modelID }) ?? readyModels.first
+                generation.selectedModelID = model?.id
+                generation.generate(using: model, modelContext: modelContext)
+                onReuse()
+            } onDelete: {
+                deleteImage(image)
+            }
+        } else {
+            EmptyStateView(
+                systemImage: "photo.badge.exclamationmark",
+                title: "Image unavailable",
+                message: "This generated image is no longer in the gallery."
+            )
+        }
+    }
+
+    private func galleryNavigationBehavior<V: View>(_ view: V) -> some View {
+        view
+            .onAppear {
+                reconcileImageFiles()
+                openFocusedImageIfAvailable()
+            }
+            .onChange(of: focusedImageID) {
+                openFocusedImageIfAvailable()
+            }
+            .onChange(of: images.map(\.id)) {
+                openFocusedImageIfAvailable()
+            }
+            .navigationDestination(for: UUID.self) { imageID in
+                imageDetail(for: imageID)
+            }
     }
 
     private func openFocusedImageIfAvailable() {

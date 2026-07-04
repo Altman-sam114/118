@@ -114,7 +114,11 @@ struct RootContentView: View {
         case .models:
             ModelLibraryView(fileStore: fileStore)
         case .gallery:
-            GalleryView(fileStore: fileStore, focusedImageID: $focusedGalleryImageID) {
+            GalleryView(
+                fileStore: fileStore,
+                focusedImageID: $focusedGalleryImageID,
+                layoutMode: galleryLayoutMode
+            ) {
                 selection = .generate
             }
         case .prompts:
@@ -129,6 +133,10 @@ struct RootContentView: View {
             get: { selection },
             set: { selection = $0 ?? .generate }
         )
+    }
+
+    private var galleryLayoutMode: GalleryLayoutMode {
+        horizontalSizeClass == .regular ? .embeddedWide : .standalone
     }
 
     private func configureDownloadPersistence() {

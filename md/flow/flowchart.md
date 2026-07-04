@@ -9,7 +9,10 @@
 ```mermaid
 flowchart TD
   U["用户操作：下载模型、输入 Prompt、点击生成"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts"]
-  UI --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
+  UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
+  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 嵌入式 filter rail"]
+  NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
+  GALUI --> VM
   VM --> SD["SwiftData 元数据：LocalModel / GeneratedImage / GalleryFolder / PromptTemplate"]
   VM --> FS["Application Support 文件：GGUF 模型 / PNG 图片"]
   VM --> REQ["ImageGenerationRequest：参数、模型路径、辅助模型路径"]

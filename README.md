@@ -4,7 +4,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 
 ## Current implementation
 
-- SwiftUI app shell with adaptive tab and split-view navigation for iPhone and iPad.
+- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including an embedded Gallery filter rail that avoids nested split views.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, and restart recovery for interrupted downloads.

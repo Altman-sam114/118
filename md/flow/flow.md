@@ -49,6 +49,7 @@
 
 - `RootContentView` 管理 Generate、Models、Gallery、Prompts 四个入口。
 - iPhone 使用 TabView，iPad 使用 NavigationSplitView。
+- iPad regular 由 Root 持有唯一顶层 split；Gallery 在 Root detail 中使用嵌入式宽屏布局，避免 split 嵌套。
 - 创建并注入 `GenerationViewModel`。
 - 连接生成结果到 Gallery 跳转。
 
@@ -177,6 +178,7 @@
 - Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果。
 - Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件。
 - Gallery：查看、过滤、排序、复用参数、删除图片。
+- Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 

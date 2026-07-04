@@ -141,6 +141,25 @@
 - 验证结果：需要运行 `git diff --check`、`plutil`、workflow YAML 解析和 `native-backend-asset.json` JSON 解析；push `main` 后由 Agent C 下载最新 CI 结果包核对。
 - 遗留事项：Release asset 被替换、native bridge ABI 改变或 stable-diffusion.cpp 包装刷新时，必须同步更新 `native-backend-asset.json` 的 SHA-256。
 
+### v1.0 / iPad 宽屏导航布局基线
+
+- 日期：2026-07-04
+- 核心变更：
+  - Root 在 iPad regular size class 下继续持有唯一顶层 `NavigationSplitView`。
+  - Gallery 新增 standalone 与 embedded wide 两种布局模式。
+  - iPhone/compact Gallery 保留原有内部筛选 split；iPad Root detail 中改为单层 `NavigationStack`、左侧 filter rail、右侧图片网格和详情导航，避免 split 嵌套。
+  - 保留 Gallery filter、sort、refresh、folder 管理、图片详情、reuse、regenerate、delete、share 和 Generate 跳转到最新图片详情的行为。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `README.md`
+  - `md/prompt/v1（体验优化）/v1.0（iPad宽屏导航布局基线）.md`
+  - `update_log.md`
+- 验证结果：本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse 均通过；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不启用 Mac Catalyst、不实现付费功能；后续可在此布局基线上继续做 mac/Catalyst 可行性评估和付费功能入口设计。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
