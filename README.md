@@ -11,7 +11,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - Generation screen with positive and negative prompts, Dynamic Type-friendly prompt editor headers and clear controls, shared parameter controls, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
 - Gallery grid with a Dynamic Type-friendly filter rail, readable folder/tag filters with image counts, Dynamic Type-friendly image tiles, readable metadata, clear tile accessibility labels, readable detail parameters and actions, editable folders, folder and tag filtering, date/model sorting, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, accessible labeled category and template controls, category rename/clear actions, Dynamic Type-friendly prompt rows, editable saved templates with labeled prompt editors, direct saving from the generation screen, and one-click loading into the generation screen.
-- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, availability rows, and Mac readiness blockers with Dynamic Type-friendly status badges and explicit VoiceOver semantics, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
+- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, availability rows, readable note rows, and Mac readiness blockers with Dynamic Type-friendly status badges and explicit VoiceOver semantics, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
 ## Native inference integration
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-05
 
+- Completed: Refined Plan note rows so StoreKit-disabled and Mac-support prerequisite notes keep readable 44pt rows, wrap at Dynamic Type sizes, and expose explicit VoiceOver label/value/hint semantics.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.21 version.
+- Risk: This is presentation-only; no StoreKit purchase flow, entitlement persistence, Mac Catalyst support, native backend, navigation, or data-layer behavior is changed.
 - Completed: Refined iPad sidebar rows so each main navigation section keeps a readable 44pt row and exposes explicit selected/not-selected VoiceOver values and workspace hints.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.20 version.
 - Risk: This is presentation-only; no Root navigation state, TabView, Gallery layout, StoreKit, Mac Catalyst, native backend, or data-layer behavior is changed.

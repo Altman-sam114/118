@@ -616,8 +616,13 @@ private struct PlanView: View {
             status: PlanStatusToken(title: "Not configured", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber)
         )
 
-        Label("Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.", systemImage: "exclamationmark.triangle")
-            .foregroundStyle(SciFiTheme.secondaryText)
+        PlanNoteRow(
+            text: "Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.",
+            systemImage: "exclamationmark.triangle",
+            iconColor: SciFiTheme.amber,
+            accessibilityLabel: "StoreKit purchase status",
+            accessibilityHint: "This build does not include purchase, restore, receipt, subscription, or entitlement flows."
+        )
     }
 
     @ViewBuilder
@@ -634,8 +639,13 @@ private struct PlanView: View {
             status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber)
         )
 
-        Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
-            .foregroundStyle(SciFiTheme.secondaryText)
+        PlanNoteRow(
+            text: "Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.",
+            systemImage: "checklist",
+            iconColor: SciFiTheme.cyan,
+            accessibilityLabel: "Mac support status",
+            accessibilityHint: "This iOS build does not currently ship a Mac or Catalyst app."
+        )
     }
 
     @ViewBuilder
@@ -805,6 +815,31 @@ private struct PlanStatusSummaryRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue(status.title)
+    }
+}
+
+private struct PlanNoteRow: View {
+    let text: String
+    let systemImage: String
+    let iconColor: Color
+    let accessibilityLabel: String
+    let accessibilityHint: String
+
+    var body: some View {
+        Label {
+            Text(text)
+                .font(.callout)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: systemImage)
+                .foregroundStyle(iconColor)
+        }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityValue(text)
+        .accessibilityHint(accessibilityHint)
     }
 }
 

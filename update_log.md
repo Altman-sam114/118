@@ -547,6 +547,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator sidebar/VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.21 / Plan 说明行可读性
+
+- 日期：2026-07-05
+- 核心变更：
+  - Plan 的 StoreKit 未启用说明和 Mac 支持前置条件说明从裸 `Label` 提取为私有 `PlanNoteRow`。
+  - 两条说明保留原有事实，明确当前 build 未启用 purchase/restore/receipt/subscription/entitlement，Mac 支持仍需要 Xcode 平台、native Mac/Catalyst slice、签名决策和专门 UI 验证。
+  - note row 使用真实 `Label`、44pt 最小高度、可换行文本和显式 accessibility label/value/hint，提升 Dynamic Type 与 VoiceOver 可读性。
+  - 保持 compact Form、iPad regular 双栏布局、当前付费事实、Mac readiness 事实、Root 导航和业务门禁不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或生成流程。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.21（Plan说明行可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
