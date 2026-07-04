@@ -176,6 +176,7 @@
 职责：
 
 - Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果。
+- Generate 在 compact 下保持单列表单；在 iPad regular 下使用双栏创作台，左侧放模型/prompt/参数，右侧放状态、运行和结果。
 - Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件。
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
