@@ -251,6 +251,15 @@ private struct PlanEntitlementRuleItem: Identifiable {
     var id: String { title }
 }
 
+private struct PlanAvailabilityItem: Identifiable {
+    let title: String
+    let detail: String
+    let status: PlanStatusToken
+    let systemImage: String
+
+    var id: String { title }
+}
+
 private enum MacReadinessStatus {
     case requiresConfiguration
     case requiresNativeBuild
@@ -370,6 +379,21 @@ private struct PlanView: View {
             detail: "No purchase state is stored, no entitlement is granted, and no App Store product is requested.",
             status: .notImplemented,
             systemImage: "xmark.seal"
+        )
+    ]
+
+    private let availabilityItems = [
+        PlanAvailabilityItem(
+            title: "Core local tools",
+            detail: "Generate, Models, Gallery, and Prompts remain available in the Local plan.",
+            status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint),
+            systemImage: "lock.open"
+        ),
+        PlanAvailabilityItem(
+            title: "Purchase UI",
+            detail: "Purchase UI should only be added after StoreKit products and entitlement mapping exist.",
+            status: PlanStatusToken(title: "Requires configuration", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber),
+            systemImage: "cart"
         )
     ]
 
@@ -608,8 +632,9 @@ private struct PlanView: View {
 
     @ViewBuilder
     private var availabilityContent: some View {
-        Label("Generate, Models, Gallery, and Prompts remain available in the Local plan.", systemImage: "lock.open")
-        Label("Purchase UI should only be added after StoreKit products and entitlement mapping exist.", systemImage: "wrench.and.screwdriver")
+        ForEach(availabilityItems) { item in
+            AvailabilityRow(item: item)
+        }
     }
 
     private var planOverview: some View {
@@ -820,6 +845,19 @@ private struct EntitlementRuleRow: View {
             detail: item.detail,
             systemImage: item.systemImage,
             status: item.status.token
+        )
+    }
+}
+
+private struct AvailabilityRow: View {
+    let item: PlanAvailabilityItem
+
+    var body: some View {
+        PlanStatusRow(
+            title: item.title,
+            detail: item.detail,
+            systemImage: item.systemImage,
+            status: item.status
         )
     }
 }

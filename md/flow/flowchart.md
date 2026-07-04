@@ -14,7 +14,7 @@ flowchart TD
   UI --> PROMPTUI["Prompts：模板分类 / 可读编辑器 / 可访问 controls / 共享参数编辑"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 可读 filter rail / 可读图块和详情"]
-  NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 可访问状态徽章 / 能力矩阵 / entitlement rules / Mac readiness"]
+  NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 可访问状态徽章 / 能力矩阵 / entitlement rules / availability / Mac readiness"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
   MODELUI --> VM
