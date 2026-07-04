@@ -8,7 +8,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, and restart recovery for interrupted downloads.
-- Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status.
+- Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
 - Gallery grid with editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, category rename/clear actions, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
 - Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, and Mac readiness blockers with Dynamic Type-friendly status badges, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Refined Generate so iPad regular uses the two-column creation console only at non-accessibility Dynamic Type sizes; accessibility text sizes now use a single-column Generate layout with stacked console header, status pills, and metrics.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.9 version.
+- Risk: This is presentation-only; no generation behavior, StoreKit behavior, Mac Catalyst support, or simulator screenshot QA is added.
 - Completed: Refined Plan status rows so current build, platform status, Mac readiness, capability matrix, and entitlement rules use Dynamic Type-friendly status badges; accessibility text sizes now use a single-column Plan layout and stacked overview header.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.8 version.
 - Risk: This is presentation-only; no StoreKit behavior, Mac Catalyst support, or simulator screenshot QA is added.

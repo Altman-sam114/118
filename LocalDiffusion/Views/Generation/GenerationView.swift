@@ -9,6 +9,7 @@ struct GenerationView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var viewModel: GenerationViewModel
     @Query(sort: \LocalModel.name) private var models: [LocalModel]
     @State private var showingSaveTemplate = false
@@ -71,13 +72,21 @@ struct GenerationView: View {
     @ViewBuilder
     private var generationLayout: some View {
         if horizontalSizeClass == .regular {
-            wideGenerationLayout
+            if dynamicTypeSize.isAccessibilitySize {
+                singleColumnGenerationLayout
+            } else {
+                wideGenerationLayout
+            }
         } else {
             compactGenerationLayout
         }
     }
 
     private var compactGenerationLayout: some View {
+        singleColumnGenerationLayout
+    }
+
+    private var singleColumnGenerationLayout: some View {
         Form {
             consoleSection
             modelSection
@@ -116,55 +125,105 @@ struct GenerationView: View {
     private var consoleSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(SciFiTheme.cyan)
-                        .frame(width: 54, height: 54)
-                        .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
-                        }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Local Render Console")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(SciFiTheme.primaryText)
-                        Text("GGUF model loaded locally. Tune prompts and fire the native backend from this device.")
-                            .font(.subheadline)
-                            .foregroundStyle(SciFiTheme.secondaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                HStack {
-                    SciFiStatusPill(
-                        title: viewModel.backendStatus.isReady ? "Backend Online" : "Backend Offline",
-                        systemImage: viewModel.backendStatus.isReady ? "cpu" : "exclamationmark.triangle",
-                        color: viewModel.backendStatus.isReady ? SciFiTheme.mint : SciFiTheme.amber
-                    )
-                    SciFiStatusPill(
-                        title: selectedModel?.family.rawValue ?? "No Model",
-                        systemImage: "shippingbox",
-                        color: selectedModel == nil ? SciFiTheme.amber : SciFiTheme.cyan
-                    )
-                }
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    SciFiMetric(title: "Steps", value: "\(viewModel.parameters.steps)", systemImage: "number")
-                    SciFiMetric(
-                        title: "Canvas",
-                        value: "\(viewModel.parameters.width)x\(viewModel.parameters.height)",
-                        systemImage: "aspectratio",
-                        color: SciFiTheme.magenta
-                    )
-                }
+                consoleOverview
+                consoleStatusPills
+                consoleMetrics
             }
             .padding(.vertical, 4)
         }
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    @ViewBuilder
+    private var consoleOverview: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 12) {
+                consoleOverviewIcon
+                consoleOverviewCopy
+            }
+        } else {
+            HStack(alignment: .top, spacing: 12) {
+                consoleOverviewIcon
+                consoleOverviewCopy
+            }
+        }
+    }
+
+    private var consoleOverviewIcon: some View {
+        Image(systemName: "sparkles")
+            .font(.system(size: 28, weight: .semibold))
+            .foregroundStyle(SciFiTheme.cyan)
+            .frame(width: 54, height: 54)
+            .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
+            }
+            .accessibilityHidden(true)
+    }
+
+    private var consoleOverviewCopy: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Local Render Console")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(SciFiTheme.primaryText)
+            Text("GGUF model loaded locally. Tune prompts and fire the native backend from this device.")
+                .font(.subheadline)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private var consoleStatusPills: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                backendStatusPill
+                modelStatusPill
+            }
+        } else {
+            HStack {
+                backendStatusPill
+                modelStatusPill
+            }
+        }
+    }
+
+    private var backendStatusPill: some View {
+        SciFiStatusPill(
+            title: viewModel.backendStatus.isReady ? "Backend Online" : "Backend Offline",
+            systemImage: viewModel.backendStatus.isReady ? "cpu" : "exclamationmark.triangle",
+            color: viewModel.backendStatus.isReady ? SciFiTheme.mint : SciFiTheme.amber
+        )
+    }
+
+    private var modelStatusPill: some View {
+        SciFiStatusPill(
+            title: selectedModel?.family.rawValue ?? "No Model",
+            systemImage: "shippingbox",
+            color: selectedModel == nil ? SciFiTheme.amber : SciFiTheme.cyan
+        )
+    }
+
+    private var consoleMetrics: some View {
+        LazyVGrid(columns: consoleMetricColumns, spacing: 10) {
+            SciFiMetric(title: "Steps", value: "\(viewModel.parameters.steps)", systemImage: "number")
+            SciFiMetric(
+                title: "Canvas",
+                value: "\(viewModel.parameters.width)x\(viewModel.parameters.height)",
+                systemImage: "aspectratio",
+                color: SciFiTheme.magenta
+            )
+        }
+    }
+
+    private var consoleMetricColumns: [GridItem] {
+        if dynamicTypeSize.isAccessibilitySize {
+            return [GridItem(.flexible())]
+        }
+
+        return [GridItem(.flexible()), GridItem(.flexible())]
     }
 
     private var modelSection: some View {
