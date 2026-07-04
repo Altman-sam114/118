@@ -749,9 +749,7 @@ private struct ModelRow: View {
             footer
 
             if let message = progress.message, !message.isEmpty {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+                ModelMessageRow(message: message)
             }
         }
         .padding(12)
@@ -901,6 +899,26 @@ private struct ModelRow: View {
         case .failed:
             "exclamationmark.triangle"
         }
+    }
+}
+
+private struct ModelMessageRow: View {
+    let message: String
+
+    var body: some View {
+        Label {
+            Text(message)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle")
+        }
+        .foregroundStyle(SciFiTheme.amber)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Model status message")
+        .accessibilityValue(message)
+        .accessibilityHint("Describes this model's download or storage status.")
     }
 }
 

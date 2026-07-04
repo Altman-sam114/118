@@ -7,7 +7,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows, an embedded Gallery filter rail that avoids nested split views, and a Plan entry for paid-capability planning status.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
-- Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, restart recovery for interrupted downloads, accessible labeled row controls, and Dynamic Type-friendly model storage rows.
+- Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, restart recovery for interrupted downloads, accessible labeled row controls, readable model status messages, and Dynamic Type-friendly model storage rows.
 - Generation screen with positive and negative prompts, Dynamic Type-friendly prompt editor headers and clear controls, shared parameter controls, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
 - Gallery grid with a Dynamic Type-friendly filter rail, readable folder/tag filters with image counts, Dynamic Type-friendly image tiles, readable metadata, clear tile accessibility labels, readable detail parameters and actions, editable folders, folder and tag filtering, date/model sorting, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, accessible labeled category and template controls, category rename/clear actions, Dynamic Type-friendly prompt rows, editable saved templates with labeled prompt editors, direct saving from the generation screen, and one-click loading into the generation screen.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-05
 
+- Completed: Refined Models row status messages so download and storage messages keep readable 44pt rows, wrap at Dynamic Type sizes, and expose explicit VoiceOver label/value/hint semantics.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.22 version.
+- Risk: This is presentation-only; no download state machine, file storage, SwiftData schema, native backend, navigation, or data-layer behavior is changed.
 - Completed: Refined Plan note rows so StoreKit-disabled and Mac-support prerequisite notes keep readable 44pt rows, wrap at Dynamic Type sizes, and expose explicit VoiceOver label/value/hint semantics.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.21 version.
 - Risk: This is presentation-only; no StoreKit purchase flow, entitlement persistence, Mac Catalyst support, native backend, navigation, or data-layer behavior is changed.
