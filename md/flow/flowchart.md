@@ -13,7 +13,7 @@ flowchart TD
   UI --> MODELUI["Models：下载 / 导入 / 删除 / 可访问 controls / Dynamic Type 堆叠"]
   UI --> PROMPTUI["Prompts：模板分类 / 编辑加载 / 可访问 controls / Dynamic Type 堆叠"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
-  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 嵌入式 filter rail"]
+  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail / 可读图块"]
   NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 状态徽章 / 能力矩阵 / entitlement rules / Mac readiness"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
@@ -32,7 +32,7 @@ flowchart TD
   MOCK --> PNG
   OFF --> ERR["用户可见错误"]
   PNG --> SAVE["保存图片文件并插入 GeneratedImage"]
-  SAVE --> GALLERY["Gallery 展示、过滤、复用参数"]
+  SAVE --> GALLERY["Gallery 展示、过滤、可读图块、复用参数"]
   GALLERY --> UI
 ```
 

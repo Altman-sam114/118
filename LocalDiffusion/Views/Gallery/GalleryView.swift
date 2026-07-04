@@ -28,6 +28,7 @@ struct GalleryView: View {
     let onReuse: () -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var generation: GenerationViewModel
     @Query(sort: \GeneratedImage.createdAt, order: .reverse) private var images: [GeneratedImage]
     @Query(sort: \GalleryFolder.name) private var folders: [GalleryFolder]
@@ -234,7 +235,7 @@ struct GalleryView: View {
                 .padding()
             } else {
                 ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: imageGridMinimumWidth), spacing: 12)], spacing: 12) {
                         ForEach(visibleImages) { image in
                             NavigationLink(value: image.id) {
                                 ImageTile(image: image, fileStore: fileStore)
@@ -247,6 +248,10 @@ struct GalleryView: View {
                 }
             }
         }
+    }
+
+    private var imageGridMinimumWidth: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? 220 : 150
     }
 
     private var selectedFilterLabel: some View {
@@ -446,6 +451,8 @@ private struct ImageTile: View {
     let image: GeneratedImage
     let fileStore: AppFileStore
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let uiImage = UIImage(contentsOfFile: fileStore.imageURL(for: image.imageFilename).path) {
@@ -457,7 +464,8 @@ private struct ImageTile: View {
                     .clipped()
                     .overlay(alignment: .topTrailing) {
                         Text("\(image.resolvedOutputWidth)x\(image.resolvedOutputHeight)")
-                            .font(.caption2.monospacedDigit().weight(.semibold))
+                            .font(.caption.monospacedDigit())
+                            .bold()
                             .foregroundStyle(SciFiTheme.cyan)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 4)
@@ -477,18 +485,41 @@ private struct ImageTile: View {
             Text(image.prompt)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(SciFiTheme.primaryText)
-                .lineLimit(2)
-            HStack {
-                Text(image.createdAt, style: .date)
-                Spacer()
-                Text(image.modelName)
-                    .lineLimit(1)
-            }
-            .font(.caption2)
-            .foregroundStyle(SciFiTheme.secondaryText)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+
+            metadataView
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
         }
         .padding(10)
         .sciFiPanel()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(accessibilitySummary))
+        .accessibilityHint("Opens image detail")
+    }
+
+    @ViewBuilder
+    private var metadataView: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(image.createdAt, style: .date)
+                Text(image.modelName)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else {
+            HStack(alignment: .firstTextBaseline) {
+                Text(image.createdAt, style: .date)
+                Spacer(minLength: 8)
+                Text(image.modelName)
+                    .lineLimit(1)
+            }
+        }
+    }
+
+    private var accessibilitySummary: String {
+        let date = image.createdAt.formatted(date: .abbreviated, time: .omitted)
+        return "\(image.prompt). Model \(image.modelName). Created \(date). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
     }
 }
 
