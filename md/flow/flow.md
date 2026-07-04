@@ -177,7 +177,7 @@
 
 - Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果。
 - Generate 在 compact 下保持单列表单；在 iPad regular 普通 Dynamic Type 下使用双栏创作台，左侧放模型/prompt/参数，右侧放状态、运行和结果；accessibility Dynamic Type 下回退单列，控制台 header、状态 pill 和 metrics 纵向/单列排列以保持可读。
-- Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件。
+- Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件；行内控制按钮提供可访问文本 label 和 44pt 命中区，storage/model/untracked rows 在 accessibility Dynamic Type 下改为纵向堆叠以保持可读。
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
@@ -345,7 +345,7 @@ git push origin main
 ## 5. 用户入口
 
 - Generate：主要生成入口。
-- Models：模型下载、导入、删除、状态恢复入口。
+- Models：模型下载、导入、删除、状态恢复入口，行内控制支持可访问 label 和大字号堆叠。
 - Gallery：生成结果查看、过滤、复用入口。
 - Prompts：提示词模板维护入口。
 - Plan：当前 Local plan、付费能力规划、entitlement rules 和平台可用性状态入口。

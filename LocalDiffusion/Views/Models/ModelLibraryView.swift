@@ -543,24 +543,11 @@ private struct StorageSummaryRow: View {
     let untrackedCount: Int
     let untrackedBytes: Int64
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Storage Matrix")
-                        .font(.headline)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text("\(totalCount) tracked models")
-                        .font(.caption)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-                Spacer(minLength: 12)
-                SciFiStatusPill(
-                    title: "\(readyCount) ready",
-                    systemImage: "checkmark.circle",
-                    color: readyCount == 0 ? SciFiTheme.amber : SciFiTheme.mint
-                )
-            }
+            header
 
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                 GridRow {
@@ -585,6 +572,41 @@ private struct StorageSummaryRow: View {
         .padding(14)
         .sciFiPanel(isHighlighted: readyCount > 0)
     }
+
+    @ViewBuilder
+    private var header: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                titleBlock
+                readyPill
+            }
+        } else {
+            HStack {
+                titleBlock
+                Spacer(minLength: 12)
+                readyPill
+            }
+        }
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Storage Matrix")
+                .font(.headline)
+                .foregroundStyle(SciFiTheme.primaryText)
+            Text("\(totalCount) tracked models")
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
+        }
+    }
+
+    private var readyPill: some View {
+        SciFiStatusPill(
+            title: "\(readyCount) ready",
+            systemImage: "checkmark.circle",
+            color: readyCount == 0 ? SciFiTheme.amber : SciFiTheme.mint
+        )
+    }
 }
 
 private struct UntrackedModelFileRow: View {
@@ -592,29 +614,58 @@ private struct UntrackedModelFileRow: View {
     let importFile: () -> Void
     let delete: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(file.filename)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(SciFiTheme.primaryText)
-                    .lineLimit(1)
-                Text(ByteCountFormatter.fileSizeString(file.bytes))
-                    .font(.caption)
-                    .foregroundStyle(SciFiTheme.secondaryText)
-            }
-            Spacer()
-            Button(action: importFile) {
-                Image(systemName: "plus.circle")
-            }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
-            Button(role: .destructive, action: delete) {
-                Image(systemName: "trash")
-            }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
-        }
+        rowContent
         .padding(12)
         .sciFiPanel()
+    }
+
+    @ViewBuilder
+    private var rowContent: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 10) {
+                fileInfo
+                actions
+            }
+        } else {
+            HStack(alignment: .firstTextBaseline) {
+                fileInfo
+                Spacer()
+                actions
+            }
+        }
+    }
+
+    private var fileInfo: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(file.filename)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(SciFiTheme.primaryText)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+            Text(ByteCountFormatter.fileSizeString(file.bytes))
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
+        }
+    }
+
+    private var actions: some View {
+        HStack(spacing: 8) {
+            Button(action: importFile) {
+                Label("Import Untracked Model", systemImage: "plus.circle")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+            .frame(minWidth: 44, minHeight: 44)
+
+            Button(role: .destructive, action: delete) {
+                Label("Delete Untracked Model File", systemImage: "trash")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+            .frame(minWidth: 44, minHeight: 44)
+        }
     }
 }
 
@@ -686,32 +737,16 @@ private struct ModelRow: View {
     let delete: () -> Void
     let details: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(model.name)
-                        .font(.headline)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text("\(model.family.rawValue) | \(model.sourceFilename)")
-                        .font(.subheadline)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                        .lineLimit(1)
-                }
-                Spacer()
-                SciFiStatusPill(title: statusText, systemImage: statusIcon, color: statusColor)
-            }
+            header
 
             ProgressView(value: progress.fraction)
                 .tint(statusColor)
 
-            HStack {
-                Text(sizeText)
-                    .font(.caption)
-                    .foregroundStyle(SciFiTheme.secondaryText)
-                Spacer()
-                controls
-            }
+            footer
 
             if let message = progress.message, !message.isEmpty {
                 Label(message, systemImage: "exclamationmark.triangle")
@@ -723,56 +758,98 @@ private struct ModelRow: View {
         .sciFiPanel(isHighlighted: progress.status == .downloading || progress.status == .ready)
     }
 
-    private var controls: some View {
-        HStack {
-            Button(action: details) {
-                Image(systemName: "info.circle")
+    @ViewBuilder
+    private var header: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                modelIdentity
+                statusPill
             }
-            .buttonStyle(SciFiSecondaryButtonStyle())
+        } else {
+            HStack(alignment: .firstTextBaseline) {
+                modelIdentity
+                Spacer()
+                statusPill
+            }
+        }
+    }
+
+    private var modelIdentity: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(model.name)
+                .font(.headline)
+                .foregroundStyle(SciFiTheme.primaryText)
+            Text("\(model.family.rawValue) | \(model.sourceFilename)")
+                .font(.subheadline)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+        }
+    }
+
+    private var statusPill: some View {
+        SciFiStatusPill(title: statusText, systemImage: statusIcon, color: statusColor)
+    }
+
+    @ViewBuilder
+    private var footer: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                sizeLabel
+                controls
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            HStack {
+                sizeLabel
+                Spacer()
+                controls
+            }
+        }
+    }
+
+    private var sizeLabel: some View {
+        Text(sizeText)
+            .font(.caption)
+            .foregroundStyle(SciFiTheme.secondaryText)
+    }
+
+    private var controls: some View {
+        HStack(spacing: 8) {
+            controlButton("Model Details", systemImage: "info.circle", action: details)
 
             switch progress.status {
             case .ready:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(SciFiTheme.mint)
                     .accessibilityLabel("Ready")
-                Button(role: .destructive, action: delete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                controlButton("Delete Model", systemImage: "trash", color: SciFiTheme.danger, role: .destructive, action: delete)
             case .downloading:
-                Button(action: pause) {
-                    Image(systemName: "pause.fill")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
-                Button(role: .destructive, action: cancel) {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
-                Button(role: .destructive, action: delete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                controlButton("Pause Download", systemImage: "pause.fill", color: SciFiTheme.amber, action: pause)
+                controlButton("Cancel Download", systemImage: "xmark", color: SciFiTheme.danger, role: .destructive, action: cancel)
+                controlButton("Delete Model", systemImage: "trash", color: SciFiTheme.danger, role: .destructive, action: delete)
             case .paused:
-                Button(action: startOrResume) {
-                    Image(systemName: "play.fill")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
-                Button(role: .destructive, action: delete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                controlButton("Resume Download", systemImage: "play.fill", color: SciFiTheme.mint, action: startOrResume)
+                controlButton("Delete Model", systemImage: "trash", color: SciFiTheme.danger, role: .destructive, action: delete)
             case .queued, .failed:
-                Button(action: startOrResume) {
-                    Image(systemName: "arrow.down")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle())
-                Button(role: .destructive, action: delete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                controlButton("Download Model", systemImage: "arrow.down", action: startOrResume)
+                controlButton("Delete Model", systemImage: "trash", color: SciFiTheme.danger, role: .destructive, action: delete)
             }
         }
+    }
+
+    private func controlButton(
+        _ title: String,
+        systemImage: String,
+        color: Color = SciFiTheme.cyan,
+        role: ButtonRole? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(role: role, action: action) {
+            Label(title, systemImage: systemImage)
+        }
         .labelStyle(.iconOnly)
+        .buttonStyle(SciFiSecondaryButtonStyle(color: color))
+        .frame(minWidth: 44, minHeight: 44)
     }
 
     private var statusText: String {
