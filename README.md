@@ -8,7 +8,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, restart recovery for interrupted downloads, accessible labeled row controls, and Dynamic Type-friendly model storage rows.
-- Generation screen with positive and negative prompts, Dynamic Type-friendly shared parameter controls, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
+- Generation screen with positive and negative prompts, Dynamic Type-friendly prompt editor headers and clear controls, shared parameter controls, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
 - Gallery grid with Dynamic Type-friendly image tiles, readable metadata, clear tile accessibility labels, editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, accessible labeled category and template controls, category rename/clear actions, Dynamic Type-friendly prompt rows, editable saved templates with labeled prompt editors, direct saving from the generation screen, and one-click loading into the generation screen.
 - Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, and Mac readiness blockers with Dynamic Type-friendly status badges, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Refined Generate prompt editors so headers, character counts, clear controls, placeholders, and text editor accessibility remain readable at Dynamic Type sizes.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.15 version.
+- Risk: This is presentation-only; no prompt semantics, generation behavior, template saving, StoreKit, Mac Catalyst, native backend, or simulator screenshot QA is added.
 - Completed: Refined the Prompt template editor so positive and negative prompt fields use visible labels, placeholders, character counts, Sci-Fi panel styling, and taller Dynamic Type-friendly editing areas.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.14 version.
 - Risk: This is presentation-only; no template schema, save/load behavior, generation parameters, StoreKit, Mac Catalyst, native backend, or simulator screenshot QA is added.

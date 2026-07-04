@@ -362,32 +362,13 @@ struct GenerationView: View {
         accent: Color
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(accent)
-                Spacer()
-                Text("\(text.wrappedValue.count)")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(SciFiTheme.secondaryText)
-                if !text.wrappedValue.isEmpty {
-                    Button {
-                        text.wrappedValue = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(SciFiTheme.secondaryText)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Clear \(title)")
-                }
-            }
+            promptEditorHeader(title: title, text: text, accent: accent)
 
             TextEditor(text: text)
                 .focused($focusedPrompt, equals: field)
                 .scrollContentBackground(.hidden)
                 .foregroundStyle(SciFiTheme.primaryText)
-                .frame(minHeight: minHeight)
+                .frame(minHeight: promptEditorMinHeight(minHeight))
                 .padding(8)
                 .background(SciFiTheme.panelSoft, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(alignment: .topLeading) {
@@ -397,12 +378,102 @@ struct GenerationView: View {
                             .foregroundStyle(SciFiTheme.secondaryText.opacity(0.72))
                             .padding(.top, 16)
                             .padding(.leading, 14)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
                     }
                 }
                 .overlay {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(accent.opacity(0.26), lineWidth: 1)
                 }
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(Text(text.wrappedValue.isEmpty ? "Empty prompt" : text.wrappedValue))
+                .accessibilityHint(Text(accessibilityHint(for: field)))
+        }
+    }
+
+    @ViewBuilder
+    private func promptEditorHeader(
+        title: String,
+        text: Binding<String>,
+        accent: Color
+    ) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 6) {
+                promptEditorTitle(title, accent: accent)
+                promptEditorMetadata(text: text, title: title)
+            }
+        } else {
+            HStack {
+                promptEditorTitle(title, accent: accent)
+                Spacer()
+                promptEditorMetadata(text: text, title: title)
+            }
+        }
+    }
+
+    private func promptEditorTitle(_ title: String, accent: Color) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(accent)
+    }
+
+    @ViewBuilder
+    private func promptEditorMetadata(text: Binding<String>, title: String) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 6) {
+                promptCharacterCount(text)
+                clearPromptButton(text: text, title: title)
+            }
+        } else {
+            HStack(spacing: 8) {
+                promptCharacterCount(text)
+                clearPromptButton(text: text, title: title)
+            }
+        }
+    }
+
+    private func promptCharacterCount(_ text: Binding<String>) -> some View {
+        Text("\(text.wrappedValue.count) chars")
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(SciFiTheme.secondaryText)
+    }
+
+    @ViewBuilder
+    private func clearPromptButton(text: Binding<String>, title: String) -> some View {
+        if !text.wrappedValue.isEmpty {
+            if dynamicTypeSize.isAccessibilitySize {
+                clearPromptButtonContent(text: text, title: title)
+            } else {
+                clearPromptButtonContent(text: text, title: title)
+                    .labelStyle(.iconOnly)
+            }
+        }
+    }
+
+    private func clearPromptButtonContent(text: Binding<String>, title: String) -> some View {
+        Button {
+            text.wrappedValue = ""
+        } label: {
+            Label("Clear \(title)", systemImage: "xmark.circle.fill")
+                .font(.caption)
+                .foregroundStyle(SciFiTheme.secondaryText)
+        }
+        .buttonStyle(.plain)
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityHint("Clears only this prompt field.")
+    }
+
+    private func promptEditorMinHeight(_ minHeight: CGFloat) -> CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? minHeight + 48 : minHeight
+    }
+
+    private func accessibilityHint(for field: PromptField) -> String {
+        switch field {
+        case .positive:
+            return "Edits the positive prompt used for image generation."
+        case .negative:
+            return "Edits the negative prompt used to avoid unwanted details."
         }
     }
 
