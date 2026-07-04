@@ -21,6 +21,10 @@ enum GalleryLayoutMode {
     case embeddedWide
 }
 
+private func galleryImageCountText(_ count: Int) -> String {
+    count == 1 ? "1 image" : "\(count) images"
+}
+
 struct GalleryView: View {
     let fileStore: AppFileStore
     @Binding var focusedImageID: UUID?
@@ -151,7 +155,7 @@ struct GalleryView: View {
                     filterList
                         .scrollContentBackground(.hidden)
                         .background(SciFiTheme.panelSoft)
-                        .frame(width: 280)
+                        .frame(width: filterRailWidth)
 
                     Rectangle()
                         .fill(SciFiTheme.stroke)
@@ -175,13 +179,23 @@ struct GalleryView: View {
 
     private var filterList: some View {
         List(selection: filterBinding) {
-            Label("All Images", systemImage: "square.grid.2x2")
+            GalleryFilterRow(
+                title: "All Images",
+                systemImage: "square.grid.2x2",
+                kind: .allImages,
+                imageCount: images.count
+            )
                 .tag(GalleryFilter.all)
                 .sciFiListRow()
 
             Section("Folders") {
                 ForEach(folders) { folder in
-                    Label(folder.name, systemImage: "folder")
+                    GalleryFilterRow(
+                        title: folder.name,
+                        systemImage: "folder",
+                        kind: .folder,
+                        imageCount: imageCount(inFolder: folder.id)
+                    )
                         .tag(GalleryFilter.folder(folder.id))
                         .sciFiListRow()
                         .swipeActions(edge: .trailing) {
@@ -216,7 +230,12 @@ struct GalleryView: View {
 
             Section("Tags") {
                 ForEach(allTags, id: \.self) { tag in
-                    Label(tag, systemImage: "tag")
+                    GalleryFilterRow(
+                        title: tag,
+                        systemImage: "tag",
+                        kind: .tag,
+                        imageCount: imageCount(withTag: tag)
+                    )
                         .tag(GalleryFilter.tag(tag))
                         .sciFiListRow()
                 }
@@ -254,10 +273,19 @@ struct GalleryView: View {
         dynamicTypeSize.isAccessibilitySize ? 220 : 150
     }
 
+    private var filterRailWidth: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? 320 : 280
+    }
+
     private var selectedFilterLabel: some View {
         Label(selectedFilterTitle, systemImage: selectedFilterSystemImage)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(SciFiTheme.cyan)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Selected gallery filter")
+            .accessibilityValue("\(selectedFilterTitle), \(galleryImageCountText(visibleImages.count))")
     }
 
     private var selectedFilterTitle: String {
@@ -290,6 +318,7 @@ struct GalleryView: View {
             } label: {
                 Label("Refresh Gallery", systemImage: "arrow.clockwise")
             }
+            .accessibilityHint("Checks generated image files and removes missing or orphaned gallery entries.")
         }
 
         ToolbarItem(placement: .primaryAction) {
@@ -299,6 +328,7 @@ struct GalleryView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityHint("Changes the order of visible gallery images.")
         }
     }
 
@@ -310,6 +340,7 @@ struct GalleryView: View {
             } label: {
                 Label("New Folder", systemImage: "folder.badge.plus")
             }
+            .accessibilityHint("Creates a folder for organizing gallery images.")
         }
     }
 
@@ -388,6 +419,14 @@ struct GalleryView: View {
         try? modelContext.save()
     }
 
+    private func imageCount(inFolder folderID: UUID) -> Int {
+        images.filter { $0.folderID == folderID }.count
+    }
+
+    private func imageCount(withTag tag: String) -> Int {
+        images.filter { $0.tags.contains(tag) }.count
+    }
+
     private func deleteImage(_ image: GeneratedImage) {
         try? fileStore.removeImageFile(named: image.imageFilename)
         modelContext.delete(image)
@@ -444,6 +483,72 @@ struct GalleryView: View {
             get: { filter },
             set: { filter = $0 ?? .all }
         )
+    }
+}
+
+private enum GalleryFilterRowKind {
+    case allImages
+    case folder
+    case tag
+
+    var accessibilityLabel: String {
+        switch self {
+        case .allImages:
+            return "All Images filter"
+        case .folder:
+            return "Folder filter"
+        case .tag:
+            return "Tag filter"
+        }
+    }
+
+    var accessibilityHint: String {
+        switch self {
+        case .allImages:
+            return "Shows every generated image in the gallery."
+        case .folder:
+            return "Filters the gallery images by this folder."
+        case .tag:
+            return "Filters the gallery images by this tag."
+        }
+    }
+}
+
+private struct GalleryFilterRow: View {
+    let title: String
+    let systemImage: String
+    let kind: GalleryFilterRowKind
+    let imageCount: Int
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(SciFiTheme.primaryText)
+                    .lineLimit(titleLineLimit)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(galleryImageCountText(imageCount))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(SciFiTheme.secondaryText)
+                    .lineLimit(1)
+            }
+        } icon: {
+            Image(systemName: systemImage)
+                .foregroundStyle(SciFiTheme.cyan)
+        }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(kind.accessibilityLabel)
+        .accessibilityValue("\(title), \(galleryImageCountText(imageCount))")
+        .accessibilityHint(kind.accessibilityHint)
+    }
+
+    private var titleLineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
 }
 
