@@ -155,12 +155,89 @@ struct RootContentView: View {
     }
 }
 
+private enum PlanCapabilityStatus {
+    case available
+    case planned
+    case requiresConfiguration
+
+    var title: String {
+        switch self {
+        case .available: "Available"
+        case .planned: "Planned"
+        case .requiresConfiguration: "Requires configuration"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .available: "checkmark.circle"
+        case .planned: "clock"
+        case .requiresConfiguration: "wrench.and.screwdriver"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .available: SciFiTheme.mint
+        case .planned: SciFiTheme.cyan
+        case .requiresConfiguration: SciFiTheme.amber
+        }
+    }
+}
+
+private struct PlanCapabilityItem: Identifiable {
+    let title: String
+    let detail: String
+    let status: PlanCapabilityStatus
+    let systemImage: String
+
+    var id: String { title }
+}
+
 private struct PlanView: View {
-    private let futureCapabilities = [
-        "Higher-throughput local queues",
-        "Advanced batch generation controls",
-        "Expanded pro prompt presets",
-        "Optional workflow export tools"
+    private let capabilityItems = [
+        PlanCapabilityItem(
+            title: "Local generation workspace",
+            detail: "Prompt, parameter, run, cancel, and result handoff.",
+            status: .available,
+            systemImage: "sparkles"
+        ),
+        PlanCapabilityItem(
+            title: "Model and storage management",
+            detail: "Download, import, resume, reconcile, and delete GGUF files.",
+            status: .available,
+            systemImage: "shippingbox"
+        ),
+        PlanCapabilityItem(
+            title: "Gallery and prompt reuse",
+            detail: "Folders, tags, templates, reuse, and regeneration.",
+            status: .available,
+            systemImage: "square.grid.2x2"
+        ),
+        PlanCapabilityItem(
+            title: "Batch queue controls",
+            detail: "Higher-throughput local generation planning.",
+            status: .planned,
+            systemImage: "list.bullet.rectangle"
+        ),
+        PlanCapabilityItem(
+            title: "Pro prompt packs",
+            detail: "Curated prompt presets and reusable style systems.",
+            status: .planned,
+            systemImage: "text.book.closed"
+        ),
+        PlanCapabilityItem(
+            title: "Workflow export",
+            detail: "Portable generation recipes and production handoff.",
+            status: .planned,
+            systemImage: "square.and.arrow.up"
+        ),
+        PlanCapabilityItem(
+            title: "StoreKit purchases",
+            detail: "Requires product IDs, entitlement rules, and App Store Connect.",
+            status: .requiresConfiguration,
+            systemImage: "cart"
+        )
     ]
 
     var body: some View {
@@ -211,13 +288,13 @@ private struct PlanView: View {
                 }
 
                 Section {
-                    ForEach(futureCapabilities, id: \.self) { capability in
-                        Label(capability, systemImage: "sparkles")
+                    ForEach(capabilityItems) { item in
+                        CapabilityRow(item: item)
                     }
                 } header: {
-                    Text("Future Paid Capabilities")
+                    Text("Capability Matrix")
                 } footer: {
-                    Text("These are planning candidates only. No feature is locked, purchased, or activated by this screen.")
+                    Text("Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.")
                 }
 
                 Section("Availability") {
@@ -265,5 +342,33 @@ private struct PlanView: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
+    }
+}
+
+private struct CapabilityRow: View {
+    let item: PlanCapabilityItem
+
+    var body: some View {
+        LabeledContent {
+            Label(item.status.title, systemImage: item.status.systemImage)
+                .foregroundStyle(item.status.color)
+                .font(.callout)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .multilineTextAlignment(.trailing)
+        } label: {
+            Label {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
+                        .foregroundStyle(SciFiTheme.primaryText)
+                    Text(item.detail)
+                        .font(.callout)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            } icon: {
+                Image(systemName: item.systemImage)
+                    .foregroundStyle(SciFiTheme.cyan)
+            }
+        }
     }
 }

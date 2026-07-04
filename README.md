@@ -11,7 +11,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status.
 - Gallery grid with editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, category rename/clear actions, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
-- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, lists future paid-capability candidates without enabling purchases or entitlements, and reports that Mac Catalyst is not currently enabled.
+- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents a capability matrix for available/planned/configuration-gated features without enabling purchases or entitlements, and reports that Mac Catalyst is not currently enabled.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
 ## Native inference integration
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Added a Plan capability matrix that separates current Local features, planned paid candidates, and StoreKit configuration-gated work without purchase actions or entitlements.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.4 version.
+- Risk: The matrix is informational only; StoreKit products, prices, entitlement rules, and paid access remain unimplemented.
 - Completed: Added a Mac platform status baseline to Plan and documentation. The app now reports iPhone/iPad availability and Mac Catalyst as not enabled until Xcode platform settings, native backend slices, signing, and UI validation are handled.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.3 version.
 - Risk: This does not enable a Mac build; the native XCFramework currently contains only iOS and iOS simulator slices.
