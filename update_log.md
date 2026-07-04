@@ -445,6 +445,27 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.16 / Gallery 详情可读性
+
+- 日期：2026-07-04
+- 核心变更：
+  - Gallery 图片详情页的参数区从系统 `LabeledContent` 改为项目风格的可读参数行。
+  - Prompt 和非空 Negative 参数使用纵向长文本布局，accessibility Dynamic Type 下所有参数行改为纵向 label/value，减少横向挤压。
+  - 参数行补足明确 accessibility label/value，长 value 可自然换行，不使用缩放压缩。
+  - Reuse Parameters、Reuse and Generate、Share PNG 和 Save Tags 操作补足 44pt 行高与明确辅助功能 hint。
+  - Tags 输入在 accessibility Dynamic Type 下允许更多可见行，保持普通字号紧凑。
+  - 保持 Reuse、Regenerate、Delete、Share、Folder picker、Tags 保存、图片文件删除和 SwiftData 保存行为不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或生成参数语义。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.16（Gallery详情可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

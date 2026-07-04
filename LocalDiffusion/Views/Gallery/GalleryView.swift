@@ -534,6 +534,7 @@ private struct ImageDetailView: View {
     @State private var tagText: String
     @State private var showingDeleteConfirmation = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.modelContext) private var modelContext
 
     init(
@@ -567,26 +568,40 @@ private struct ImageDetailView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(SciFiTheme.cyan.opacity(0.26), lineWidth: 1)
                         }
+                        .accessibilityLabel("Generated image preview")
+                        .accessibilityValue(imagePreviewAccessibilityValue)
                 }
                 .listRowBackground(SciFiTheme.panel)
             }
 
             Section("Parameters") {
-                LabeledContent("Model", value: image.modelName)
-                LabeledContent("Prompt", value: image.prompt)
-                LabeledContent("Negative", value: image.negativePrompt.isEmpty ? "None" : image.negativePrompt)
-                LabeledContent("Steps", value: "\(image.steps)")
-                LabeledContent("CFG", value: image.cfgScale.formatted(.number.precision(.fractionLength(1))))
-                LabeledContent("Seed", value: "\(image.seed)")
-                LabeledContent("Requested Size", value: "\(image.width) x \(image.height)")
-                LabeledContent("Output Size", value: "\(image.resolvedOutputWidth) x \(image.resolvedOutputHeight)")
-                LabeledContent("Sampler", value: image.samplerRawValue)
+                GalleryDetailParameterRow(title: "Model", value: image.modelName)
+                GalleryDetailParameterRow(title: "Prompt", value: image.prompt, isLongForm: true)
+                GalleryDetailParameterRow(
+                    title: "Negative",
+                    value: image.negativePrompt.isEmpty ? "None" : image.negativePrompt,
+                    isLongForm: !image.negativePrompt.isEmpty
+                )
+                GalleryDetailParameterRow(title: "Steps", value: "\(image.steps)")
+                GalleryDetailParameterRow(
+                    title: "CFG",
+                    value: image.cfgScale.formatted(.number.precision(.fractionLength(1)))
+                )
+                GalleryDetailParameterRow(title: "Seed", value: "\(image.seed)")
+                GalleryDetailParameterRow(title: "Requested Size", value: "\(image.width) x \(image.height)")
+                GalleryDetailParameterRow(
+                    title: "Output Size",
+                    value: "\(image.resolvedOutputWidth) x \(image.resolvedOutputHeight)"
+                )
+                GalleryDetailParameterRow(title: "Sampler", value: image.samplerRawValue)
                 Button {
                     onReuse()
                 } label: {
                     Label("Reuse Parameters", systemImage: "arrow.triangle.2.circlepath")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityHint("Loads these generation parameters back into Generate.")
 
                 Button {
                     onRegenerate()
@@ -594,12 +609,16 @@ private struct ImageDetailView: View {
                     Label("Reuse and Generate", systemImage: "play.fill")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityHint("Loads these parameters and starts a new local generation.")
 
                 if fileStore.fileExists(at: imageURL), fileStore.fileSize(at: imageURL) > 0 {
                     ShareLink(item: imageURL) {
                         Label("Share PNG", systemImage: "square.and.arrow.up")
                     }
-                    .foregroundStyle(SciFiTheme.cyan)
+                    .buttonStyle(SciFiSecondaryButtonStyle())
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .accessibilityHint("Shares the generated PNG file.")
                 }
             }
             .listRowBackground(SciFiTheme.panel)
@@ -611,8 +630,10 @@ private struct ImageDetailView: View {
                         Text(folder.name).tag(Optional(folder.id))
                     }
                 }
+                .accessibilityHint("Assigns this image to a gallery folder.")
 
                 TextField("Tags, comma separated", text: $tagText, axis: .vertical)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3...6 : 1...3)
                 Button {
                     image.tags = tagText.tagsFromCSV()
                     try? modelContext.save()
@@ -620,6 +641,8 @@ private struct ImageDetailView: View {
                     Label("Save Tags", systemImage: "tag")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityHint("Saves the comma-separated tags for this image.")
             }
             .listRowBackground(SciFiTheme.panel)
         }
@@ -633,6 +656,7 @@ private struct ImageDetailView: View {
                 } label: {
                     Label("Delete Image", systemImage: "trash")
                 }
+                .accessibilityHint("Shows a confirmation before deleting the image file and metadata.")
             }
         }
         .confirmationDialog("Delete this generated image?", isPresented: $showingDeleteConfirmation) {
@@ -654,6 +678,62 @@ private struct ImageDetailView: View {
                 try? modelContext.save()
             }
         )
+    }
+
+    private var imagePreviewAccessibilityValue: String {
+        "Prompt \(image.prompt). Model \(image.modelName). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
+    }
+}
+
+private struct GalleryDetailParameterRow: View {
+    let title: String
+    let value: String
+    var isLongForm = false
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Group {
+            if shouldStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    titleText
+                    valueText
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    titleText
+                    Spacer(minLength: 12)
+                    valueText
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(value)
+    }
+
+    private var shouldStack: Bool {
+        dynamicTypeSize.isAccessibilitySize || isLongForm
+    }
+
+    private var titleText: some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(SciFiTheme.cyan)
+    }
+
+    private var valueText: some View {
+        Text(value)
+            .font(.body)
+            .foregroundStyle(SciFiTheme.primaryText)
+            .lineLimit(valueLineLimit)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var valueLineLimit: Int? {
+        shouldStack ? nil : 2
     }
 }
 
