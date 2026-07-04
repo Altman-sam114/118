@@ -287,6 +287,26 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍是 UI/文档基线；真实 StoreKit 接入、产品 ID、购买恢复、receipt 校验、entitlement 持久化和付费门禁仍需后续人工决策与专门轮次。
 
+### v1.8 / Plan 状态行可读性
+
+- 日期：2026-07-04
+- 核心变更：
+  - 为 Plan 增加共享 `PlanStatusRow`、`PlanStatusSummaryRow` 与 `PlanStatusBadge`，统一 Current Build、Platform Status、Mac Readiness、Capability Matrix 和 Entitlement Rules 的状态展示。
+  - 状态徽章使用文字、SF Symbol、颜色和描边共同表达状态，避免只靠颜色或尾部压缩标签。
+  - 移除这些状态行里为尾部列挤压使用的 `lineLimit(2)` 和 `minimumScaleFactor(0.85)`，让 Dynamic Type 下文本自然换行。
+  - iPad regular 在 accessibility Dynamic Type 下回退单列，普通双栏增加最小列宽；Plan overview 在 accessibility Dynamic Type 下使用纵向图标和文案布局。
+  - 保持 compact Form 和 iPad regular 双栏内容顺序、事实语义和警示文案不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData、文件存储或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.8（Plan状态行可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

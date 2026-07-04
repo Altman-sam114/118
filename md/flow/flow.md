@@ -181,7 +181,7 @@
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
-- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、entitlement rules、平台状态和 Mac readiness checklist；compact 使用单列 Form，iPad regular 使用双栏阅读布局；能力矩阵区分 Available、Planned、Requires configuration，权益规则明确当前本地工具保持可用、付费候选仍未售卖且未持久化 entitlement，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
+- Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、entitlement rules、平台状态和 Mac readiness checklist；compact 使用单列 Form，iPad regular 使用双栏阅读布局，accessibility Dynamic Type 下回退单列；Current Build、Platform Status、Mac readiness、能力矩阵和权益规则使用文字、图标、颜色和描边共同表达的状态徽章，避免只靠颜色或尾部压缩标签表达状态；权益规则明确当前本地工具保持可用、付费候选仍未售卖且未持久化 entitlement，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 
 输入：

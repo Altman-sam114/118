@@ -155,6 +155,12 @@ struct RootContentView: View {
     }
 }
 
+private struct PlanStatusToken {
+    let title: String
+    let systemImage: String
+    let color: Color
+}
+
 private enum PlanCapabilityStatus {
     case available
     case planned
@@ -182,6 +188,10 @@ private enum PlanCapabilityStatus {
         case .planned: SciFiTheme.cyan
         case .requiresConfiguration: SciFiTheme.amber
         }
+    }
+
+    var token: PlanStatusToken {
+        PlanStatusToken(title: title, systemImage: systemImage, color: color)
     }
 }
 
@@ -226,6 +236,10 @@ private enum PlanEntitlementRuleStatus {
         case .notImplemented: SciFiTheme.magenta
         }
     }
+
+    var token: PlanStatusToken {
+        PlanStatusToken(title: title, systemImage: systemImage, color: color)
+    }
 }
 
 private struct PlanEntitlementRuleItem: Identifiable {
@@ -268,6 +282,10 @@ private enum MacReadinessStatus {
         case .planned: SciFiTheme.cyan
         }
     }
+
+    var token: PlanStatusToken {
+        PlanStatusToken(title: title, systemImage: systemImage, color: color)
+    }
 }
 
 private struct MacReadinessItem: Identifiable {
@@ -281,6 +299,7 @@ private struct MacReadinessItem: Identifiable {
 
 private struct PlanView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private let capabilityItems = [
         PlanCapabilityItem(
@@ -415,23 +434,36 @@ private struct PlanView: View {
 
     private var regularLayout: some View {
         ScrollView {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 16) {
-                    regularPrimaryColumn
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                    regularDetailColumn
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                }
-
-                VStack(alignment: .leading, spacing: 16) {
-                    regularPrimaryColumn
-                    regularDetailColumn
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    regularStackLayout
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        regularColumnLayout
+                        regularStackLayout
+                    }
                 }
             }
             .frame(maxWidth: 1180)
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var regularColumnLayout: some View {
+        HStack(alignment: .top, spacing: 16) {
+            regularPrimaryColumn
+                .frame(minWidth: 320, maxWidth: .infinity, alignment: .topLeading)
+            regularDetailColumn
+                .frame(minWidth: 320, maxWidth: .infinity, alignment: .topLeading)
+        }
+    }
+
+    private var regularStackLayout: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            regularPrimaryColumn
+            regularDetailColumn
         }
     }
 
@@ -519,19 +551,17 @@ private struct PlanView: View {
 
     @ViewBuilder
     private var currentBuildContent: some View {
-        LabeledContent {
-            Text("Local")
-                .foregroundStyle(SciFiTheme.mint)
-        } label: {
-            Label("Plan", systemImage: "internaldrive")
-        }
+        PlanStatusSummaryRow(
+            title: "Plan",
+            systemImage: "internaldrive",
+            status: PlanStatusToken(title: "Local", systemImage: "checkmark.circle", color: SciFiTheme.mint)
+        )
 
-        LabeledContent {
-            Text("Not configured")
-                .foregroundStyle(SciFiTheme.amber)
-        } label: {
-            Label("StoreKit products", systemImage: "cart")
-        }
+        PlanStatusSummaryRow(
+            title: "StoreKit products",
+            systemImage: "cart",
+            status: PlanStatusToken(title: "Not configured", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber)
+        )
 
         Label("Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.", systemImage: "exclamationmark.triangle")
             .foregroundStyle(SciFiTheme.secondaryText)
@@ -539,19 +569,17 @@ private struct PlanView: View {
 
     @ViewBuilder
     private var platformStatusContent: some View {
-        LabeledContent {
-            Text("Available")
-                .foregroundStyle(SciFiTheme.mint)
-        } label: {
-            Label("iPhone / iPad", systemImage: "iphone")
-        }
+        PlanStatusSummaryRow(
+            title: "iPhone / iPad",
+            systemImage: "iphone",
+            status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint)
+        )
 
-        LabeledContent {
-            Text("Not enabled")
-                .foregroundStyle(SciFiTheme.amber)
-        } label: {
-            Label("Mac Catalyst", systemImage: "desktopcomputer")
-        }
+        PlanStatusSummaryRow(
+            title: "Mac Catalyst",
+            systemImage: "desktopcomputer",
+            status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber)
+        )
 
         Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
             .foregroundStyle(SciFiTheme.secondaryText)
@@ -586,26 +614,15 @@ private struct PlanView: View {
 
     private var planOverview: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "creditcard")
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundStyle(SciFiTheme.cyan)
-                    .frame(width: 52, height: 52)
-                    .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
-                    }
-                    .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Local Plan")
-                        .font(.headline)
-                        .foregroundStyle(SciFiTheme.primaryText)
-
-                    Text("This build is a local-first image generation app. Paid capability planning is visible here, but StoreKit is not configured.")
-                        .font(.body)
-                        .foregroundStyle(SciFiTheme.secondaryText)
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) {
+                    planOverviewIcon
+                    planOverviewCopy
+                }
+            } else {
+                HStack(alignment: .top, spacing: 12) {
+                    planOverviewIcon
+                    planOverviewCopy
                 }
             }
 
@@ -618,6 +635,32 @@ private struct PlanView: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
+    }
+
+    private var planOverviewIcon: some View {
+        Image(systemName: "creditcard")
+            .font(.system(size: 26, weight: .semibold))
+            .foregroundStyle(SciFiTheme.cyan)
+            .frame(width: 52, height: 52)
+            .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
+            }
+            .accessibilityHidden(true)
+    }
+
+    private var planOverviewCopy: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Local Plan")
+                .font(.headline)
+                .foregroundStyle(SciFiTheme.primaryText)
+
+            Text("This build is a local-first image generation app. Paid capability planning is visible here, but StoreKit is not configured.")
+                .font(.body)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
@@ -655,31 +698,91 @@ private struct PlanPanel<Content: View>: View {
     }
 }
 
+private struct PlanStatusBadge: View {
+    let status: PlanStatusToken
+
+    var body: some View {
+        Label {
+            Text(status.title)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: status.systemImage)
+        }
+        .font(.callout)
+        .foregroundStyle(status.color)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(status.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(status.color.opacity(0.35), lineWidth: 1)
+        }
+    }
+}
+
+private struct PlanStatusSummaryRow: View {
+    let title: String
+    let systemImage: String
+    let status: PlanStatusToken
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(title)
+                    .foregroundStyle(SciFiTheme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: systemImage)
+                    .foregroundStyle(SciFiTheme.cyan)
+            }
+
+            PlanStatusBadge(status: status)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct PlanStatusRow: View {
+    let title: String
+    let detail: String
+    let systemImage: String
+    let status: PlanStatusToken
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(title)
+                    .foregroundStyle(SciFiTheme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: systemImage)
+                    .foregroundStyle(SciFiTheme.cyan)
+            }
+
+            Text(detail)
+                .font(.callout)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+
+            PlanStatusBadge(status: status)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 private struct MacReadinessRow: View {
     let item: MacReadinessItem
 
     var body: some View {
-        LabeledContent {
-            Label(item.status.title, systemImage: item.status.systemImage)
-                .foregroundStyle(item.status.color)
-                .font(.callout)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .multilineTextAlignment(.trailing)
-        } label: {
-            Label {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text(item.detail)
-                        .font(.callout)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-            } icon: {
-                Image(systemName: item.systemImage)
-                    .foregroundStyle(SciFiTheme.cyan)
-            }
-        }
+        PlanStatusRow(
+            title: item.title,
+            detail: item.detail,
+            systemImage: item.systemImage,
+            status: item.status.token
+        )
     }
 }
 
@@ -687,27 +790,12 @@ private struct CapabilityRow: View {
     let item: PlanCapabilityItem
 
     var body: some View {
-        LabeledContent {
-            Label(item.status.title, systemImage: item.status.systemImage)
-                .foregroundStyle(item.status.color)
-                .font(.callout)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .multilineTextAlignment(.trailing)
-        } label: {
-            Label {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text(item.detail)
-                        .font(.callout)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-            } icon: {
-                Image(systemName: item.systemImage)
-                    .foregroundStyle(SciFiTheme.cyan)
-            }
-        }
+        PlanStatusRow(
+            title: item.title,
+            detail: item.detail,
+            systemImage: item.systemImage,
+            status: item.status.token
+        )
     }
 }
 
@@ -715,26 +803,11 @@ private struct EntitlementRuleRow: View {
     let item: PlanEntitlementRuleItem
 
     var body: some View {
-        LabeledContent {
-            Label(item.status.title, systemImage: item.status.systemImage)
-                .foregroundStyle(item.status.color)
-                .font(.callout)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .multilineTextAlignment(.trailing)
-        } label: {
-            Label {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text(item.detail)
-                        .font(.callout)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-            } icon: {
-                Image(systemName: item.systemImage)
-                    .foregroundStyle(SciFiTheme.cyan)
-            }
-        }
+        PlanStatusRow(
+            title: item.title,
+            detail: item.detail,
+            systemImage: item.systemImage,
+            status: item.status.token
+        )
     }
 }

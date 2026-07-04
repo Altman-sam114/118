@@ -11,7 +11,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status.
 - Gallery grid with editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, category rename/clear actions, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
-- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents a capability matrix and entitlement rules baseline, lists Mac readiness blockers, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
+- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, and Mac readiness blockers with Dynamic Type-friendly status badges, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
 ## Native inference integration
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Refined Plan status rows so current build, platform status, Mac readiness, capability matrix, and entitlement rules use Dynamic Type-friendly status badges; accessibility text sizes now use a single-column Plan layout and stacked overview header.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.8 version.
+- Risk: This is presentation-only; no StoreKit behavior, Mac Catalyst support, or simulator screenshot QA is added.
 - Completed: Added a Plan entitlement rules baseline that protects current Local tools, marks paid candidates as planning-only, and records StoreKit/product/entitlement prerequisites before any purchase UI can exist.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.7 version.
 - Risk: This is still UI/documentation only; StoreKit, product IDs, purchase state persistence, and entitlement enforcement remain unimplemented.
