@@ -227,32 +227,57 @@ private struct PromptCategoryHeader: View {
     let onRename: () -> Void
     let onClear: () -> Void
 
-    var body: some View {
-        HStack {
-            Text(group.title)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(SciFiTheme.cyan)
-            Spacer()
-            if !group.isUncategorized {
-                Menu {
-                    Button {
-                        onRename()
-                    } label: {
-                        Label("Rename Category", systemImage: "pencil")
-                    }
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-                    Button(role: .destructive) {
-                        onClear()
-                    } label: {
-                        Label("Clear Category", systemImage: "folder.badge.minus")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+    var body: some View {
+        headerContent
+    }
+
+    @ViewBuilder
+    private var headerContent: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                title
+                if !group.isUncategorized {
+                    categoryActions
                 }
-                .foregroundStyle(SciFiTheme.cyan)
-                .accessibilityLabel("Category actions")
+            }
+        } else {
+            HStack {
+                title
+                Spacer()
+                if !group.isUncategorized {
+                    categoryActions
+                }
             }
         }
+    }
+
+    private var title: some View {
+        Text(group.title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(SciFiTheme.cyan)
+    }
+
+    private var categoryActions: some View {
+        Menu {
+            Button {
+                onRename()
+            } label: {
+                Label("Rename Category", systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                onClear()
+            } label: {
+                Label("Clear Category", systemImage: "folder.badge.minus")
+            }
+        } label: {
+            Label("Category Actions", systemImage: "ellipsis.circle")
+        }
+        .labelStyle(.iconOnly)
+        .foregroundStyle(SciFiTheme.cyan)
+        .frame(minWidth: 44, minHeight: 44)
     }
 }
 
@@ -261,40 +286,90 @@ private struct PromptTemplateRow: View {
     let onLoad: () -> Void
     let onEdit: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(template.name)
-                        .font(.headline)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                    Text(template.prompt)
-                        .font(.subheadline)
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                        .lineLimit(2)
-                }
-                Spacer()
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
-                .accessibilityLabel("Edit template")
-
-                Button(action: onLoad) {
-                    Image(systemName: "arrow.down.doc")
-                }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
-                .accessibilityLabel("Load template")
-            }
-
-            HStack(spacing: 8) {
-                SciFiStatusPill(title: "\(template.steps)", systemImage: "number", color: SciFiTheme.cyan)
-                SciFiStatusPill(title: template.samplerRawValue, systemImage: "slider.horizontal.3", color: SciFiTheme.magenta)
-                SciFiStatusPill(title: "\(template.width)x\(template.height)", systemImage: "aspectratio", color: SciFiTheme.amber)
-            }
+            header
+            metricPills
         }
         .padding(12)
         .sciFiPanel()
+    }
+
+    @ViewBuilder
+    private var header: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 10) {
+                templateCopy
+                actions
+            }
+        } else {
+            HStack {
+                templateCopy
+                Spacer()
+                actions
+            }
+        }
+    }
+
+    private var templateCopy: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(template.name)
+                .font(.headline)
+                .foregroundStyle(SciFiTheme.primaryText)
+            Text(template.prompt)
+                .font(.subheadline)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 4 : 2)
+        }
+    }
+
+    private var actions: some View {
+        HStack(spacing: 8) {
+            Button(action: onEdit) {
+                Label("Edit Template", systemImage: "pencil")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+            .frame(minWidth: 44, minHeight: 44)
+
+            Button(action: onLoad) {
+                Label("Load Template", systemImage: "arrow.down.doc")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+            .frame(minWidth: 44, minHeight: 44)
+        }
+    }
+
+    @ViewBuilder
+    private var metricPills: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                stepsPill
+                samplerPill
+                sizePill
+            }
+        } else {
+            HStack(spacing: 8) {
+                stepsPill
+                samplerPill
+                sizePill
+            }
+        }
+    }
+
+    private var stepsPill: some View {
+        SciFiStatusPill(title: "\(template.steps)", systemImage: "number", color: SciFiTheme.cyan)
+    }
+
+    private var samplerPill: some View {
+        SciFiStatusPill(title: template.samplerRawValue, systemImage: "slider.horizontal.3", color: SciFiTheme.magenta)
+    }
+
+    private var sizePill: some View {
+        SciFiStatusPill(title: "\(template.width)x\(template.height)", systemImage: "aspectratio", color: SciFiTheme.amber)
     }
 }
 

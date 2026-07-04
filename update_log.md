@@ -345,6 +345,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.11 / Prompts 控件可读性
+
+- 日期：2026-07-04
+- 核心变更：
+  - Prompt Library 的分类操作菜单、模板编辑和模板加载控件改为带文本的 `Label`，视觉上继续保持 icon-only Sci-Fi 控件。
+  - 分类菜单触发器、模板编辑按钮和模板加载按钮补足 44pt 最小命中区，改善触控和辅助输入目标。
+  - 分类 header 和模板行读取 Dynamic Type size，在 accessibility 字号下将标题、操作按钮和参数 pill 纵向堆叠，减少横向挤压。
+  - 保持模板加载、编辑、添加、删除、分类重命名、分类清空、搜索和保存行为不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或其他业务页面。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.11（Prompts控件可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator screenshot/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
