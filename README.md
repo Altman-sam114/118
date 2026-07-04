@@ -4,13 +4,14 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 
 ## Current implementation
 
-- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including an embedded Gallery filter rail that avoids nested split views.
+- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including an embedded Gallery filter rail that avoids nested split views and a Plan entry for paid-capability status.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, and restart recovery for interrupted downloads.
 - Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status.
 - Gallery grid with editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, category rename/clear actions, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
+- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, and lists future paid-capability candidates without enabling purchases or entitlements.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
 ## Native inference integration
@@ -86,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Added a Plan navigation entry and local paid-capability baseline. The screen reports the current Local plan, StoreKit-not-configured status, and future paid-capability candidates without purchase UI or entitlements.
+- Verified: Local lightweight checks and cloud CI artifact review are required for the v1.2 version.
+- Risk: Real paid features still require product IDs, entitlement rules, StoreKit implementation, and App Store Connect configuration.
 - Completed: Added the Agent X documentation baseline for future controller-loop iteration. Agent X can be summoned with `agentx:`, but it must still schedule Agent A prompts, Agent B implementation pushes, and Agent C artifact review rather than replacing them.
 - Verified: Documentation-only change; `git diff --check` is the required local validation for this version.
 - Risk: This prepares the workflow only. It does not start an actual Agent X loop or change app behavior.

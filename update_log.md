@@ -178,6 +178,24 @@
 - 验证结果：本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse 均通过；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍不启用 Mac Catalyst、不实现付费功能；后续可继续做 mac/Catalyst 可行性和付费功能信息架构。
 
+### v1.2 / Plan 付费能力基线
+
+- 日期：2026-07-04
+- 核心变更：
+  - Root 导航新增 Plan 入口，iPhone TabView 与 iPad sidebar 均可进入。
+  - Plan 页面展示当前 Local plan、StoreKit 产品未配置状态和未来付费能力候选。
+  - 页面不提供购买、恢复、收据校验、订阅或 entitlement UI，不限制现有本地功能。
+  - 不修改 SwiftData、文件存储、native backend、Xcode 平台设置或 StoreKit 依赖。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.2（Plan付费能力基线）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：真实付费功能仍需人工提供产品 ID、entitlement 规则、StoreKit 接入策略和 App Store Connect 配置。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

@@ -8,10 +8,11 @@
 
 ```mermaid
 flowchart TD
-  U["用户操作：下载模型、输入 Prompt、点击生成"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts"]
+  U["用户操作：下载模型、输入 Prompt、点击生成、查看 Plan"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts / Plan"]
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 嵌入式 filter rail"]
+  NAV --> PLANUI["Plan：Local plan / StoreKit 未配置 / 未来付费能力候选"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
   GALUI --> VM

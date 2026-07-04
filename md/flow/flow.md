@@ -47,7 +47,7 @@
 
 职责：
 
-- `RootContentView` 管理 Generate、Models、Gallery、Prompts 四个入口。
+- `RootContentView` 管理 Generate、Models、Gallery、Prompts、Plan 五个入口。
 - iPhone 使用 TabView，iPad 使用 NavigationSplitView。
 - iPad regular 由 Root 持有唯一顶层 split；Gallery 在 Root detail 中使用嵌入式宽屏布局，避免 split 嵌套。
 - 创建并注入 `GenerationViewModel`。
@@ -181,6 +181,7 @@
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
+- Plan：展示当前 Local plan、StoreKit 未配置状态和未来付费能力候选，不启用购买、恢复、收据、订阅或 entitlement。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 
 输入：
@@ -347,6 +348,7 @@ git push origin main
 - Models：模型下载、导入、删除、状态恢复入口。
 - Gallery：生成结果查看、过滤、复用入口。
 - Prompts：提示词模板维护入口。
+- Plan：当前 Local plan 和付费能力规划状态入口。
 - StartupFailureView：SwiftData store 无法打开时的错误入口。
 
 ## 6. 已确认铁律
