@@ -250,6 +250,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：真正启用 Mac Catalyst 前仍需 native backend Mac/Catalyst slice、平台设置、签名/分发决策和 Mac UI smoke 验证。
 
+### v1.6 / Plan 宽屏布局
+
+- 日期：2026-07-04
+- 核心变更：
+  - Plan 页面根据 horizontal size class 选择 compact 单列 Form 或 iPad regular 双栏阅读布局。
+  - iPad regular 左栏集中 Local Plan、Current Build 和 Platform Status；右栏集中 Mac Readiness、Capability Matrix 和 Availability。
+  - 宽屏布局使用 `ScrollView` 与 `ViewThatFits`，在空间不足时回退为单列堆叠，减少文字挤压风险。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData、文件存储或其他业务页面。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.6（Plan宽屏布局）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮只优化展示密度；真实付费、Mac Catalyst 和截图/Dynamic Type 目检仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

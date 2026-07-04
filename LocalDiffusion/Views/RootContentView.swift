@@ -237,6 +237,8 @@ private struct MacReadinessItem: Identifiable {
 }
 
 private struct PlanView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     private let capabilityItems = [
         PlanCapabilityItem(
             title: "Local generation workspace",
@@ -311,80 +313,183 @@ private struct PlanView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    planOverview
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                }
-
-                Section("Current Build") {
-                    LabeledContent {
-                        Text("Local")
-                            .foregroundStyle(SciFiTheme.mint)
-                    } label: {
-                        Label("Plan", systemImage: "internaldrive")
-                    }
-
-                    LabeledContent {
-                        Text("Not configured")
-                            .foregroundStyle(SciFiTheme.amber)
-                    } label: {
-                        Label("StoreKit products", systemImage: "cart")
-                    }
-
-                    Label("Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-
-                Section("Platform Status") {
-                    LabeledContent {
-                        Text("Available")
-                            .foregroundStyle(SciFiTheme.mint)
-                    } label: {
-                        Label("iPhone / iPad", systemImage: "iphone")
-                    }
-
-                    LabeledContent {
-                        Text("Not enabled")
-                            .foregroundStyle(SciFiTheme.amber)
-                    } label: {
-                        Label("Mac Catalyst", systemImage: "desktopcomputer")
-                    }
-
-                    Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
-                        .foregroundStyle(SciFiTheme.secondaryText)
-                }
-
-                Section {
-                    ForEach(macReadinessItems) { item in
-                        MacReadinessRow(item: item)
-                    }
-                } header: {
-                    Text("Mac Readiness")
-                } footer: {
-                    Text("These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.")
-                }
-
-                Section {
-                    ForEach(capabilityItems) { item in
-                        CapabilityRow(item: item)
-                    }
-                } header: {
-                    Text("Capability Matrix")
-                } footer: {
-                    Text("Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.")
-                }
-
-                Section("Availability") {
-                    Label("Generate, Models, Gallery, and Prompts remain available in the Local plan.", systemImage: "lock.open")
-                    Label("StoreKit integration requires product IDs, entitlement rules, and App Store Connect configuration before any purchase UI is added.", systemImage: "wrench.and.screwdriver")
+            Group {
+                if horizontalSizeClass == .regular {
+                    regularLayout
+                } else {
+                    compactLayout
                 }
             }
             .navigationTitle("Plan")
             .sciFiScreen()
             .bottomTabBarClearance()
         }
+    }
+
+    private var compactLayout: some View {
+        Form {
+            Section {
+                planOverview
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+
+            currentBuildSection
+            platformStatusSection
+            macReadinessSection
+            capabilityMatrixSection
+            availabilitySection
+        }
+    }
+
+    private var regularLayout: some View {
+        ScrollView {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 16) {
+                    regularPrimaryColumn
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    regularDetailColumn
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    regularPrimaryColumn
+                    regularDetailColumn
+                }
+            }
+            .frame(maxWidth: 1180)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var regularPrimaryColumn: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            planOverview
+
+            PlanPanel("Current Build") {
+                currentBuildContent
+            }
+
+            PlanPanel("Platform Status") {
+                platformStatusContent
+            }
+        }
+    }
+
+    private var regularDetailColumn: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            PlanPanel("Mac Readiness", footer: "These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.") {
+                macReadinessContent
+            }
+
+            PlanPanel("Capability Matrix", footer: "Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.") {
+                capabilityMatrixContent
+            }
+
+            PlanPanel("Availability") {
+                availabilityContent
+            }
+        }
+    }
+
+    private var currentBuildSection: some View {
+        Section("Current Build") {
+            currentBuildContent
+        }
+    }
+
+    private var platformStatusSection: some View {
+        Section("Platform Status") {
+            platformStatusContent
+        }
+    }
+
+    private var macReadinessSection: some View {
+        Section {
+            macReadinessContent
+        } header: {
+            Text("Mac Readiness")
+        } footer: {
+            Text("These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.")
+        }
+    }
+
+    private var capabilityMatrixSection: some View {
+        Section {
+            capabilityMatrixContent
+        } header: {
+            Text("Capability Matrix")
+        } footer: {
+            Text("Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.")
+        }
+    }
+
+    private var availabilitySection: some View {
+        Section("Availability") {
+            availabilityContent
+        }
+    }
+
+    @ViewBuilder
+    private var currentBuildContent: some View {
+        LabeledContent {
+            Text("Local")
+                .foregroundStyle(SciFiTheme.mint)
+        } label: {
+            Label("Plan", systemImage: "internaldrive")
+        }
+
+        LabeledContent {
+            Text("Not configured")
+                .foregroundStyle(SciFiTheme.amber)
+        } label: {
+            Label("StoreKit products", systemImage: "cart")
+        }
+
+        Label("Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.", systemImage: "exclamationmark.triangle")
+            .foregroundStyle(SciFiTheme.secondaryText)
+    }
+
+    @ViewBuilder
+    private var platformStatusContent: some View {
+        LabeledContent {
+            Text("Available")
+                .foregroundStyle(SciFiTheme.mint)
+        } label: {
+            Label("iPhone / iPad", systemImage: "iphone")
+        }
+
+        LabeledContent {
+            Text("Not enabled")
+                .foregroundStyle(SciFiTheme.amber)
+        } label: {
+            Label("Mac Catalyst", systemImage: "desktopcomputer")
+        }
+
+        Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
+            .foregroundStyle(SciFiTheme.secondaryText)
+    }
+
+    @ViewBuilder
+    private var macReadinessContent: some View {
+        ForEach(macReadinessItems) { item in
+            MacReadinessRow(item: item)
+        }
+    }
+
+    @ViewBuilder
+    private var capabilityMatrixContent: some View {
+        ForEach(capabilityItems) { item in
+            CapabilityRow(item: item)
+        }
+    }
+
+    @ViewBuilder
+    private var availabilityContent: some View {
+        Label("Generate, Models, Gallery, and Prompts remain available in the Local plan.", systemImage: "lock.open")
+        Label("StoreKit integration requires product IDs, entitlement rules, and App Store Connect configuration before any purchase UI is added.", systemImage: "wrench.and.screwdriver")
     }
 
     private var planOverview: some View {
@@ -421,6 +526,40 @@ private struct PlanView: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
+    }
+}
+
+private struct PlanPanel<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+
+    init(_ title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(SciFiTheme.primaryText)
+
+            VStack(alignment: .leading, spacing: 10) {
+                content
+            }
+
+            if let footer {
+                Text(footer)
+                    .font(.callout)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .sciFiPanel()
     }
 }
 

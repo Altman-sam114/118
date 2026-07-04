@@ -11,7 +11,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - Generation screen with positive and negative prompts, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status.
 - Gallery grid with editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
 - Prompt library with categories, category rename/clear actions, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
-- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents a capability matrix, and lists Mac readiness blockers without enabling purchases, entitlements, or Mac Catalyst.
+- Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents a capability matrix, lists Mac readiness blockers, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
 ## Native inference integration
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Added an iPad regular two-column Plan layout so Local plan status, platform status, Mac blockers, capability matrix, and availability notes are easier to scan without changing compact Form behavior.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.6 version.
+- Risk: This is presentation-only; StoreKit remains unconfigured and Mac Catalyst remains disabled.
 - Completed: Added a Mac readiness checklist to Plan, covering Xcode platform configuration, native Mac/Catalyst backend slice work, window/sidebar QA, and distribution/signing decisions.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.5 version.
 - Risk: This remains planning UI only; Mac Catalyst is still disabled and the native XCFramework still needs a Mac/Catalyst slice before a real Mac build.
