@@ -12,7 +12,7 @@ flowchart TD
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 嵌入式 filter rail"]
-  NAV --> PLANUI["Plan：Local plan / StoreKit 未配置 / 未来付费能力候选"]
+  NAV --> PLANUI["Plan：Local plan / StoreKit 未配置 / 平台状态 / 未来付费能力候选"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
   GALUI --> VM

@@ -191,6 +191,25 @@ private struct PlanView: View {
                         .foregroundStyle(SciFiTheme.secondaryText)
                 }
 
+                Section("Platform Status") {
+                    LabeledContent {
+                        Text("Available")
+                            .foregroundStyle(SciFiTheme.mint)
+                    } label: {
+                        Label("iPhone / iPad", systemImage: "iphone")
+                    }
+
+                    LabeledContent {
+                        Text("Not enabled")
+                            .foregroundStyle(SciFiTheme.amber)
+                    } label: {
+                        Label("Mac Catalyst", systemImage: "desktopcomputer")
+                    }
+
+                    Label("Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.", systemImage: "checklist")
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+
                 Section {
                     ForEach(futureCapabilities, id: \.self) { capability in
                         Label(capability, systemImage: "sparkles")

@@ -181,7 +181,7 @@
 - Gallery：查看、过滤、排序、复用参数、删除图片。
 - Gallery 在 compact/standalone 下保留内部筛选 split；在 iPad Root detail 下使用左侧 filter rail + 图片网格 + detail navigation 的单层宽屏布局。
 - Prompts：保存、分类、编辑、加载模板。
-- Plan：展示当前 Local plan、StoreKit 未配置状态和未来付费能力候选，不启用购买、恢复、收据、订阅或 entitlement。
+- Plan：展示当前 Local plan、StoreKit 未配置状态、未来付费能力候选和平台状态；当前 iPhone/iPad 可用，Mac Catalyst 未启用。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白。
 
 输入：
@@ -348,7 +348,7 @@ git push origin main
 - Models：模型下载、导入、删除、状态恢复入口。
 - Gallery：生成结果查看、过滤、复用入口。
 - Prompts：提示词模板维护入口。
-- Plan：当前 Local plan 和付费能力规划状态入口。
+- Plan：当前 Local plan、付费能力规划和平台可用性状态入口。
 - StartupFailureView：SwiftData store 无法打开时的错误入口。
 
 ## 6. 已确认铁律
@@ -369,6 +369,7 @@ git push origin main
 - 图片生成队列和历史任务恢复。
 - 更严格的截图 smoke test：像素检查或 UI 文本检查。
 - ModelLibraryView 拆分为更小的 feature files。
+- Mac Catalyst 支持：需要 Xcode 平台设置、native backend Mac/Catalyst slice、签名/分发配置和专门 UI 验证。
 
 ## 8. 不允许破坏的行为
 
