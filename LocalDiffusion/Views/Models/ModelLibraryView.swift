@@ -922,6 +922,26 @@ private struct ModelMessageRow: View {
     }
 }
 
+private struct ModelDetailMessageRow: View {
+    let message: String
+
+    var body: some View {
+        Label {
+            Text(message)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle")
+        }
+        .foregroundStyle(SciFiTheme.amber)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Model detail status message")
+        .accessibilityValue(message)
+        .accessibilityHint("Describes this model's download or storage status in the detail view.")
+    }
+}
+
 private struct ModelDetailView: View {
     let model: LocalModel
     let progress: ModelDownloadProgress
@@ -947,8 +967,7 @@ private struct ModelDetailView: View {
                     LabeledContent("Downloaded", value: sizeText)
 
                     if let message = progress.message, !message.isEmpty {
-                        DetailTextRow(title: "Message", value: message)
-                            .foregroundStyle(SciFiTheme.amber)
+                        ModelDetailMessageRow(message: message)
                     }
                 }
                 .listRowBackground(SciFiTheme.panel)

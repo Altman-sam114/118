@@ -584,6 +584,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.23 / Models 详情消息可读性
+
+- 日期：2026-07-05
+- 核心变更：
+  - Models 详情页 Status section 的 `progress.message` 从普通 `DetailTextRow` 提取为私有 `ModelDetailMessageRow`。
+  - 详情 message 文本来源、状态判断、下载/删除/导入/reconcile 和 native loading 行为保持不变。
+  - 详情 message row 使用真实 `Label`、`SciFiTheme.amber`、44pt 最小高度、可换行文本和显式 accessibility label/value/hint，提升下载/存储状态消息的 Dynamic Type 与 VoiceOver 可读性。
+  - 不修改 `HuggingFaceDownloadManager`、`ModelDownloadProgress`、`LocalModel`、SwiftData schema、文件存储、native backend、CI workflow、导航或业务行为。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.23（Models详情消息可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
