@@ -12,7 +12,7 @@ flowchart TD
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / 可读 prompt editor / 可读参数控件"]
   UI --> MODELUI["Models：下载 / 导入 / 删除 / 可访问 controls / Dynamic Type 堆叠"]
   UI --> PROMPTUI["Prompts：模板分类 / 可读编辑器 / 可访问 controls / 共享参数编辑"]
-  UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView"]
+  UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView / 可访问 sidebar rows"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 可读 filter rail / 可读图块和详情"]
   NAV --> PLANUI["Plan：compact Form / iPad 双栏 / 可访问状态徽章 / 能力矩阵 / entitlement rules / availability / Mac readiness"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]

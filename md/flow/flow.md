@@ -49,6 +49,7 @@
 
 - `RootContentView` 管理 Generate、Models、Gallery、Prompts、Plan 五个入口。
 - iPhone 使用 TabView，iPad 使用 NavigationSplitView。
+- iPad sidebar row 提供明确 selected/not-selected 辅助功能值、workspace hint 和 44pt 最小触控高度。
 - iPad regular 由 Root 持有唯一顶层 split；Gallery 在 Root detail 中使用嵌入式宽屏布局，避免 split 嵌套。
 - 创建并注入 `GenerationViewModel`。
 - 连接生成结果到 Gallery 跳转。
@@ -176,6 +177,7 @@
 职责：
 
 - Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果；prompt 编辑器 header、清除控件和共享参数控件提供明确可访问标签和值，并在 accessibility Dynamic Type 下减少横向挤压。
+- Root：iPhone 使用 compact TabView；iPad 使用单层 NavigationSplitView，sidebar 行保持真实文本和 SF Symbol，提供 selected/not-selected 辅助功能值、workspace hint 和 44pt 最小触控高度。
 - Generate 在 compact 下保持单列表单；在 iPad regular 普通 Dynamic Type 下使用双栏创作台，左侧放模型/prompt/参数，右侧放状态、运行和结果；accessibility Dynamic Type 下回退单列，控制台 header、状态 pill 和 metrics 纵向/单列排列以保持可读。
 - Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件；行内控制按钮提供可访问文本 label 和 44pt 命中区，storage/model/untracked rows 在 accessibility Dynamic Type 下改为纵向堆叠以保持可读。
 - Gallery：查看、过滤、排序、复用参数、删除图片；筛选栏、图块和详情页参数/操作在 accessibility Dynamic Type 下使用可读布局、清晰辅助功能语义和足够触控区域。

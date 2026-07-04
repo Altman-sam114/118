@@ -27,6 +27,16 @@ enum AppSection: Hashable {
         case .plan: "creditcard"
         }
     }
+
+    var sidebarAccessibilityHint: String {
+        switch self {
+        case .generate: "Opens the generation workspace."
+        case .models: "Opens model download and storage management."
+        case .gallery: "Opens generated image browsing and reuse."
+        case .prompts: "Opens saved prompt templates."
+        case .plan: "Opens local plan and platform readiness."
+        }
+    }
 }
 
 struct RootContentView: View {
@@ -97,7 +107,7 @@ struct RootContentView: View {
     private var sidebarLayout: some View {
         NavigationSplitView {
             List(sections, id: \.self, selection: sidebarSelectionBinding) { section in
-                Label(section.title, systemImage: section.systemImage)
+                SidebarSectionRow(section: section, isSelected: selection == section)
                     .tag(section)
                     .sciFiListRow()
             }
@@ -152,6 +162,25 @@ struct RootContentView: View {
         downloads.onModelStateChange = { [modelContext] in
             try? modelContext.save()
         }
+    }
+}
+
+private struct SidebarSectionRow: View {
+    let section: AppSection
+    let isSelected: Bool
+
+    var body: some View {
+        Label {
+            Text(section.title)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: section.systemImage)
+        }
+        .frame(minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(section.title)
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .accessibilityHint(section.sidebarAccessibilityHint)
     }
 }
 

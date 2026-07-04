@@ -528,6 +528,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.20 / Root 侧栏可访问性语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - iPad regular Root sidebar 从裸 `Label` 提取为私有 `SidebarSectionRow`，保留原有 title、SF Symbol、`.tag(section)` 和 `.sciFiListRow()`。
+  - 每个 sidebar row 提供 44pt 最小高度，减少触控和 Dynamic Type 可读性风险。
+  - 每个 sidebar row 提供明确 accessibility label、Selected / Not selected value 和 workspace hint。
+  - 保持 `NavigationSplitView`、`List(selection:)`、`sidebarSelectionBinding`、`sectionContent`、compact `TabView` 和 Gallery embedded wide 逻辑不变。
+  - 不修改 StoreKit、Mac Catalyst、Xcode project、native backend、SwiftData schema、文件存储、CI workflow 或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.20（Root侧栏可访问性语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator sidebar/VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

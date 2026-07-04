@@ -4,7 +4,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 
 ## Current implementation
 
-- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including an embedded Gallery filter rail that avoids nested split views and a Plan entry for paid-capability planning status.
+- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows, an embedded Gallery filter rail that avoids nested split views, and a Plan entry for paid-capability planning status.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, restart recovery for interrupted downloads, accessible labeled row controls, and Dynamic Type-friendly model storage rows.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-05
 
+- Completed: Refined iPad sidebar rows so each main navigation section keeps a readable 44pt row and exposes explicit selected/not-selected VoiceOver values and workspace hints.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.20 version.
+- Risk: This is presentation-only; no Root navigation state, TabView, Gallery layout, StoreKit, Mac Catalyst, native backend, or data-layer behavior is changed.
 - Completed: Refined Plan availability rows so core Local tools and the blocked Purchase UI condition use the same readable status-row pattern and VoiceOver label/value semantics as the rest of Plan.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.19 version.
 - Risk: This is presentation-only; no StoreKit purchase flow, entitlement persistence, Mac Catalyst support, native backend, or simulator VoiceOver QA is added.
