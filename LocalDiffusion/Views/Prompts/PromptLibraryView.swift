@@ -378,6 +378,7 @@ struct PromptTemplateEditor: View {
     let onSave: (String, String, GenerationParameters) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var name: String
     @State private var category: String
     @State private var parameters: GenerationParameters
@@ -406,14 +407,23 @@ struct PromptTemplateEditor: View {
                 .listRowBackground(SciFiTheme.panel)
 
                 Section("Prompts") {
-                    TextEditor(text: $parameters.prompt)
-                        .scrollContentBackground(.hidden)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                        .frame(minHeight: 96)
-                    TextEditor(text: $parameters.negativePrompt)
-                        .scrollContentBackground(.hidden)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                        .frame(minHeight: 72)
+                    promptEditor(
+                        title: "Positive Signal",
+                        placeholder: "Describe the image this template should generate",
+                        text: $parameters.prompt,
+                        minHeight: 104,
+                        accent: SciFiTheme.cyan,
+                        accessibilityHint: "Edits the positive prompt saved with this template."
+                    )
+
+                    promptEditor(
+                        title: "Negative Mask",
+                        placeholder: "Artifacts, styles, or details to avoid",
+                        text: $parameters.negativePrompt,
+                        minHeight: 80,
+                        accent: SciFiTheme.magenta,
+                        accessibilityHint: "Edits the negative prompt saved with this template."
+                    )
                 }
                 .listRowBackground(SciFiTheme.panel)
 
@@ -440,6 +450,67 @@ struct PromptTemplateEditor: View {
                 }
             }
         }
+    }
+
+    private func promptEditor(
+        title: String,
+        placeholder: String,
+        text: Binding<String>,
+        minHeight: CGFloat,
+        accent: Color,
+        accessibilityHint: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(accent)
+                    Text("\(text.wrappedValue.count) chars")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            } else {
+                HStack {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(accent)
+                    Spacer()
+                    Text("\(text.wrappedValue.count) chars")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            }
+
+            TextEditor(text: text)
+                .scrollContentBackground(.hidden)
+                .foregroundStyle(SciFiTheme.primaryText)
+                .frame(minHeight: promptEditorMinHeight(minHeight))
+                .padding(8)
+                .background(SciFiTheme.panelSoft, in: RoundedRectangle(cornerRadius: 8))
+                .overlay(alignment: .topLeading) {
+                    if text.wrappedValue.isEmpty {
+                        Text(placeholder)
+                            .font(.body)
+                            .foregroundStyle(SciFiTheme.secondaryText.opacity(0.72))
+                            .padding(.top, 16)
+                            .padding(.leading, 14)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(accent.opacity(0.26), lineWidth: 1)
+                }
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(Text(text.wrappedValue.isEmpty ? "Empty prompt" : text.wrappedValue))
+                .accessibilityHint(Text(accessibilityHint))
+        }
+    }
+
+    private func promptEditorMinHeight(_ minHeight: CGFloat) -> CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? minHeight + 48 : minHeight
     }
 }
 

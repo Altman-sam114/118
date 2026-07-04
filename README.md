@@ -10,7 +10,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup, restart recovery for interrupted downloads, accessible labeled row controls, and Dynamic Type-friendly model storage rows.
 - Generation screen with positive and negative prompts, Dynamic Type-friendly shared parameter controls, steps, CFG, seed, preset or custom image size, sampler, progress, explicit cancellation state, result display, a handoff to the saved gallery result, and an iPad two-column creation console that separates inputs from run/result status while falling back to a single readable column at accessibility Dynamic Type sizes.
 - Gallery grid with Dynamic Type-friendly image tiles, readable metadata, clear tile accessibility labels, editable folders, folder and tag filtering, date/model sorting, detail parameters, editable tags, folder assignment, PNG sharing, file-backed deletion, missing-file and orphan-file reconciliation, parameter reuse, one-tap regeneration, and separate requested/output image dimensions.
-- Prompt library with categories, accessible labeled category and template controls, category rename/clear actions, Dynamic Type-friendly prompt rows, editable saved templates, direct saving from the generation screen, and one-click loading into the generation screen.
+- Prompt library with categories, accessible labeled category and template controls, category rename/clear actions, Dynamic Type-friendly prompt rows, editable saved templates with labeled prompt editors, direct saving from the generation screen, and one-click loading into the generation screen.
 - Plan screen that truthfully shows the current Local plan, states that StoreKit products are not configured, presents platform status, a capability matrix, entitlement rules, and Mac readiness blockers with Dynamic Type-friendly status badges, and uses an iPad regular two-column layout without enabling purchases, entitlements, or Mac Catalyst.
 - Inference protocol boundary plus an explicit unavailable-backend error when native inference is not linked, an opt-in `DEBUG_MOCK_INFERENCE` placeholder backend for development, a conditional stable-diffusion.cpp XCFramework C bridge, and an Objective-C++ native bridge matched to current stable-diffusion.cpp image-generation APIs with progress and cancellation propagation.
 
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-04
 
+- Completed: Refined the Prompt template editor so positive and negative prompt fields use visible labels, placeholders, character counts, Sci-Fi panel styling, and taller Dynamic Type-friendly editing areas.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.14 version.
+- Risk: This is presentation-only; no template schema, save/load behavior, generation parameters, StoreKit, Mac Catalyst, native backend, or simulator screenshot QA is added.
 - Completed: Refined shared parameter controls so Seed/Size/CFG rows, status pills, and metric cards use clearer accessibility labels and reduce horizontal compression at accessibility Dynamic Type sizes.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.13 version.
 - Risk: This is presentation-only; no parameter defaults, ranges, normalization, generation behavior, StoreKit, Mac Catalyst, native backend, or simulator screenshot QA is added.
