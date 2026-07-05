@@ -598,6 +598,8 @@ private struct ImageTile: View {
         }
         .padding(10)
         .sciFiPanel()
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .hoverEffect(.highlight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilitySummary))
         .accessibilityHint("Opens image detail")

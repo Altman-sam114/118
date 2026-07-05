@@ -789,6 +789,23 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.35 / Gallery 图块指针悬停基线
+
+- 日期：2026-07-05
+- 核心变更：
+  - Gallery 图片图块增加与 8pt 圆角视觉一致的 hit shape 和系统 `hoverEffect(.highlight)`。
+  - 保持现有 `NavigationLink(value:)`、`.buttonStyle(.plain)`、图片渲染、尺寸徽章、prompt、metadata、accessibility summary 和 detail hint 不变。
+  - 不修改 Gallery 筛选、排序、详情导航、删除、分享、复用、再生成、folder/tag 保存、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.35（Gallery图块指针悬停基线）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator pointer hover 目检、Mac build、StoreKit 测试、Gallery 交互实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.34 / iPad 指针悬停基线
 
 - 日期：2026-07-05
