@@ -62,6 +62,7 @@ struct ParameterEditor: View {
             .tint(SciFiTheme.cyan)
             .accessibilityLabel("CFG Scale")
             .accessibilityValue(cfgValueText)
+            .accessibilityHint("Adjust prompt guidance strength for these generation parameters.")
         }
         .foregroundStyle(SciFiTheme.primaryText)
     }
