@@ -769,6 +769,26 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、Mac build、StoreKit 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.33 / Plan 付费候选可用性
+
+- 日期：2026-07-05
+- 核心变更：
+  - Plan Availability 区新增 `Paid candidates` 非交互状态行，状态为 `Planning only`。
+  - 新行明确 Batch queue、curated prompt packs、workflow export 当前未售卖、未解锁，仍需要 product decisions、StoreKit products 和 entitlement mapping。
+  - Entitlement Rules 中 paid candidate 的状态从 `Candidate` 收敛为 `Planning only`，标题从 `Paid feature candidates` 收敛为 `Paid candidates`。
+  - 新行复用现有 `PlanAvailabilityItem`、`AvailabilityRow`、`PlanStatusRow` 和 `PlanStatusBadge` 视觉与 VoiceOver label/value 语义。
+  - 保持 Core local tools、Purchase UI、Mac app Not enabled、Platform Status、Mac readiness、Capability Matrix、compact Form、iPad 双栏/单列回退和所有 Plan 事实不变。
+  - 不修改 StoreKit、product IDs、purchase/restore/receipt/subscription、entitlement persistence、paid gates、Mac Catalyst、Xcode project、native XCFramework、SwiftData schema、文件存储、native backend、CI workflow 或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.33（Plan付费候选可用性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

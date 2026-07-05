@@ -242,7 +242,7 @@ private enum PlanEntitlementRuleStatus {
     var title: String {
         switch self {
         case .protected: "Protected"
-        case .candidate: "Candidate"
+        case .candidate: "Planning only"
         case .requiresConfiguration: "Requires configuration"
         case .notImplemented: "Not implemented"
         }
@@ -392,8 +392,8 @@ private struct PlanView: View {
             systemImage: "lock.open"
         ),
         PlanEntitlementRuleItem(
-            title: "Paid feature candidates",
-            detail: "Batch queue, curated prompt packs, and workflow export still need product decisions.",
+            title: "Paid candidates",
+            detail: "Batch queue, curated prompt packs, and workflow export are planning-only until product decisions exist.",
             status: .candidate,
             systemImage: "sparkles"
         ),
@@ -417,6 +417,12 @@ private struct PlanView: View {
             detail: "Generate, Models, Gallery, and Prompts remain available in the Local plan.",
             status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint),
             systemImage: "lock.open"
+        ),
+        PlanAvailabilityItem(
+            title: "Paid candidates",
+            detail: "Batch queue, curated prompt packs, and workflow export are not sold or unlocked in this build; they still need product decisions, StoreKit products, and entitlement mapping.",
+            status: PlanStatusToken(title: "Planning only", systemImage: "clock", color: SciFiTheme.cyan),
+            systemImage: "sparkles"
         ),
         PlanAvailabilityItem(
             title: "Purchase UI",
