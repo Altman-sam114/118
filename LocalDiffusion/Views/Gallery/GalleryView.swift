@@ -735,10 +735,15 @@ private struct ImageDetailView: View {
                         Text(folder.name).tag(Optional(folder.id))
                     }
                 }
+                .accessibilityLabel(Text("Image folder"))
+                .accessibilityValue(Text(currentFolderAccessibilityValue))
                 .accessibilityHint("Assigns this image to a gallery folder.")
 
                 TextField("Tags, comma separated", text: $tagText, axis: .vertical)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3...6 : 1...3)
+                    .accessibilityLabel(Text("Image tags"))
+                    .accessibilityValue(Text(tagTextAccessibilityValue))
+                    .accessibilityHint(Text("Separate tags with commas, then use Save Tags to store them."))
                 Button {
                     image.tags = tagText.tagsFromCSV()
                     try? modelContext.save()
@@ -747,7 +752,8 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .accessibilityHint("Saves the comma-separated tags for this image.")
+                .accessibilityValue(Text(saveTagsAccessibilityValue))
+                .accessibilityHint("Saves the current comma-separated tags for this image.")
             }
             .listRowBackground(SciFiTheme.panel)
         }
@@ -787,6 +793,35 @@ private struct ImageDetailView: View {
 
     private var imagePreviewAccessibilityValue: String {
         "Prompt \(image.prompt). Model \(image.modelName). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
+    }
+
+    private var currentFolderAccessibilityValue: String {
+        guard let folderID = image.folderID else {
+            return "No folder"
+        }
+
+        return folders.first(where: { $0.id == folderID })?.name ?? "Folder unavailable"
+    }
+
+    private var tagTextAccessibilityValue: String {
+        let trimmedTagText = tagText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedTagText.isEmpty ? "No tags" : trimmedTagText
+    }
+
+    private var savedTags: [String] {
+        image.tags
+    }
+
+    private var draftTags: [String] {
+        tagText.tagsFromCSV()
+    }
+
+    private var hasUnsavedTagChanges: Bool {
+        draftTags != savedTags
+    }
+
+    private var saveTagsAccessibilityValue: String {
+        hasUnsavedTagChanges ? "Unsaved changes" : "No changes"
     }
 }
 
