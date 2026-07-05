@@ -161,6 +161,7 @@ struct ParameterEditor: View {
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Width")
         .accessibilityValue("\(parameters.width)")
+        .accessibilityHint("Adjust the canvas width in pixels for these generation parameters.")
     }
 
     private var heightControl: some View {
@@ -173,6 +174,7 @@ struct ParameterEditor: View {
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Height")
         .accessibilityValue("\(parameters.height)")
+        .accessibilityHint("Adjust the canvas height in pixels for these generation parameters.")
     }
 
     private var samplerControl: some View {

@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.48 / 共享宽高控件语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - 共享 `ParameterEditor` 的 Width 和 Height stepper 增加 VoiceOver hint。
+  - Width hint 明确说明该控件调整当前生成参数的 canvas width pixels；Height hint 明确说明该控件调整 canvas height pixels。
+  - 保持现有 `Stepper` 标题、dimension 范围、step、width/height binding、归一化、foreground style、accessibility label/value、size preset、Generate 和 Prompt Template Editor 行为不变。
+  - 不修改尺寸范围、step、默认值、归一化、native request mapping、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.48（共享宽高控件语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、Mac build、StoreKit 测试、Width/Height stepper 实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.47 / 共享 CFG 控件语义
 
 - 日期：2026-07-05
