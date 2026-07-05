@@ -48,6 +48,7 @@ struct ParameterEditor: View {
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Steps")
         .accessibilityValue("\(parameters.steps)")
+        .accessibilityHint("Adjust the number of denoising steps for these generation parameters.")
     }
 
     private var cfgControl: some View {
