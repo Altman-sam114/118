@@ -620,6 +620,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.25 / Models 存储摘要语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Models 页面 `StorageSummaryRow` 保持现有 Storage Matrix 视觉布局、ready pill、Grid 行和颜色不变。
+  - 将 tracked、on-disk 和 untracked 文案提取为私有计算属性，供 Grid 和辅助功能摘要复用。
+  - 为 Storage Matrix 外层添加组合 accessibility label/value/hint，让 VoiceOver 一次读出 ready/total、tracked storage、on-disk storage 和 untracked file count/size。
+  - 不修改模型存储统计、未跟踪文件扫描、导入、删除、reconcile、下载、`AppFileStore`、`HuggingFaceDownloadManager`、SwiftData schema、native backend、CI workflow 或导航行为。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.25（Models存储摘要语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

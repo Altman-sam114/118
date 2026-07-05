@@ -552,17 +552,17 @@ private struct StorageSummaryRow: View {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                 GridRow {
                     Text("Tracked")
-                    Text(ByteCountFormatter.fileSizeString(trackedBytes))
+                    Text(trackedText)
                         .foregroundStyle(SciFiTheme.primaryText)
                 }
                 GridRow {
                     Text("On Disk")
-                    Text(ByteCountFormatter.fileSizeString(directoryBytes))
+                    Text(directoryText)
                         .foregroundStyle(SciFiTheme.primaryText)
                 }
                 GridRow {
                     Text("Untracked")
-                    Text("\(untrackedCount) files, \(ByteCountFormatter.fileSizeString(untrackedBytes))")
+                    Text(untrackedText)
                         .foregroundStyle(untrackedCount == 0 ? SciFiTheme.secondaryText : SciFiTheme.amber)
                 }
             }
@@ -571,6 +571,10 @@ private struct StorageSummaryRow: View {
         }
         .padding(14)
         .sciFiPanel(isHighlighted: readyCount > 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Model storage summary")
+        .accessibilityValue(accessibilitySummaryValue)
+        .accessibilityHint("Summarizes tracked, on-disk, and untracked model storage.")
     }
 
     @ViewBuilder
@@ -606,6 +610,22 @@ private struct StorageSummaryRow: View {
             systemImage: "checkmark.circle",
             color: readyCount == 0 ? SciFiTheme.amber : SciFiTheme.mint
         )
+    }
+
+    private var trackedText: String {
+        ByteCountFormatter.fileSizeString(trackedBytes)
+    }
+
+    private var directoryText: String {
+        ByteCountFormatter.fileSizeString(directoryBytes)
+    }
+
+    private var untrackedText: String {
+        "\(untrackedCount) files, \(ByteCountFormatter.fileSizeString(untrackedBytes))"
+    }
+
+    private var accessibilitySummaryValue: String {
+        "\(readyCount) of \(totalCount) tracked models ready. Tracked storage \(trackedText). On disk \(directoryText). Untracked \(untrackedText)."
     }
 }
 
