@@ -10,7 +10,7 @@
 flowchart TD
   U["用户操作：下载模型、输入 Prompt、点击生成、查看 Plan"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts / Plan"]
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / 可读 prompt editor / 可读参数控件"]
-  UI --> MODELUI["Models：下载 / 导入 / 删除 / Storage Matrix VoiceOver 摘要 / Add Model error row / 可访问 controls / 列表和详情 message rows"]
+  UI --> MODELUI["Models：下载 / 导入 / 删除 / Add Model 键盘提交 / Storage Matrix VoiceOver 摘要 / Add Model error row / 可访问 controls / 列表和详情 message rows"]
   UI --> PROMPTUI["Prompts：模板分类 / 可读编辑器 / 可访问 controls / 共享参数编辑"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView / 可访问 sidebar rows"]
   NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 可读 filter rail / 可读图块和详情"]
@@ -65,7 +65,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["用户打开 Models：Storage Matrix 摘要 / 可访问控件 / 大字号堆叠"] --> B{"模型来源"}
+  A["用户打开 Models：Add Model 键盘提交 / Storage Matrix 摘要 / 可访问控件 / 大字号堆叠"] --> B{"模型来源"}
   B -- "Hugging Face GGUF URL" --> C["解析仓库、文件名、revision、URL"]
   C --> D["创建 LocalModel 元数据"]
   D --> E["HuggingFaceDownloadManager 下载"]

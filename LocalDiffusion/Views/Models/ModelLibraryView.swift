@@ -1236,13 +1236,19 @@ private struct AddModelView: View {
                     TextField("huggingface.co/.../resolve/.../*.gguf", text: $huggingFaceURL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .submitLabel(.go)
+                        .onSubmit {
+                            parseHuggingFaceURLIfReady()
+                        }
                     Button {
-                        applyHuggingFaceURL()
+                        parseHuggingFaceURLIfReady()
                     } label: {
                         Label("Parse Hugging Face URL", systemImage: "link")
                     }
-                    .disabled(huggingFaceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(!hasHuggingFaceURL)
                     .buttonStyle(SciFiSecondaryButtonStyle())
+                    .accessibilityValue(parseURLAccessibilityValue)
+                    .accessibilityHint("Fills the model fields from a Hugging Face GGUF file URL.")
                 }
                 .listRowBackground(SciFiTheme.panel)
 
@@ -1254,9 +1260,17 @@ private struct AddModelView: View {
                     TextField("GGUF file path or direct URL", text: $filename)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .submitLabel(.go)
+                        .onSubmit {
+                            submitModelIfReady()
+                        }
                     TextField("Revision", text: $revision)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .submitLabel(.go)
+                        .onSubmit {
+                            submitModelIfReady()
+                        }
                     Picker("Family", selection: $family) {
                         ForEach(ModelFamily.allCases) { family in
                             Text(family.rawValue).tag(family)
@@ -1282,17 +1296,42 @@ private struct AddModelView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Download") {
-                        addModel()
+                        submitModelIfReady()
                     }
                     .disabled(!canSubmit)
+                    .accessibilityLabel("Download model")
+                    .accessibilityValue(downloadAccessibilityValue)
+                    .accessibilityHint("Starts the Hugging Face GGUF model download when required fields are complete.")
                 }
             }
         }
     }
 
+    private var hasHuggingFaceURL: Bool {
+        !huggingFaceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var parseURLAccessibilityValue: String {
+        hasHuggingFaceURL ? "Ready to parse." : "Paste a Hugging Face GGUF URL before parsing."
+    }
+
+    private var downloadAccessibilityValue: String {
+        canSubmit ? "Ready to download." : "Enter a display name and GGUF file path before downloading."
+    }
+
+    private func parseHuggingFaceURLIfReady() {
+        guard hasHuggingFaceURL else { return }
+        applyHuggingFaceURL()
+    }
+
+    private func submitModelIfReady() {
+        guard canSubmit else { return }
+        addModel()
     }
 
     private func applyHuggingFaceURL() {

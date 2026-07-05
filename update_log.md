@@ -638,6 +638,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.26 / Add Model 键盘提交语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Add Model 表单的 Hugging Face URL 输入支持 Return 触发现有 URL 解析流程，空 URL 不触发错误。
+  - GGUF file path 和 Revision 输入支持 Return 在 `canSubmit` 为 true 时触发现有下载创建流程。
+  - toolbar `Download` 按钮改为调用安全提交 helper，并保留现有禁用条件，避免键盘提交绕过 `canSubmit`。
+  - `Parse Hugging Face URL` 和 `Download` 按钮提供 ready/missing accessibility value 与明确 hint，改善 VoiceOver 表单状态反馈。
+  - 不修改 URL 解析、错误文案、重复检测、文件存在检测、下载启动、dismiss、`AppFileStore`、`HuggingFaceDownloadManager`、SwiftData schema、native backend、CI workflow 或导航行为。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.26（AddModel键盘提交语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator 外接键盘/VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
