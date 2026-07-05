@@ -1247,8 +1247,7 @@ private struct AddModelView: View {
 
                 if let errorMessage {
                     Section {
-                        Text(errorMessage)
-                            .foregroundStyle(SciFiTheme.danger)
+                        AddModelErrorRow(message: errorMessage)
                     }
                     .listRowBackground(SciFiTheme.panel)
                 }
@@ -1339,6 +1338,26 @@ private struct AddModelView: View {
 
         onAdd(model)
         dismiss()
+    }
+}
+
+private struct AddModelErrorRow: View {
+    let message: String
+
+    var body: some View {
+        Label {
+            Text(message)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle")
+        }
+        .foregroundStyle(SciFiTheme.danger)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Add model error")
+        .accessibilityValue(message)
+        .accessibilityHint("Fix the model source or file information before downloading.")
     }
 }
 
