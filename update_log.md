@@ -675,6 +675,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、文件导入删除实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.28 / Prompt 空状态语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Prompt Library 的无模板空状态现在向 VoiceOver 组合暴露 Prompt Library empty state、无保存模板和 Add/Generate 保存下一步提示。
+  - Prompt Library 的搜索无结果空状态现在向 VoiceOver 组合暴露无匹配模板、当前搜索词和调整搜索或新增模板的下一步提示。
+  - 空状态语义只添加在 `PromptLibraryView` 的两个调用点，不修改共享 `EmptyStateView`，避免影响 Generate、Models 或 Gallery 的现有空状态表现。
+  - 保持模板查询、搜索过滤、分类 rename/clear、模板新增/编辑/删除/加载、SwiftData schema、native backend、StoreKit、Mac Catalyst、Xcode project 和 CI workflow 不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.28（Prompt空状态语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、模板增删改实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

@@ -46,6 +46,10 @@ struct PromptLibraryView: View {
                         title: "No templates",
                         message: "Save prompt templates with reusable defaults."
                     )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("Prompt Library empty state"))
+                    .accessibilityValue(Text("No saved prompt templates."))
+                    .accessibilityHint(Text("Use Add to create a template, or save the current generation settings from Generate."))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 } else if filteredTemplates.isEmpty {
@@ -54,6 +58,10 @@ struct PromptLibraryView: View {
                         title: "No matching templates",
                         message: "Try a different template name, category, or prompt term."
                     )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("No matching prompt templates"))
+                    .accessibilityValue(Text(emptySearchAccessibilityValue))
+                    .accessibilityHint(Text("Adjust the search text or use Add to create a new template."))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 } else {
@@ -184,6 +192,14 @@ struct PromptLibraryView: View {
                 }
             }
         )
+    }
+
+    private var emptySearchAccessibilityValue: String {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            return "No templates match the current search."
+        }
+        return "No templates match \(query)."
     }
 }
 
