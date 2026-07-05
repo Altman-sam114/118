@@ -182,6 +182,7 @@ struct ParameterEditor: View {
         .tint(SciFiTheme.cyan)
         .accessibilityLabel("Sampler")
         .accessibilityValue(parameters.samplerRawValue)
+        .accessibilityHint("Choose the sampling algorithm for these generation parameters.")
     }
 
     @ViewBuilder
