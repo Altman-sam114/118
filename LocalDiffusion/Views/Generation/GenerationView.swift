@@ -288,6 +288,10 @@ struct GenerationView: View {
                         .foregroundStyle(SciFiTheme.primaryText)
                 }
                 .tint(SciFiTheme.cyan)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Generation progress"))
+                .accessibilityValue(Text(generationProgressAccessibilityValue))
+                .accessibilityHint(Text("Shows the current local render stage and percentage."))
                 Button(role: .destructive) {
                     viewModel.cancel()
                 } label: {
@@ -295,6 +299,9 @@ struct GenerationView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
                 .disabled(viewModel.isCancelling)
+                .accessibilityLabel(Text("Cancel generation"))
+                .accessibilityValue(Text(viewModel.isCancelling ? "Cancelling" : "Active"))
+                .accessibilityHint(Text("Stops the current local render task before it saves a result."))
             } else {
                 Button {
                     viewModel.generate(using: selectedModel, modelContext: modelContext)
@@ -340,6 +347,9 @@ struct GenerationView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(SciFiTheme.cyan.opacity(0.28), lineWidth: 1)
                     }
+                    .accessibilityLabel(Text("Generated image preview"))
+                    .accessibilityValue(Text(resultImageAccessibilityValue(for: image)))
+                    .accessibilityHint(Text("Use View in Gallery to inspect, tag, share, or reuse the saved result."))
 
                 Button {
                     onShowGallery()
@@ -348,6 +358,8 @@ struct GenerationView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .disabled(viewModel.latestGeneratedImageID == nil)
+                .accessibilityValue(Text(viewModel.latestGeneratedImageID == nil ? "Unavailable" : "Ready"))
+                .accessibilityHint(Text("Opens the saved generated image in Gallery."))
             }
             .listRowBackground(SciFiTheme.panel)
         }
@@ -499,7 +511,8 @@ struct GenerationView: View {
                 color: SciFiTheme.amber,
                 primaryActionTitle: "Generate",
                 primaryActionImage: "play.slash",
-                secondaryAction: .none
+                secondaryAction: .none,
+                accessibilityHint: "Generation cannot start until the local inference backend is available."
             )
         }
 
@@ -511,7 +524,8 @@ struct GenerationView: View {
                 color: SciFiTheme.amber,
                 primaryActionTitle: "Select Model First",
                 primaryActionImage: "play.slash",
-                secondaryAction: .openModels
+                secondaryAction: .openModels,
+                accessibilityHint: "Open Models to download or import a ready GGUF model."
             )
         }
 
@@ -523,7 +537,8 @@ struct GenerationView: View {
                 color: SciFiTheme.amber,
                 primaryActionTitle: "Add Prompt First",
                 primaryActionImage: "play.slash",
-                secondaryAction: .focusPrompt
+                secondaryAction: .focusPrompt,
+                accessibilityHint: "Edit the positive prompt before starting generation."
             )
         }
 
@@ -535,7 +550,8 @@ struct GenerationView: View {
             color: SciFiTheme.mint,
             primaryActionTitle: "Generate",
             primaryActionImage: "play.fill",
-            secondaryAction: .none
+            secondaryAction: .none,
+            accessibilityHint: "Ready to start local image generation."
         )
     }
 
@@ -548,6 +564,22 @@ struct GenerationView: View {
                 }
             }
         )
+    }
+
+    private var generationProgressAccessibilityValue: String {
+        "\(viewModel.progress.stage), \(progressPercentText)."
+    }
+
+    private var progressPercentText: String {
+        let clampedFraction = min(max(viewModel.progress.fraction, 0), 1)
+        return "\(Int((clampedFraction * 100).rounded())) percent"
+    }
+
+    private func resultImageAccessibilityValue(for image: UIImage) -> String {
+        let pixelWidth = Int((image.size.width * image.scale).rounded())
+        let pixelHeight = Int((image.size.height * image.scale).rounded())
+        let galleryState = viewModel.latestGeneratedImageID == nil ? "Gallery record unavailable" : "Saved to Gallery"
+        return "\(pixelWidth) by \(pixelHeight) pixels. \(galleryState)."
     }
 }
 
@@ -570,6 +602,7 @@ private struct GenerationGate {
     let primaryActionTitle: String
     let primaryActionImage: String
     let secondaryAction: GenerationGateSecondaryAction
+    let accessibilityHint: String
 }
 
 private struct GenerationGatePanel: View {
@@ -582,6 +615,7 @@ private struct GenerationGatePanel: View {
                 .foregroundStyle(gate.color)
                 .frame(width: 32, height: 32)
                 .background(gate.color.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(gate.title)
@@ -601,5 +635,9 @@ private struct GenerationGatePanel: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(gate.color.opacity(0.22), lineWidth: 1)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Generation status"))
+        .accessibilityValue(Text("\(gate.title). \(gate.message)"))
+        .accessibilityHint(Text(gate.accessibilityHint))
     }
 }

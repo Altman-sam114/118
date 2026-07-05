@@ -176,7 +176,7 @@
 
 职责：
 
-- Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果；prompt 编辑器 header、清除控件和共享参数控件提供明确可访问标签和值，并在 accessibility Dynamic Type 下减少横向挤压。
+- Generate：输入 prompt、参数、选择模型、启动/取消生成、展示结果；prompt 编辑器 header、清除控件、运行门禁、进度、取消按钮、结果预览和 Gallery handoff 提供明确可访问标签/值/提示，并在 accessibility Dynamic Type 下减少横向挤压。
 - Root：iPhone 使用 compact TabView；iPad 使用单层 NavigationSplitView，sidebar 行保持真实文本和 SF Symbol，提供 selected/not-selected 辅助功能值、workspace hint 和 44pt 最小触控高度。
 - Generate 在 compact 下保持单列表单；在 iPad regular 普通 Dynamic Type 下使用双栏创作台，左侧放模型/prompt/参数，右侧放状态、运行和结果；accessibility Dynamic Type 下回退单列，控制台 header、状态 pill 和 metrics 纵向/单列排列以保持可读。
 - Models：下载、导入、暂停、恢复、删除、检查未追踪模型文件；Add Model 支持 URL 解析和完成字段的键盘提交语义，Download 按钮提供 ready/missing VoiceOver 状态；行内控制按钮提供可访问文本 label 和 44pt 命中区，storage/model/untracked rows 在 accessibility Dynamic Type 下改为纵向堆叠以保持可读，未跟踪文件行和 Import/Delete 操作提供具体文件上下文，Storage Matrix 提供 ready/tracked/on-disk/untracked 组合 VoiceOver 摘要，Add Model 错误、模型行和详情状态消息使用可换行 message row 并提供明确辅助功能 label/value/hint。
@@ -346,7 +346,7 @@ git push origin main
 
 ## 5. 用户入口
 
-- Generate：主要生成入口。
+- Generate：主要生成入口，运行门禁、生成进度、取消状态、结果预览和 Gallery handoff 提供可访问状态语义。
 - Models：模型下载、导入、删除、状态恢复入口，Add Model 表单支持键盘提交和可访问确认状态，未跟踪文件行提供文件名/大小和操作上下文，Storage Matrix、Add Model 错误、行内控制、列表状态消息和详情状态消息支持可访问 label/value/hint 与大字号可读布局。
 - Gallery：生成结果查看、过滤、复用入口，筛选栏、图块和详情参数/操作支持大字号可读布局、VoiceOver 摘要和清晰操作语义。
 - Prompts：提示词模板维护入口，空状态、搜索空状态、分类/模板行控制、模板 prompt 编辑区和共享参数编辑支持可访问 label、下一步提示与大字号可读布局。

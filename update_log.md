@@ -693,6 +693,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、模板增删改实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.29 / Generate 运行状态语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - `GenerationGatePanel` 现在向 VoiceOver 组合暴露 generation status、当前门禁标题/说明和下一步 hint，覆盖 backend offline、model required、prompt required 和 ready to render。
+  - 生成中进度现在向 VoiceOver 暴露当前 stage 和由进度 fraction 派生的百分比。
+  - Cancel 按钮现在暴露 Cancel generation、Active/Cancelling 状态和取消本地渲染任务的 hint，同时保留 destructive role、禁用条件和现有 action。
+  - 生成结果预览现在向 VoiceOver 暴露 generated image preview、解码后像素尺寸和 Gallery 保存状态；View in Gallery 按钮暴露 Ready/Unavailable 状态和打开已保存结果的 hint。
+  - 保持生成门禁条件、生成启动、取消、保存、Gallery 跳转、SwiftData schema、native backend、StoreKit、Mac Catalyst、Xcode project 和 CI workflow 不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.29（Generate运行状态语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、真实生成取消测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
