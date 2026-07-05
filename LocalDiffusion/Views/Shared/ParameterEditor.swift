@@ -24,6 +24,9 @@ struct ParameterEditor: View {
                 Label("Reset Defaults", systemImage: "arrow.counterclockwise")
             }
             .buttonStyle(SciFiSecondaryButtonStyle())
+            .accessibilityLabel("Reset parameter defaults")
+            .accessibilityValue("Resets steps, CFG, seed, canvas size, and sampler")
+            .accessibilityHint("Keeps the positive and negative prompts unchanged.")
 
             stepsControl
             cfgControl
