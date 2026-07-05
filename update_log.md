@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.36 / Plan 能力矩阵付费候选语义收敛
+
+- 日期：2026-07-05
+- 核心变更：
+  - Plan Capability Matrix 的 planned status 文案从 `Planned` 收敛为 `Planning only`，与 Availability 和 Entitlement Rules 的 paid candidate 语义一致。
+  - Batch queue controls、Curated prompt packs、Workflow export 的 detail 现在明确是 planning-only paid candidates，当前 build 未售卖、未解锁。
+  - Capability Matrix footer 改为 `Planning-only and configuration-gated items are not purchases or active entitlements.`，避免把 paid candidates 误解为当前可购买或 active entitlement。
+  - 不新增 StoreKit、product IDs、purchase/restore/receipt/subscription、entitlement persistence、paid gates、Mac Catalyst、Xcode project、native XCFramework、SwiftData schema、文件存储、native backend、CI workflow 或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.36（Plan能力矩阵付费候选语义收敛）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.35 / Gallery 图块指针悬停基线
 
 - 日期：2026-07-05

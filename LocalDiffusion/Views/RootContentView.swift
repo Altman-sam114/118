@@ -200,7 +200,7 @@ private enum PlanCapabilityStatus {
     var title: String {
         switch self {
         case .available: "Available"
-        case .planned: "Planned"
+        case .planned: "Planning only"
         case .requiresConfiguration: "Requires configuration"
         }
     }
@@ -362,19 +362,19 @@ private struct PlanView: View {
         ),
         PlanCapabilityItem(
             title: "Batch queue controls",
-            detail: "Higher-throughput local generation planning.",
+            detail: "Planning-only paid candidate for higher-throughput local generation; not sold or unlocked in this build.",
             status: .planned,
             systemImage: "list.bullet.rectangle"
         ),
         PlanCapabilityItem(
             title: "Curated prompt packs",
-            detail: "Future paid candidate for reusable style systems.",
+            detail: "Planning-only paid candidate for reusable style systems; not sold or unlocked in this build.",
             status: .planned,
             systemImage: "text.book.closed"
         ),
         PlanCapabilityItem(
             title: "Workflow export",
-            detail: "Portable generation recipes and production handoff.",
+            detail: "Planning-only paid candidate for portable generation recipes and production handoff; not sold or unlocked in this build.",
             status: .planned,
             systemImage: "square.and.arrow.up"
         ),
@@ -554,7 +554,7 @@ private struct PlanView: View {
                 macReadinessContent
             }
 
-            PlanPanel("Capability Matrix", footer: "Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.") {
+            PlanPanel("Capability Matrix", footer: "Available items are part of the current Local plan. Planning-only and configuration-gated items are not purchases or active entitlements.") {
                 capabilityMatrixContent
             }
 
@@ -596,7 +596,7 @@ private struct PlanView: View {
         } header: {
             Text("Capability Matrix")
         } footer: {
-            Text("Available items are part of the current Local plan. Planned and configuration-gated items are not purchases or active entitlements.")
+            Text("Available items are part of the current Local plan. Planning-only and configuration-gated items are not purchases or active entitlements.")
         }
     }
 
