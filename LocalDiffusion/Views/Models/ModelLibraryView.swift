@@ -664,10 +664,15 @@ private struct UntrackedModelFileRow: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(SciFiTheme.primaryText)
                 .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-            Text(ByteCountFormatter.fileSizeString(file.bytes))
+            Text(fileSizeText)
                 .font(.caption)
                 .foregroundStyle(SciFiTheme.secondaryText)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Untracked model file")
+        .accessibilityValue(fileAccessibilityValue)
+        .accessibilityHint("Import this file into the model library or delete it from local storage.")
     }
 
     private var actions: some View {
@@ -678,6 +683,8 @@ private struct UntrackedModelFileRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(importAccessibilityLabel)
+            .accessibilityHint(importAccessibilityHint)
 
             Button(role: .destructive, action: delete) {
                 Label("Delete Untracked Model File", systemImage: "trash")
@@ -685,7 +692,33 @@ private struct UntrackedModelFileRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(deleteAccessibilityLabel)
+            .accessibilityHint(deleteAccessibilityHint)
         }
+    }
+
+    private var fileSizeText: String {
+        ByteCountFormatter.fileSizeString(file.bytes)
+    }
+
+    private var fileAccessibilityValue: String {
+        "\(file.filename), \(fileSizeText)"
+    }
+
+    private var importAccessibilityLabel: String {
+        "Import \(file.filename)"
+    }
+
+    private var deleteAccessibilityLabel: String {
+        "Delete \(file.filename)"
+    }
+
+    private var importAccessibilityHint: String {
+        "Opens the import form for \(file.filename)."
+    }
+
+    private var deleteAccessibilityHint: String {
+        "Shows a confirmation before deleting \(file.filename)."
     }
 }
 

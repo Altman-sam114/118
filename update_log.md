@@ -657,6 +657,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator 外接键盘/VoiceOver 目检；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.27 / 未跟踪模型文件行语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - `UntrackedModelFileRow` 的文件信息现在向 VoiceOver 组合暴露未跟踪模型文件、文件名和格式化后的文件大小。
+  - 未跟踪文件 Import 和 Delete 图标按钮现在向 VoiceOver 暴露具体文件名，并保留现有 icon-only 视觉样式、44pt 命中区和删除 destructive role。
+  - 文件大小显示复用私有 `fileSizeText`，避免可视文本和辅助功能值分开格式化。
+  - 不修改未跟踪文件扫描、排序、大小计算、导入 sheet、删除确认、文件删除、`AppFileStore`、SwiftData schema、native backend、CI workflow 或导航行为。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.27（未跟踪模型文件行语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、文件导入删除实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
