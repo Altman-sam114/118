@@ -901,6 +901,8 @@ private struct ModelRow: View {
         .labelStyle(.iconOnly)
         .buttonStyle(SciFiSecondaryButtonStyle(color: color))
         .frame(minWidth: 44, minHeight: 44)
+        .accessibilityLabel(Text("\(title): \(model.name)"))
+        .accessibilityHint(Text("Applies this action to \(model.name)."))
     }
 
     private var statusText: String {
