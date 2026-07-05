@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.43 / 共享随机种子按钮语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - 共享 `ParameterEditor` 的 Randomize Seed 按钮增加当前 seed 的 VoiceOver value。
+  - Randomize Seed hint 明确说明点击会生成新的随机 seed。
+  - 覆盖普通字号 icon-only 分支和 accessibility Dynamic Type 显示文本分支。
+  - 保持现有按钮视觉、`Label("Randomize Seed", systemImage: "dice")`、`.labelStyle(.iconOnly)`、amber secondary button style、tint、44pt frame、`randomizeSeed()` 行为、seed 随机范围、Seed 文本框、Generate 和 Prompt Template Editor 行为不变。
+  - 不修改 SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.43（共享随机种子按钮语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver 目检、Mac build、StoreKit 测试、Randomize Seed 实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.42 / 共享参数重置按钮语义
 
 - 日期：2026-07-05

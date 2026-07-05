@@ -99,6 +99,8 @@ struct ParameterEditor: View {
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
             .tint(SciFiTheme.amber)
             .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+            .accessibilityValue("Current seed \(parameters.seed)")
+            .accessibilityHint("Generates a new random seed value.")
         } else {
             Button(action: randomizeSeed) {
                 Label("Randomize Seed", systemImage: "dice")
@@ -107,6 +109,8 @@ struct ParameterEditor: View {
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
             .tint(SciFiTheme.amber)
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityValue("Current seed \(parameters.seed)")
+            .accessibilityHint("Generates a new random seed value.")
         }
     }
 
