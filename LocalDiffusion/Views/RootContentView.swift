@@ -423,6 +423,12 @@ private struct PlanView: View {
             detail: "Purchase UI should only be added after StoreKit products and entitlement mapping exist.",
             status: PlanStatusToken(title: "Requires configuration", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber),
             systemImage: "cart"
+        ),
+        PlanAvailabilityItem(
+            title: "Mac app",
+            detail: "This iOS target does not currently ship a Mac or Catalyst app. Mac support still requires platform settings, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.",
+            status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber),
+            systemImage: "desktopcomputer"
         )
     ]
 
