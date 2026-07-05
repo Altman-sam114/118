@@ -541,6 +541,8 @@ private struct GalleryFilterRow: View {
                 .foregroundStyle(SciFiTheme.cyan)
         }
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .hoverEffect(.highlight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(kind.accessibilityLabel)
         .accessibilityValue("\(title), \(galleryImageCountText(imageCount))")

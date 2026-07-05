@@ -789,6 +789,23 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.37 / Gallery 筛选栏指针悬停基线
+
+- 日期：2026-07-05
+- 核心变更：
+  - Gallery filter rail rows 增加与 8pt 圆角视觉一致的 hit shape 和系统 `hoverEffect(.highlight)`。
+  - 保持现有 `List(selection:)`、`.tag(...)`、`.sciFiListRow()`、title/count 文本、SF Symbol、44pt 最小高度、Dynamic Type 行为和 accessibility label/value/hint 不变。
+  - 不修改 Gallery 筛选、排序、详情导航、删除、分享、复用、再生成、folder/tag 保存、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.37（Gallery筛选栏指针悬停基线）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator pointer hover 目检、Mac build、StoreKit 测试、Gallery filter rail 交互实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.36 / Plan 能力矩阵付费候选语义收敛
 
 - 日期：2026-07-05
