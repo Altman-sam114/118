@@ -4,7 +4,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 
 ## Current implementation
 
-- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows, an embedded Gallery filter rail that avoids nested split views, and a Plan entry for paid-capability planning status.
+- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows with pointer hover affordance, an embedded Gallery filter rail that avoids nested split views, and a Plan entry for paid-capability planning status.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, keyboard-aware Add Model submission, `.gguf` source validation, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup with file-specific VoiceOver actions, restart recovery for interrupted downloads, accessible labeled row controls, readable Add Model errors, readable model list and detail status messages, and Dynamic Type-friendly model storage rows with a combined VoiceOver storage summary.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-05
 
+- Completed: Added an iPad pointer hover affordance baseline for regular-width sidebar rows and shared Sci-Fi primary/secondary buttons.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.34 version.
+- Risk: This is iPad UI affordance only; no Mac Catalyst support, Mac build validation, StoreKit product, purchase flow, entitlement persistence, SwiftData schema, native backend, Xcode project, or workflow behavior is changed.
 - Completed: Added a Plan Availability row for paid candidates and renamed the paid candidate entitlement status to Planning only, making clear that Batch queue, curated prompt packs, and workflow export are not sold or unlocked in this build.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.33 version.
 - Risk: This is presentation-only; no StoreKit product, purchase flow, restore, receipt, subscription, entitlement persistence, paid gate, Mac Catalyst support, SwiftData schema, native backend, Xcode project, or workflow behavior is changed.

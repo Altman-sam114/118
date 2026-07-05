@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.34 / iPad 指针悬停基线
+
+- 日期：2026-07-05
+- 核心变更：
+  - iPad regular sidebar row 增加与 8pt 圆角视觉一致的 hit shape 和系统 `hoverEffect(.highlight)`。
+  - `SciFiPrimaryButtonStyle` 和 `SciFiSecondaryButtonStyle` 增加与 8pt 圆角视觉一致的 hit shape，并在 enabled 状态下提供系统 hover affordance。
+  - 保持 sidebar title、SF Symbol、44pt 最小高度、selected/not-selected VoiceOver value、workspace hint、按钮 pressed/disabled 视觉和所有业务 action 不变。
+  - 不修改 StoreKit、paid candidates、entitlement rules、Mac Catalyst、Xcode project、native XCFramework、SwiftData schema、文件存储、native backend、CI workflow 或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.34（iPad指针悬停基线）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator pointer hover 目检、Mac build、StoreKit 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。

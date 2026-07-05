@@ -177,6 +177,8 @@ private struct SidebarSectionRow: View {
             Image(systemName: section.systemImage)
         }
         .frame(minHeight: 44, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .hoverEffect(.highlight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(section.title)
         .accessibilityValue(isSelected ? "Selected" : "Not selected")

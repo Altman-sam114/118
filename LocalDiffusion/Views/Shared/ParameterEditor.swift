@@ -546,6 +546,8 @@ struct SciFiPrimaryButtonStyle: ButtonStyle {
                 x: 0,
                 y: 6
             )
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .hoverEffect(.highlight, isEnabled: isEnabled)
     }
 }
 
@@ -566,5 +568,7 @@ struct SciFiSecondaryButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(resolvedColor.opacity(isEnabled ? 0.35 : 0.22), lineWidth: 1)
             }
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .hoverEffect(.highlight, isEnabled: isEnabled)
     }
 }
