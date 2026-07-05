@@ -702,6 +702,7 @@ private struct PlanView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Local Plan")
         .accessibilityValue(planOverviewAccessibilityValue)
+        .accessibilityHint("Summarizes the current local plan and paid capability planning status.")
     }
 
     private var planOverviewIcon: some View {
@@ -751,6 +752,8 @@ private struct PlanPanel<Content: View>: View {
             Text(title)
                 .font(.headline)
                 .foregroundStyle(SciFiTheme.primaryText)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityLabel(title)
 
             VStack(alignment: .leading, spacing: 10) {
                 content
@@ -761,6 +764,9 @@ private struct PlanPanel<Content: View>: View {
                     .font(.callout)
                     .foregroundStyle(SciFiTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(title) note")
+                    .accessibilityValue(footer)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

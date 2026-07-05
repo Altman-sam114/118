@@ -731,6 +731,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、folder/tag 实机测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.31 / Plan 面板地标语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Plan iPad regular 自定义 `PlanPanel` 标题现在暴露 heading 辅助功能 trait，便于 VoiceOver 在双栏阅读布局中按面板导航。
+  - `PlanPanel` footer 现在向 VoiceOver 暴露带面板标题上下文的 note label 和原 footer 文本 value，避免脱离系统 `Section` 后只朗读孤立说明。
+  - Plan overview 增加简短 accessibility hint，说明该面板概括当前 Local plan 与付费能力规划状态。
+  - 保持 compact Form、iPad regular 双栏/单列回退、Current Build、Platform Status、Mac readiness、Capability Matrix、Entitlement Rules、Availability 内容和所有 Plan 事实不变。
+  - 不新增 StoreKit、购买、恢复、收据、订阅、entitlement persistence、Mac Catalyst、Xcode project、SwiftData schema、文件存储、native backend、CI workflow 或业务门禁。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.31（Plan面板地标语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
+
 ## 历史维护记录
 
 - 2026-06-28：将旧的单文件 `agent.md` 思路迁移为标准 `AGENTS.md` + `update_log.md` + `md/` 目录体系；`agent.md` 不再作为入口文件。
