@@ -354,6 +354,8 @@ private struct PromptTemplateRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(Text("Edit Template: \(template.name)"))
+            .accessibilityHint(Text("Opens \(template.name) for editing."))
 
             Button(action: onLoad) {
                 Label("Load Template", systemImage: "arrow.down.doc")
@@ -361,6 +363,8 @@ private struct PromptTemplateRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(Text("Load Template: \(template.name)"))
+            .accessibilityHint(Text("Loads \(template.name) into Generate."))
         }
     }
 

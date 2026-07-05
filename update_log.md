@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.40 / Prompt 模板行按钮模板上下文语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Prompt template row 的 edit/load controls 增加模板名上下文 VoiceOver label 和 hint。
+  - 覆盖 `Edit Template` 和 `Load Template` 两个由 `PromptTemplateRow.actions` 生成的按钮。
+  - 保持现有按钮视觉、44pt 最小命中区、shared button hover、按钮顺序和 action 行为不变。
+  - 不修改模板 query、search、grouping、sort、edit、load、delete、分类 mutation、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.40（Prompt模板行按钮模板上下文语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver 目检、Mac build、StoreKit 测试、Prompt template row 实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.39 / Models 行内按钮模型上下文语义
 
 - 日期：2026-07-05
