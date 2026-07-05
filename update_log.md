@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.49 / 共享 Seed 输入语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - 共享 `ParameterEditor` 的 Seed 文本框增加 VoiceOver hint。
+  - Hint 明确说明该文本框编辑当前生成参数的 seed value。
+  - 保持现有 `TextField` 标题、number pad、seed binding、当前 value、Randomize Seed 按钮、随机范围、Generate 和 Prompt Template Editor 行为不变。
+  - 不修改 seed 默认值、类型、输入行为、随机 seed 逻辑、native request mapping、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.49（共享Seed输入语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、Mac build、StoreKit 测试、Seed 文本框实机输入测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.48 / 共享宽高控件语义
 
 - 日期：2026-07-05

@@ -90,6 +90,7 @@ struct ParameterEditor: View {
             .keyboardType(.numberPad)
             .accessibilityLabel("Seed")
             .accessibilityValue("\(parameters.seed)")
+            .accessibilityHint("Edits the seed value for these generation parameters.")
     }
 
     @ViewBuilder
