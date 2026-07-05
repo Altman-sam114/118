@@ -294,6 +294,11 @@ private struct PromptCategoryHeader: View {
         .labelStyle(.iconOnly)
         .foregroundStyle(SciFiTheme.cyan)
         .frame(minWidth: 44, minHeight: 44)
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .hoverEffect(.highlight)
+        .accessibilityLabel(Text("\(group.title) category actions"))
+        .accessibilityValue(Text("Menu"))
+        .accessibilityHint(Text("Opens rename and clear actions for this category."))
     }
 }
 

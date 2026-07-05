@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.38 / Prompt 分类菜单指针悬停语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Prompt Library category action menu 增加与 8pt 圆角视觉一致的 hit shape 和系统 `hoverEffect(.highlight)`。
+  - 菜单触发器增加分类上下文 VoiceOver label/value/hint，说明当前分类和 rename/clear menu 目的。
+  - 保持现有 `Menu`、`Rename Category`、`Clear Category`、`.labelStyle(.iconOnly)`、颜色、44pt 最小命中区、Dynamic Type header layout 和分类 rename/clear 行为不变。
+  - 不修改模板 query、search、grouping、sort、delete、edit、load、分类 mutation、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.38（Prompt分类菜单指针悬停语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator pointer hover 目检、VoiceOver 目检、Mac build、StoreKit 测试、Prompt 分类菜单实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.37 / Gallery 筛选栏指针悬停基线
 
 - 日期：2026-07-05
