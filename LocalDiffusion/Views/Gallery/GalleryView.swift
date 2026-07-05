@@ -310,6 +310,17 @@ struct GalleryView: View {
         }
     }
 
+    private var sortAccessibilityValue: String {
+        switch sort {
+        case .newest:
+            return "Newest images first"
+        case .oldest:
+            return "Oldest images first"
+        case .model:
+            return "Grouped by model name"
+        }
+    }
+
     @ToolbarContentBuilder
     private func imageGridToolbar(refreshPlacement: ToolbarItemPlacement = .topBarLeading) -> some ToolbarContent {
         ToolbarItem(placement: refreshPlacement) {
@@ -328,6 +339,8 @@ struct GalleryView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityLabel("Gallery sort order")
+            .accessibilityValue(sortAccessibilityValue)
             .accessibilityHint("Changes the order of visible gallery images.")
         }
     }

@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.41 / Gallery 排序菜单当前值语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - Gallery Sort menu 增加当前排序 VoiceOver label/value 语义。
+  - 当前排序会朗读为 `Newest images first`、`Oldest images first` 或 `Grouped by model name`。
+  - 保持现有 `Picker("Sort", selection: $sort)`、`.pickerStyle(.menu)`、排序选项、toolbar placement、hint 和 `visibleImages` 排序行为不变。
+  - 不修改排序算法、Gallery filter rail、image tile、detail view、folder/tag 组织、delete/share/reuse/regenerate、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.41（Gallery排序菜单当前值语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver 目检、Mac build、StoreKit 测试、Gallery Sort menu 实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.40 / Prompt 模板行按钮模板上下文语义
 
 - 日期：2026-07-05
