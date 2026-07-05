@@ -146,6 +146,7 @@ struct ParameterEditor: View {
         .frame(minHeight: 44, alignment: .leading)
         .accessibilityLabel("Canvas size preset")
         .accessibilityValue(currentSizeText)
+        .accessibilityHint("Choose a preset that updates width and height. Custom width and height remain editable.")
     }
 
     private var widthControl: some View {

@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.44 / 共享尺寸预设菜单语义
+
+- 日期：2026-07-05
+- 核心变更：
+  - 共享 `ParameterEditor` 的 Canvas Size preset menu 增加 VoiceOver hint。
+  - 新 hint 明确说明选择 preset 会同时更新 width 和 height。
+  - 新 hint 明确说明自定义 width 和 height 仍可继续编辑。
+  - 保持现有 `Menu(currentSizeText)`、preset 列表、按钮 action、tint、44pt frame、accessibility label/value、Width/Height stepper、尺寸归一化、Generate 和 Prompt Template Editor 行为不变。
+  - 不修改 SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.44（共享尺寸预设菜单语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮仍未做 simulator VoiceOver 目检、Mac build、StoreKit 测试、Canvas Size preset 实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.43 / 共享随机种子按钮语义
 
 - 日期：2026-07-05
