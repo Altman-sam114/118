@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.108 / Models 添加表单字段语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `AddModelView` 的 Hugging Face file URL TextField 新增字段级 VoiceOver label、当前 URL/空 URL value 和粘贴后解析的 hint。
+  - Hugging Face 下载表单的 Display name、Repository、GGUF file path or direct URL、Revision 字段新增当前值/空值语义和用途 hint。
+  - `Family` Picker 新增 model family label、当前 family value 和写入 Hugging Face 下载 metadata 的 hint。
+  - 保留 URL parse、键盘提交、Download disabled gate、duplicate checks、`.gguf` validation、error row、download creation 和 dismiss 行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.108（Models添加表单字段语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 URL parsing、download state machine、untracked file scan/import/delete behavior、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.107 / Gallery 文件夹名称字段语义
 
 - 日期：2026-07-07

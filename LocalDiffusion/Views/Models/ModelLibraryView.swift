@@ -1416,6 +1416,9 @@ private struct AddModelView: View {
                         .onSubmit {
                             parseHuggingFaceURLIfReady()
                         }
+                        .accessibilityLabel("Hugging Face file URL")
+                        .accessibilityValue(huggingFaceURLAccessibilityValue)
+                        .accessibilityHint("Paste a Hugging Face file URL, then use Parse Hugging Face URL to fill the model fields.")
                     Button {
                         parseHuggingFaceURLIfReady()
                     } label: {
@@ -1430,9 +1433,15 @@ private struct AddModelView: View {
 
                 Section("Hugging Face") {
                     TextField("Display name", text: $name)
+                        .accessibilityLabel("Model display name")
+                        .accessibilityValue(nameAccessibilityValue)
+                        .accessibilityHint("Required before downloading and used as the model name in Models.")
                     TextField("Repository, e.g. owner/repo", text: $repository)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityLabel("Hugging Face repository")
+                        .accessibilityValue(repositoryAccessibilityValue)
+                        .accessibilityHint("Optional when the GGUF file field contains a direct Hugging Face URL; otherwise use owner slash repository.")
                     TextField("GGUF file path or direct URL", text: $filename)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -1440,6 +1449,9 @@ private struct AddModelView: View {
                         .onSubmit {
                             submitModelIfReady()
                         }
+                        .accessibilityLabel("GGUF file path or direct URL")
+                        .accessibilityValue(filenameAccessibilityValue)
+                        .accessibilityHint("Required before downloading. Enter a GGUF file path or direct Hugging Face URL.")
                     TextField("Revision", text: $revision)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -1447,11 +1459,17 @@ private struct AddModelView: View {
                         .onSubmit {
                             submitModelIfReady()
                         }
+                        .accessibilityLabel("Hugging Face revision")
+                        .accessibilityValue(revisionAccessibilityValue)
+                        .accessibilityHint("Defaults to main unless the model file uses another branch, tag, or commit.")
                     Picker("Family", selection: $family) {
                         ForEach(ModelFamily.allCases) { family in
                             Text(family.rawValue).tag(family)
                         }
                     }
+                    .accessibilityLabel("Model family")
+                    .accessibilityValue(familyAccessibilityValue)
+                    .accessibilityHint("Sets the model family metadata for this Hugging Face download.")
                 }
                 .listRowBackground(SciFiTheme.panel)
 
@@ -1494,6 +1512,35 @@ private struct AddModelView: View {
 
     private var parseURLAccessibilityValue: String {
         hasHuggingFaceURL ? "Ready to parse." : "Paste a Hugging Face GGUF URL before parsing."
+    }
+
+    private var huggingFaceURLAccessibilityValue: String {
+        let trimmedURL = huggingFaceURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedURL.isEmpty ? "No Hugging Face URL" : trimmedURL
+    }
+
+    private var nameAccessibilityValue: String {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedName.isEmpty ? "No display name" : trimmedName
+    }
+
+    private var repositoryAccessibilityValue: String {
+        let trimmedRepository = repository.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedRepository.isEmpty ? "No repository" : trimmedRepository
+    }
+
+    private var filenameAccessibilityValue: String {
+        let trimmedFilename = filename.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedFilename.isEmpty ? "No GGUF file path or direct URL" : trimmedFilename
+    }
+
+    private var revisionAccessibilityValue: String {
+        let trimmedRevision = revision.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedRevision.isEmpty ? "No revision" : trimmedRevision
+    }
+
+    private var familyAccessibilityValue: String {
+        family.rawValue
     }
 
     private var downloadAccessibilityValue: String {
