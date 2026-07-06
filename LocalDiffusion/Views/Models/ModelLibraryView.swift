@@ -172,9 +172,16 @@ struct ModelLibraryView: View {
                 Button("Delete File", role: .destructive) {
                     performPendingUntrackedModelDeletion()
                 }
+                .accessibilityLabel(Text("Delete untracked model file: \(pendingUntrackedModelFilename)"))
+                .accessibilityValue(Text(pendingUntrackedModelFilename))
+                .accessibilityHint(Text("Removes this untracked GGUF file from Application Support. It is not connected to model metadata."))
+
                 Button("Cancel", role: .cancel) {
                     pendingUntrackedModelDeletion = nil
                 }
+                .accessibilityLabel(Text("Cancel deleting untracked model file: \(pendingUntrackedModelFilename)"))
+                .accessibilityValue(Text(pendingUntrackedModelFilename))
+                .accessibilityHint(Text("Keeps this local file and closes the delete confirmation."))
             } message: {
                 Text(untrackedModelDeleteMessage)
             }
@@ -574,6 +581,10 @@ struct ModelLibraryView: View {
         }
 
         return "This removes \(pendingUntrackedModelDeletion.filename) from Application Support."
+    }
+
+    private var pendingUntrackedModelFilename: String {
+        pendingUntrackedModelDeletion?.filename ?? "Unavailable file"
     }
 }
 
