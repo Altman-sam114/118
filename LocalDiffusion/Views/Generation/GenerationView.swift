@@ -312,6 +312,9 @@ struct GenerationView: View {
                 }
                 .buttonStyle(SciFiPrimaryButtonStyle())
                 .disabled(!canGenerate)
+                .accessibilityLabel(Text("Generate image"))
+                .accessibilityValue(Text(primaryGenerateAccessibilityValue(for: gate)))
+                .accessibilityHint(Text(primaryGenerateAccessibilityHint(for: gate)))
 
                 switch gate.secondaryAction {
                 case .openModels:
@@ -321,6 +324,8 @@ struct GenerationView: View {
                         Label("Open Models", systemImage: "shippingbox")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                    .accessibilityValue(Text("Model required"))
+                    .accessibilityHint(Text("Opens Models to download or import a ready GGUF model before generation."))
                 case .focusPrompt:
                     Button {
                         focusedPrompt = .positive
@@ -328,6 +333,8 @@ struct GenerationView: View {
                         Label("Edit Prompt", systemImage: "text.cursor")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle())
+                    .accessibilityValue(Text("Positive prompt required"))
+                    .accessibilityHint(Text("Moves focus to Positive Signal so you can enter the prompt used for generation."))
                 case .none:
                     EmptyView()
                 }
@@ -516,6 +523,16 @@ struct GenerationView: View {
         canSaveTemplate
         ? "Saves the current prompts and generation parameters as a Prompt Library template."
         : "Enter a positive prompt before saving a template."
+    }
+
+    private func primaryGenerateAccessibilityValue(for gate: GenerationGate) -> String {
+        canGenerate ? "Ready" : "Unavailable. \(gate.title). \(gate.message)"
+    }
+
+    private func primaryGenerateAccessibilityHint(for gate: GenerationGate) -> String {
+        canGenerate
+        ? "Starts local image generation with the selected model and current prompts."
+        : gate.accessibilityHint
     }
 
     private var generationGate: GenerationGate {
