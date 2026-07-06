@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.91 / Gallery 图块朗读拆分语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - `ImageTile` 的 accessibility label 从 prompt/model/date/output 的长摘要拆分为 prompt-focused `Generated image: ...`。
+  - 新增 accessibility value，单独暴露 model、created date 和 output width/height。
+  - 保留 `.accessibilityElement(children: .ignore)`、打开详情 hint、hover effect、visible prompt/metadata、thumbnail loading 和 NavigationLink 行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.91（Gallery图块朗读拆分语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 filtering、sorting、NavigationLink、thumbnail loading、detail actions、file storage、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.90 / Prompt 模板行摘要语义
 
 - 日期：2026-07-06

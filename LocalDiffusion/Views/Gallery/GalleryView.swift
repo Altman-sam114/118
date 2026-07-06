@@ -636,7 +636,8 @@ private struct ImageTile: View {
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .hoverEffect(.highlight)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(accessibilitySummary))
+        .accessibilityLabel(Text(accessibilityLabelText))
+        .accessibilityValue(Text(accessibilityValueText))
         .accessibilityHint("Opens image detail")
     }
 
@@ -659,9 +660,13 @@ private struct ImageTile: View {
         }
     }
 
-    private var accessibilitySummary: String {
+    private var accessibilityLabelText: String {
+        "Generated image: \(image.prompt)"
+    }
+
+    private var accessibilityValueText: String {
         let date = image.createdAt.formatted(date: .abbreviated, time: .omitted)
-        return "\(image.prompt). Model \(image.modelName). Created \(date). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
+        return "Model \(image.modelName). Created \(date). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
     }
 }
 
