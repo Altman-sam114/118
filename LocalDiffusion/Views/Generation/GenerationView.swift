@@ -454,21 +454,29 @@ struct GenerationView: View {
     private func promptEditorMetadata(text: Binding<String>, title: String) -> some View {
         if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 6) {
-                promptCharacterCount(text)
+                promptCharacterCount(text, title: title)
                 clearPromptButton(text: text, title: title)
             }
         } else {
             HStack(spacing: 8) {
-                promptCharacterCount(text)
+                promptCharacterCount(text, title: title)
                 clearPromptButton(text: text, title: title)
             }
         }
     }
 
-    private func promptCharacterCount(_ text: Binding<String>) -> some View {
-        Text("\(text.wrappedValue.count) chars")
+    private func promptCharacterCount(_ text: Binding<String>, title: String) -> some View {
+        let count = text.wrappedValue.count
+
+        return Text("\(count) chars")
             .font(.caption.monospacedDigit())
             .foregroundStyle(SciFiTheme.secondaryText)
+            .accessibilityLabel(Text("\(title) character count"))
+            .accessibilityValue(Text(promptCharacterCountAccessibilityValue(count)))
+    }
+
+    private func promptCharacterCountAccessibilityValue(_ count: Int) -> String {
+        count == 1 ? "1 character" : "\(count) characters"
     }
 
     @ViewBuilder
