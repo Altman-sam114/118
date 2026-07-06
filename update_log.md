@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.94 / Gallery 删除确认按钮语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery detail 删除确认弹窗的 destructive `Delete Image` button 新增确认删除当前生成图片的 accessibility label、当前图片 value 和删除文件/metadata 的 hint。
+  - `Cancel` button 新增取消删除当前生成图片的 accessibility label、当前图片 value 和保留文件/metadata 的 hint。
+  - 保留 dialog 标题、message、按钮可见文案、destructive/cancel roles、`onDelete(); dismiss()` 调用顺序和删除数据流不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.94（Gallery删除确认按钮语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 delete flow、file storage、SwiftData schema、navigation cleanup、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.93 / Gallery 文件夹即时保存语义
 
 - 日期：2026-07-06

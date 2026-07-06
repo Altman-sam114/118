@@ -826,7 +826,14 @@ private struct ImageDetailView: View {
                 onDelete()
                 dismiss()
             }
+            .accessibilityLabel(Text("Confirm deleting generated image"))
+            .accessibilityValue(Text(imageActionAccessibilityValue))
+            .accessibilityHint(Text("Deletes this image file and its saved generation metadata."))
+
             Button("Cancel", role: .cancel) {}
+                .accessibilityLabel(Text("Cancel deleting generated image"))
+                .accessibilityValue(Text(imageActionAccessibilityValue))
+                .accessibilityHint(Text("Keeps this image file and its saved generation metadata."))
         } message: {
             Text("The image file and its saved generation metadata will be removed.")
         }
