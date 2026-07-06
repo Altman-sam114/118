@@ -252,6 +252,10 @@ struct GalleryView: View {
                     message: "Generated images will appear here."
                 )
                 .padding()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Gallery empty state")
+                .accessibilityValue(galleryEmptyAccessibilityValue)
+                .accessibilityHint(galleryEmptyAccessibilityHint)
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: imageGridMinimumWidth), spacing: 12)], spacing: 12) {
@@ -297,6 +301,14 @@ struct GalleryView: View {
         case .tag(let tag):
             return tag
         }
+    }
+
+    private var galleryEmptyAccessibilityValue: String {
+        "\(selectedFilterTitle), \(galleryImageCountText(visibleImages.count))"
+    }
+
+    private var galleryEmptyAccessibilityHint: String {
+        "Generate an image or choose a different gallery filter."
     }
 
     private var selectedFilterSystemImage: String {
