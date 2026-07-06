@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.52 / Prompt 模板指标语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Prompt Library 模板行的 steps、sampler、size 三个 metric pill 增加明确 VoiceOver label/value/hint。
+  - Steps pill 朗读为模板 denoising steps，并保留 `template.steps` 作为 value。
+  - Sampler pill 朗读为模板 sampler algorithm，并保留 `template.samplerRawValue` 作为 value。
+  - Size pill 朗读为模板 canvas pixel size，并把 `template.width` / `template.height` 表达为像素尺寸。
+  - 保持现有模板行可视布局、Dynamic Type 堆叠、Edit/Load 按钮、模板查询、分类、保存、编辑、删除和加载行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.52（Prompt模板指标语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、Mac build、StoreKit 测试、Prompt 模板行实机 VoiceOver 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.51 / Models 空状态语义
 
 - 日期：2026-07-06

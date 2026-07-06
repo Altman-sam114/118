@@ -387,14 +387,26 @@ private struct PromptTemplateRow: View {
 
     private var stepsPill: some View {
         SciFiStatusPill(title: "\(template.steps)", systemImage: "number", color: SciFiTheme.cyan)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Template denoising steps"))
+            .accessibilityValue(Text("\(template.steps) steps"))
+            .accessibilityHint(Text("Shows the number of denoising steps saved with this template."))
     }
 
     private var samplerPill: some View {
         SciFiStatusPill(title: template.samplerRawValue, systemImage: "slider.horizontal.3", color: SciFiTheme.magenta)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Template sampler algorithm"))
+            .accessibilityValue(Text(template.samplerRawValue))
+            .accessibilityHint(Text("Shows the sampler algorithm saved with this template."))
     }
 
     private var sizePill: some View {
         SciFiStatusPill(title: "\(template.width)x\(template.height)", systemImage: "aspectratio", color: SciFiTheme.amber)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Template canvas pixel size"))
+            .accessibilityValue(Text("\(template.width) by \(template.height) pixels"))
+            .accessibilityHint(Text("Shows the canvas width and height saved with this template."))
     }
 }
 
