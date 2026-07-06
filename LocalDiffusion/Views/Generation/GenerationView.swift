@@ -373,8 +373,9 @@ struct GenerationView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .disabled(viewModel.latestGeneratedImageID == nil)
-                .accessibilityValue(Text(viewModel.latestGeneratedImageID == nil ? "Unavailable" : "Ready"))
-                .accessibilityHint(Text("Opens the saved generated image in Gallery."))
+                .accessibilityLabel(Text("View saved image in Gallery"))
+                .accessibilityValue(Text(galleryHandoffAccessibilityValue))
+                .accessibilityHint(Text(galleryHandoffAccessibilityHint))
             }
             .listRowBackground(SciFiTheme.panel)
         }
@@ -626,6 +627,22 @@ struct GenerationView: View {
         let pixelHeight = Int((image.size.height * image.scale).rounded())
         let galleryState = viewModel.latestGeneratedImageID == nil ? "Gallery record unavailable" : "Saved to Gallery"
         return "\(pixelWidth) by \(pixelHeight) pixels. \(galleryState)."
+    }
+
+    private var galleryHandoffAccessibilityValue: String {
+        if viewModel.latestGeneratedImageID == nil {
+            return "Gallery record unavailable. No saved Gallery record is available for this preview."
+        }
+
+        return "Saved to Gallery. Ready to open the latest generated image."
+    }
+
+    private var galleryHandoffAccessibilityHint: String {
+        if viewModel.latestGeneratedImageID == nil {
+            return "Complete a generation that saves a Gallery record before opening the result in Gallery."
+        }
+
+        return "Opens the latest saved generated image in Gallery for inspection, tags, sharing, or parameter reuse."
     }
 }
 

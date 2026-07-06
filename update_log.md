@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.99 / Generate 结果图库入口语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Generate 结果区 `View in Gallery` button 新增 `View saved image in Gallery` accessibility label。
+  - Gallery handoff button 的 accessibility value 区分 `Saved to Gallery` 与 `Gallery record unavailable`。
+  - Gallery handoff button 的 accessibility hint 区分可打开最新保存生成图片和需要先完成可保存生成的状态。
+  - 保留按钮可见文案、图标、样式、禁用条件、`onShowGallery()` 行为、结果预览和 `latestGeneratedImageID` 数据流不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.99（Generate结果图库入口语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 generation save data flow、Gallery navigation、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.98 / Models 未跟踪文件删除确认语义
 
 - 日期：2026-07-06
