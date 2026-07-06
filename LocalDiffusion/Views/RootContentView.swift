@@ -609,7 +609,10 @@ private struct PlanView: View {
         } header: {
             Text("Mac Readiness")
         } footer: {
-            Text("These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.")
+            compactSectionFooter(
+                "Mac Readiness",
+                "These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app."
+            )
         }
     }
 
@@ -619,7 +622,10 @@ private struct PlanView: View {
         } header: {
             Text("Capability Matrix")
         } footer: {
-            Text("Available items are part of the current Local plan. Planning-only and configuration-gated items are not purchases or active entitlements.")
+            compactSectionFooter(
+                "Capability Matrix",
+                "Available items are part of the current Local plan. Planning-only and configuration-gated items are not purchases or active entitlements."
+            )
         }
     }
 
@@ -629,7 +635,10 @@ private struct PlanView: View {
         } header: {
             Text("Entitlement Rules")
         } footer: {
-            Text("These rules are a planning baseline only. This build does not enforce paid access.")
+            compactSectionFooter(
+                "Entitlement Rules",
+                "These rules are a planning baseline only. This build does not enforce paid access."
+            )
         }
     }
 
@@ -774,6 +783,13 @@ private struct PlanView: View {
 
     private var planOverviewAccessibilityValue: String {
         "Local-first image generation app. Paid capability planning is visible, but StoreKit is not configured. No purchase state is stored, no entitlement is granted, and no App Store product is requested."
+    }
+
+    private func compactSectionFooter(_ title: String, _ text: String) -> some View {
+        Text(text)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(title) note")
+            .accessibilityValue(text)
     }
 }
 
