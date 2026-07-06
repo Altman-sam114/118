@@ -747,7 +747,7 @@ private struct PlanView: View {
     }
 
     private var planOverviewIcon: some View {
-        Image(systemName: "creditcard")
+        Image(systemName: "checklist")
             .font(.system(size: 26, weight: .semibold))
             .foregroundStyle(SciFiTheme.cyan)
             .frame(width: 52, height: 52)
