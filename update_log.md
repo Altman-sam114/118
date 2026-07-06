@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.92 / Gallery 组织标签草稿语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery detail 的 Save Tags button 新增显式 `Save image tags` accessibility label。
+  - Save Tags accessibility value 从 `Unsaved changes` / `No changes` 扩展为组合状态，同时暴露 draft tags、saved tags 和未保存状态。
+  - Tags text field 复用 tags 描述 helper，空草稿保持 `No tags` 文案；保留 tag parsing、Save Tags action、folder binding 和视觉布局不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.92（Gallery组织标签草稿语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 tag parsing、folder binding、filtering、sorting、detail actions、file storage、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.91 / Gallery 图块朗读拆分语义
 
 - 日期：2026-07-06

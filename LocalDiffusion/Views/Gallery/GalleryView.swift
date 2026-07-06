@@ -800,6 +800,7 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityLabel(Text("Save image tags"))
                 .accessibilityValue(Text(saveTagsAccessibilityValue))
                 .accessibilityHint("Saves the current comma-separated tags for this image.")
             }
@@ -858,8 +859,7 @@ private struct ImageDetailView: View {
     }
 
     private var tagTextAccessibilityValue: String {
-        let trimmedTagText = tagText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmedTagText.isEmpty ? "No tags" : trimmedTagText
+        tagsAccessibilityDescription(draftTags)
     }
 
     private var savedTags: [String] {
@@ -875,7 +875,12 @@ private struct ImageDetailView: View {
     }
 
     private var saveTagsAccessibilityValue: String {
-        hasUnsavedTagChanges ? "Unsaved changes" : "No changes"
+        let changeState = hasUnsavedTagChanges ? "Unsaved changes" : "No changes"
+        return "\(changeState). Draft tags: \(tagsAccessibilityDescription(draftTags)). Saved tags: \(tagsAccessibilityDescription(savedTags))."
+    }
+
+    private func tagsAccessibilityDescription(_ tags: [String]) -> String {
+        tags.isEmpty ? "No tags" : tags.joined(separator: ", ")
     }
 }
 
