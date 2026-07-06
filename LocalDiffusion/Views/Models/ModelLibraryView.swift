@@ -41,6 +41,10 @@ struct ModelLibraryView: View {
                             title: "No models",
                             message: "Add a Hugging Face GGUF model to begin."
                         )
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Model Library empty state")
+                        .accessibilityValue("No tracked models or untracked GGUF files.")
+                        .accessibilityHint("Use Download from Hugging Face or Import GGUF File to add a local model.")
 
                         Button {
                             showingAddModel = true
@@ -48,6 +52,7 @@ struct ModelLibraryView: View {
                             Label("Download from Hugging Face", systemImage: "arrow.down")
                         }
                         .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                        .accessibilityHint("Opens the Hugging Face model download form.")
 
                         Button {
                             showingModelFileImporter = true
@@ -55,6 +60,8 @@ struct ModelLibraryView: View {
                             Label("Import GGUF File", systemImage: "square.and.arrow.down")
                         }
                         .buttonStyle(SciFiSecondaryButtonStyle())
+                        .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                        .accessibilityHint("Opens a file picker for a local GGUF model file.")
                         .disabled(isImportingModelFile)
                     }
                     .listRowBackground(Color.clear)

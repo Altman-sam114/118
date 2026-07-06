@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.51 / Models 空状态语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Models 页面在没有 tracked models 且没有 untracked GGUF files 时为空状态增加组合 VoiceOver 语义。
+  - 空状态 value 明确朗读没有 tracked models 或 untracked GGUF files，hint 提示可使用 Download from Hugging Face 或 Import GGUF File 添加本地模型。
+  - 空状态中的 Download from Hugging Face 按钮增加打开下载表单的 hint。
+  - 空状态中的 Import GGUF File 按钮增加 ready/importing value 和打开本地 GGUF 文件选择器的 hint。
+  - 保持现有空状态可视文案、按钮样式、sheet、fileImporter、导入 loading、toolbar、storage sections、storage reconcile、下载和文件导入行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.51（Models空状态语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、Mac build、StoreKit 测试、Models 空状态实机 VoiceOver 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.50 / Gallery 空状态筛选语义
 
 - 日期：2026-07-06
