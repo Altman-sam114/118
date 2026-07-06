@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.58 / Prompt 搜索入口语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Prompt Library 搜索字段增加 search submit 语义，外接键盘和 Mac 键盘环境下的提交意图更明确。
+  - 搜索入口增加 VoiceOver hint，说明会按模板名称、分类、positive prompt 和 negative prompt 过滤模板。
+  - 保持现有 `.searchable(text:prompt:)`、`searchText`、`filteredTemplates`、`matchesSearch(_:)`、空态、分类、模板增删改和加载行为不变。
+  - 不修改模板 query、搜索算法、分组、排序、edit/load/delete、分类 mutation、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.58（Prompt搜索入口语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、Mac build、StoreKit 测试、Prompt 搜索实机交互测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.57 / Plan 摘要状态提示语义
 
 - 日期：2026-07-06

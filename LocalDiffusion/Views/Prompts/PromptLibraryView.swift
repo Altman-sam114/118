@@ -98,6 +98,8 @@ struct PromptLibraryView: View {
             .sciFiScreen()
             .bottomTabBarClearance()
             .searchable(text: $searchText, prompt: "Search templates")
+            .submitLabel(.search)
+            .accessibilityHint("Searches template names, categories, positive prompts, and negative prompts.")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
