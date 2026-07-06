@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.103 / Prompt 模板元数据输入语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PromptTemplateEditor` 的 `Name` TextField 增加 `Template name` accessibility label、空值/当前值 value 和保存前必填 hint。
+  - `PromptTemplateEditor` 的 `Category` TextField 增加 `Template category` accessibility label、`Uncategorized` 空值/当前值 value 和可选分类 hint。
+  - `PromptCategoryNameEditor` 的 `Name` TextField 增加 `Category name` accessibility label、空值/当前值 value 和保存分类重命名前必填 hint。
+  - 保留模板新增/编辑保存 trim、Save disabled gate、分类重命名保存、搜索、分组、加载和可见 UI 不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.103（Prompt模板元数据输入语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 template save/load/search/category behavior、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.102 / Prompt 模板编辑字符计数语义
 
 - 日期：2026-07-06

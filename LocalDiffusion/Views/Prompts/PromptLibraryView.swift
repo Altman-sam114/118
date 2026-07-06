@@ -463,7 +463,13 @@ struct PromptTemplateEditor: View {
             Form {
                 Section("Template") {
                     TextField("Name", text: $name)
+                        .accessibilityLabel(Text("Template name"))
+                        .accessibilityValue(Text(templateNameAccessibilityValue))
+                        .accessibilityHint(Text("Required before saving this prompt template."))
                     TextField("Category", text: $category)
+                        .accessibilityLabel(Text("Template category"))
+                        .accessibilityValue(Text(templateCategoryAccessibilityValue))
+                        .accessibilityHint(Text("Optional. Leave empty to save this template as Uncategorized."))
                 }
                 .listRowBackground(SciFiTheme.panel)
 
@@ -594,6 +600,16 @@ struct PromptTemplateEditor: View {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var templateNameAccessibilityValue: String {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedName.isEmpty ? "Template name empty" : trimmedName
+    }
+
+    private var templateCategoryAccessibilityValue: String {
+        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedCategory.isEmpty ? "Uncategorized" : trimmedCategory
+    }
+
     private var templateSaveAccessibilityValue: String {
         hasTemplateName ? "Ready" : "Template name required"
     }
@@ -623,6 +639,9 @@ private struct PromptCategoryNameEditor: View {
             Form {
                 Section("Category") {
                     TextField("Name", text: $name)
+                        .accessibilityLabel(Text("Category name"))
+                        .accessibilityValue(Text(categoryNameAccessibilityValue))
+                        .accessibilityHint(Text("Required before saving this category rename."))
                 }
                 .listRowBackground(SciFiTheme.panel)
             }
@@ -653,6 +672,11 @@ private struct PromptCategoryNameEditor: View {
 
     private var hasCategoryName: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var categoryNameAccessibilityValue: String {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedName.isEmpty ? "Category name empty" : trimmedName
     }
 
     private var categorySaveAccessibilityValue: String {
