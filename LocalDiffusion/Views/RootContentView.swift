@@ -672,11 +672,11 @@ private struct PlanView: View {
         )
 
         PlanNoteRow(
-            text: "Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build.",
+            text: "Purchases, restore, receipts, subscriptions, and entitlements are not enabled in this build; paid candidates on this screen are planning only.",
             systemImage: "exclamationmark.triangle",
             iconColor: SciFiTheme.amber,
             accessibilityLabel: "StoreKit purchase status",
-            accessibilityHint: "This build does not include purchase, restore, receipt, subscription, or entitlement flows."
+            accessibilityHint: "This build does not include purchase, restore, receipt, subscription, or entitlement flows, and paid candidates cannot be bought or unlocked here."
         )
     }
 
