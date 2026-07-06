@@ -475,6 +475,9 @@ struct PromptTemplateEditor: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityLabel(Text("Cancel template editing"))
+                    .accessibilityValue(Text("No changes saved"))
+                    .accessibilityHint(Text("Closes the template editor without saving the current edits."))
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
@@ -486,6 +489,9 @@ struct PromptTemplateEditor: View {
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel(Text("Save template"))
+                    .accessibilityValue(Text(templateSaveAccessibilityValue))
+                    .accessibilityHint(Text(templateSaveAccessibilityHint))
                 }
             }
         }
@@ -551,6 +557,20 @@ struct PromptTemplateEditor: View {
     private func promptEditorMinHeight(_ minHeight: CGFloat) -> CGFloat {
         dynamicTypeSize.isAccessibilitySize ? minHeight + 48 : minHeight
     }
+
+    private var hasTemplateName: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var templateSaveAccessibilityValue: String {
+        hasTemplateName ? "Ready" : "Template name required"
+    }
+
+    private var templateSaveAccessibilityHint: String {
+        hasTemplateName
+        ? "Saves this template name, category, prompts, and generation parameters."
+        : "Enter a template name before saving."
+    }
 }
 
 private struct PromptCategoryNameEditor: View {
@@ -581,6 +601,9 @@ private struct PromptCategoryNameEditor: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityLabel(Text("Cancel category rename"))
+                    .accessibilityValue(Text("No changes saved"))
+                    .accessibilityHint(Text("Closes the category editor without saving the rename."))
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
@@ -588,8 +611,25 @@ private struct PromptCategoryNameEditor: View {
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel(Text("Save category name"))
+                    .accessibilityValue(Text(categorySaveAccessibilityValue))
+                    .accessibilityHint(Text(categorySaveAccessibilityHint))
                 }
             }
         }
+    }
+
+    private var hasCategoryName: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var categorySaveAccessibilityValue: String {
+        hasCategoryName ? "Ready" : "Category name required"
+    }
+
+    private var categorySaveAccessibilityHint: String {
+        hasCategoryName
+        ? "Saves the category name for matching prompt templates."
+        : "Enter a category name before saving."
     }
 }
