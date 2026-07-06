@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.88 / Models 详情操作按钮语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - `ModelDetailView` 新增 `detailControlButton` helper，统一生成详情 sheet 的模型操作按钮。
+  - Models detail sheet 中 `Delete Model`、`Pause Download`、`Cancel Download`、`Resume Download`、`Download Model` 现在提供 `动作: 模型名` 的 accessibility label。
+  - 新增统一 accessibility hint，说明该操作会应用到当前模型；保留按钮标题、图标、颜色、role、状态分支和 action 调用顺序不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.88（Models详情操作按钮语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改下载状态机、删除行为、文件存储、SwiftData schema、StoreKit、Mac Catalyst、Xcode project、native backend 或 workflow。
+
 ### v1.87 / Prompt Library Add toolbar 语义
 
 - 日期：2026-07-06

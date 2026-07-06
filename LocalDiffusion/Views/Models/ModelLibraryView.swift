@@ -1171,62 +1171,86 @@ private struct ModelDetailView: View {
     private var detailControls: some View {
         switch progress.status {
         case .ready:
-            Button(role: .destructive) {
+            detailControlButton(
+                "Delete Model",
+                systemImage: "trash",
+                color: SciFiTheme.danger,
+                role: .destructive
+            ) {
                 dismiss()
                 delete()
-            } label: {
-                Label("Delete Model", systemImage: "trash")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
         case .downloading:
-            Button {
+            detailControlButton(
+                "Pause Download",
+                systemImage: "pause.fill",
+                color: SciFiTheme.amber
+            ) {
                 pause()
-            } label: {
-                Label("Pause Download", systemImage: "pause.fill")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
-            Button(role: .destructive) {
+            detailControlButton(
+                "Cancel Download",
+                systemImage: "xmark",
+                color: SciFiTheme.danger,
+                role: .destructive
+            ) {
                 cancel()
-            } label: {
-                Label("Cancel Download", systemImage: "xmark")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
-            Button(role: .destructive) {
+            detailControlButton(
+                "Delete Model",
+                systemImage: "trash",
+                color: SciFiTheme.danger,
+                role: .destructive
+            ) {
                 dismiss()
                 delete()
-            } label: {
-                Label("Delete Model", systemImage: "trash")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
         case .paused:
-            Button {
+            detailControlButton(
+                "Resume Download",
+                systemImage: "play.fill",
+                color: SciFiTheme.mint
+            ) {
                 startOrResume()
-            } label: {
-                Label("Resume Download", systemImage: "play.fill")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
-            Button(role: .destructive) {
+            detailControlButton(
+                "Delete Model",
+                systemImage: "trash",
+                color: SciFiTheme.danger,
+                role: .destructive
+            ) {
                 dismiss()
                 delete()
-            } label: {
-                Label("Delete Model", systemImage: "trash")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
         case .queued, .failed:
-            Button {
+            detailControlButton("Download Model", systemImage: "arrow.down") {
                 startOrResume()
-            } label: {
-                Label("Download Model", systemImage: "arrow.down")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle())
-            Button(role: .destructive) {
+            detailControlButton(
+                "Delete Model",
+                systemImage: "trash",
+                color: SciFiTheme.danger,
+                role: .destructive
+            ) {
                 dismiss()
                 delete()
-            } label: {
-                Label("Delete Model", systemImage: "trash")
             }
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
         }
+    }
+
+    private func detailControlButton(
+        _ title: String,
+        systemImage: String,
+        color: Color = SciFiTheme.cyan,
+        role: ButtonRole? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(role: role, action: action) {
+            Label(title, systemImage: systemImage)
+        }
+        .buttonStyle(SciFiSecondaryButtonStyle(color: color))
+        .accessibilityLabel(Text("\(title): \(model.name)"))
+        .accessibilityHint(Text("Applies this action to \(model.name)."))
     }
 
     private var statusText: String {
