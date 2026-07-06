@@ -116,9 +116,16 @@ struct GalleryView: View {
                 }
                 pendingFolderDeletion = nil
             }
+            .accessibilityLabel(Text("Delete folder: \(pendingFolderDeletionName)"))
+            .accessibilityValue(Text("Folder \(pendingFolderDeletionName)"))
+            .accessibilityHint(Text("Deletes this folder only. Images stay in the gallery and move back to All Images."))
+
             Button("Cancel", role: .cancel) {
                 pendingFolderDeletion = nil
             }
+            .accessibilityLabel(Text("Cancel deleting folder: \(pendingFolderDeletionName)"))
+            .accessibilityValue(Text("Folder \(pendingFolderDeletionName)"))
+            .accessibilityHint(Text("Keeps this folder and closes the delete confirmation."))
         } message: {
             Text("Images in this folder will remain in the gallery and move back to All Images.")
         }
@@ -509,6 +516,10 @@ struct GalleryView: View {
                 }
             }
         )
+    }
+
+    private var pendingFolderDeletionName: String {
+        pendingFolderDeletion?.name ?? "Unavailable folder"
     }
 
     private var filterBinding: Binding<GalleryFilter?> {

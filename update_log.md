@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.95 / Gallery 文件夹删除确认语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery folder 删除确认弹窗的 destructive `Delete Folder` button 新增待删除 folder 名称、folder value 和只删除 folder/图片回到 All Images 的 hint。
+  - `Cancel` button 新增取消删除该 folder 的 accessibility label、folder value 和保留 folder 的 hint。
+  - 保留 dialog 标题、message、按钮可见文案、destructive/cancel roles、`deleteFolder(id:)` 行为、`pendingFolderDeletion` 清理和图片保留逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.95（Gallery文件夹删除确认语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 folder deletion data flow、image retention、file storage、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.94 / Gallery 删除确认按钮语义
 
 - 日期：2026-07-06
