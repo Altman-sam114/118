@@ -334,6 +334,7 @@ private struct MacReadinessItem: Identifiable {
     let detail: String
     let status: MacReadinessStatus
     let systemImage: String
+    let accessibilityHint: String
 
     var id: String { title }
 }
@@ -450,25 +451,29 @@ private struct PlanView: View {
             title: "Xcode target platform",
             detail: "Project still targets iPhoneOS and iPhone Simulator only.",
             status: .requiresConfiguration,
-            systemImage: "desktopcomputer"
+            systemImage: "desktopcomputer",
+            accessibilityHint: "Clarifies Mac support requires enabling a Mac or Catalyst target platform configuration."
         ),
         MacReadinessItem(
             title: "Native backend slice",
             detail: "XCFramework needs a Mac or Catalyst library before Mac builds.",
             status: .requiresNativeBuild,
-            systemImage: "cpu"
+            systemImage: "cpu",
+            accessibilityHint: "Clarifies a Mac or Catalyst native backend slice must exist before Mac builds can run."
         ),
         MacReadinessItem(
             title: "Window and sidebar QA",
             detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need smoke coverage.",
             status: .planned,
-            systemImage: "rectangle.split.2x1"
+            systemImage: "rectangle.split.2x1",
+            accessibilityHint: "Clarifies future Mac UI needs dedicated window, sidebar, keyboard, and pointer validation."
         ),
         MacReadinessItem(
             title: "Distribution and signing",
             detail: "Developer ID, sandboxing, notarization, and App Store path require a product decision.",
             status: .requiresDecision,
-            systemImage: "person.badge.key"
+            systemImage: "person.badge.key",
+            accessibilityHint: "Clarifies the Mac signing and distribution path needs a product decision."
         )
     ]
 
@@ -909,6 +914,7 @@ private struct MacReadinessRow: View {
             systemImage: item.systemImage,
             status: item.status.token
         )
+        .accessibilityHint(item.accessibilityHint)
     }
 }
 
