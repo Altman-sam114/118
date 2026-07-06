@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.107 / Gallery 文件夹名称字段语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `FolderNameEditor` 的 `Folder name` TextField 新增字段级 VoiceOver label。
+  - Folder name accessibility value 区分空值 `No folder name` 与当前 trimmed name。
+  - 输入框 hint 说明保存前必填，并会作为 Gallery folder 名称。
+  - 保留 Save/Cancel toolbar 语义、Save disabled gate、trim 后保存、dismiss、folder create/rename/delete/filter/sort 行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.107（Gallery文件夹名称字段语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 folder create/rename/delete/filter/sort behavior、image folder assignment、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.106 / Models 未跟踪导入字段语义
 
 - 日期：2026-07-07

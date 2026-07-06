@@ -982,6 +982,9 @@ private struct FolderNameEditor: View {
             Form {
                 Section("Folder") {
                     TextField("Folder name", text: $name)
+                        .accessibilityLabel(Text("Folder name"))
+                        .accessibilityValue(Text(folderNameAccessibilityValue))
+                        .accessibilityHint(Text("Required before saving and used as the Gallery folder name."))
                 }
                 .listRowBackground(SciFiTheme.panel)
             }
@@ -1012,6 +1015,11 @@ private struct FolderNameEditor: View {
 
     private var hasFolderName: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var folderNameAccessibilityValue: String {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedName.isEmpty ? "No folder name" : trimmedName
     }
 
     private var folderSaveAccessibilityValue: String {
