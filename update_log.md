@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.97 / Models 删除确认语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Models tracked model 删除确认弹窗的 destructive `Delete Model` / `Delete Models` button 新增待删除 model 名称或多模型数量、pending model value 和删除 metadata/local file 的 hint。
+  - `Cancel` button 新增取消删除当前 pending model(s) 的 accessibility label、pending model value 和保留 metadata/local file 的 hint。
+  - 保留 dialog 标题、message、按钮可见文案、destructive/cancel roles、`performPendingModelDeletion()` 行为、`pendingModelDeletion` 清理和文件/metadata 删除逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.97（Models删除确认语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 tracked model delete data flow、untracked file delete flow、download state machine、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.96 / Prompt 分类清除确认语义
 
 - 日期：2026-07-06

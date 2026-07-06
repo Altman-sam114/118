@@ -155,9 +155,16 @@ struct ModelLibraryView: View {
                 Button(modelDeleteButtonTitle, role: .destructive) {
                     performPendingModelDeletion()
                 }
+                .accessibilityLabel(Text(modelDeleteAccessibilityLabel))
+                .accessibilityValue(Text(modelDeleteAccessibilityValue))
+                .accessibilityHint(Text(modelDeleteAccessibilityHint))
+
                 Button("Cancel", role: .cancel) {
                     pendingModelDeletion = nil
                 }
+                .accessibilityLabel(Text(modelDeleteCancelAccessibilityLabel))
+                .accessibilityValue(Text(modelDeleteAccessibilityValue))
+                .accessibilityHint(Text(modelDeleteCancelAccessibilityHint))
             } message: {
                 Text(modelDeleteMessage)
             }
@@ -493,6 +500,50 @@ struct ModelLibraryView: View {
         }
 
         return "This removes \(pendingModelDeletion.modelIDs.count) models and their local files from Application Support."
+    }
+
+    private var modelDeleteAccessibilityLabel: String {
+        guard let pendingModelDeletion else { return "Delete model" }
+        if pendingModelDeletion.modelIDs.count == 1 {
+            return "Delete model: \(pendingModelDeletion.names.first ?? "Unavailable model")"
+        }
+        return "Delete \(pendingModelDeletion.modelIDs.count) models"
+    }
+
+    private var modelDeleteCancelAccessibilityLabel: String {
+        guard let pendingModelDeletion else { return "Cancel deleting model" }
+        if pendingModelDeletion.modelIDs.count == 1 {
+            return "Cancel deleting model: \(pendingModelDeletion.names.first ?? "Unavailable model")"
+        }
+        return "Cancel deleting \(pendingModelDeletion.modelIDs.count) models"
+    }
+
+    private var modelDeleteAccessibilityValue: String {
+        guard let pendingModelDeletion else { return "No pending model deletion" }
+        if pendingModelDeletion.modelIDs.count == 1 {
+            return pendingModelDeletion.names.first ?? "Unavailable model"
+        }
+        return "\(pendingModelDeletion.modelIDs.count) models: \(pendingModelDeletion.names.joined(separator: ", "))"
+    }
+
+    private var modelDeleteAccessibilityHint: String {
+        guard let pendingModelDeletion else {
+            return "Removes model metadata and the local file from Application Support."
+        }
+        if pendingModelDeletion.modelIDs.count == 1 {
+            return "Removes this model's metadata and local file from Application Support."
+        }
+        return "Removes the selected model metadata and local files from Application Support."
+    }
+
+    private var modelDeleteCancelAccessibilityHint: String {
+        guard let pendingModelDeletion else {
+            return "Closes the delete confirmation and keeps model metadata and local files."
+        }
+        if pendingModelDeletion.modelIDs.count == 1 {
+            return "Closes the delete confirmation and keeps this model's metadata and local file."
+        }
+        return "Closes the delete confirmation and keeps the selected model metadata and local files."
     }
 
     private var deleteErrorBinding: Binding<Bool> {
