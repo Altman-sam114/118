@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.75 / Mac 就绪 QA 文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Mac Readiness 中 `Window and sidebar QA` 的 detail 从测试流程术语 `smoke coverage` 改为面向用户更清晰的 `QA validation`。
+  - 保留 Mac readiness item title、status、hint、icon、layout、Mac app Not enabled 状态和业务逻辑不变。
+  - 不修改 Mac Catalyst、Xcode project、native backend slice、StoreKit、购买、entitlement、SwiftData、workflow 或真实 Mac 验证。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.75（Mac就绪QA文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不添加 native Mac/Catalyst slice，不做真实 Mac 验证。
+
 ### v1.74 / Plan 可用性页脚语义
 
 - 日期：2026-07-06

@@ -476,7 +476,7 @@ private struct PlanView: View {
         ),
         MacReadinessItem(
             title: "Window and sidebar QA",
-            detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need smoke coverage.",
+            detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need QA validation.",
             status: .planned,
             systemImage: "rectangle.split.2x1",
             accessibilityHint: "Clarifies future Mac UI needs dedicated window, sidebar, keyboard, and pointer validation."
