@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.96 / Prompt 分类清除确认语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Prompt Library category clear 确认弹窗的 destructive `Clear Category` button 新增待清除 category 名称、category value 和 templates 移到 Uncategorized 但保留在 library 的 hint。
+  - `Cancel` button 新增取消清除该 category 的 accessibility label、category value 和保留 category 的 hint。
+  - 保留 dialog 标题、message、按钮可见文案、destructive/cancel roles、`clearCategory(_:)` 行为、`pendingCategoryClear` 清理和模板保留逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.96（Prompt分类清除确认语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 category clear data flow、template edit/load/save/search/grouping、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.95 / Gallery 文件夹删除确认语义
 
 - 日期：2026-07-06

@@ -158,9 +158,16 @@ struct PromptLibraryView: View {
                     }
                     pendingCategoryClear = nil
                 }
+                .accessibilityLabel(Text("Clear category: \(pendingCategoryClearName)"))
+                .accessibilityValue(Text(pendingCategoryClearName))
+                .accessibilityHint(Text("Moves templates in this category to Uncategorized. Templates stay in the library."))
+
                 Button("Cancel", role: .cancel) {
                     pendingCategoryClear = nil
                 }
+                .accessibilityLabel(Text("Cancel clearing category: \(pendingCategoryClearName)"))
+                .accessibilityValue(Text(pendingCategoryClearName))
+                .accessibilityHint(Text("Keeps this category unchanged and closes the confirmation."))
             } message: {
                 Text("Templates stay in the library and move to Uncategorized.")
             }
@@ -197,6 +204,10 @@ struct PromptLibraryView: View {
                 }
             }
         )
+    }
+
+    private var pendingCategoryClearName: String {
+        pendingCategoryClear?.category ?? "Unavailable category"
     }
 
     private var emptySearchAccessibilityValue: String {
