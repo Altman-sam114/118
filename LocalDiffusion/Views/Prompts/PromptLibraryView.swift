@@ -289,6 +289,14 @@ private struct PromptCategoryHeader: View {
         Text(group.title)
             .font(.caption.weight(.semibold))
             .foregroundStyle(SciFiTheme.cyan)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityLabel(Text("\(group.title) prompt category"))
+            .accessibilityValue(Text(categoryTemplateCountAccessibilityValue))
+    }
+
+    private var categoryTemplateCountAccessibilityValue: String {
+        let count = group.templates.count
+        return count == 1 ? "1 template" : "\(count) templates"
     }
 
     private var categoryActions: some View {

@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.105 / Prompt 分类标题语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PromptCategoryHeader` 的分类标题新增 VoiceOver heading 语义，便于按分类导航 Prompt Library。
+  - 分类标题 accessibility label 暴露 `<category> prompt category` 上下文。
+  - 分类标题 accessibility value 暴露当前搜索过滤后的可见模板数量，并处理 `1 template` / `N templates` 单复数。
+  - 保留分类标题可见文案、样式、Dynamic Type 布局、分类 action menu、模板搜索/分组/编辑/加载行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.105（Prompt分类标题语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 template save/load/search/category behavior、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.104 / Prompt 模板行提示摘要语义
 
 - 日期：2026-07-07
