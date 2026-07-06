@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.89 / Models 原生加载选择器语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Models detail sheet 的 Native Loading `Mode` Picker 现在提供 `Native loading mode` accessibility label、当前 mode value 和用途 hint。
+  - `auxiliaryModelPicker` 统一为 CLIP-L、CLIP-G、T5XXL、VAE 选择器提供 `<type> auxiliary model` label、当前文件名或 `None selected` value。
+  - 辅助模型选择器 hint 说明该控件会为当前模型选择 optional GGUF file；保留 Picker 标题、选项、tag、binding、SwiftData 保存和可选文件来源不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.89（Models原生加载选择器语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改辅助模型过滤、binding 保存、生成逻辑、native backend、SwiftData schema、StoreKit、Mac Catalyst、Xcode project 或 workflow。
+
 ### v1.88 / Models 详情操作按钮语义
 
 - 日期：2026-07-06

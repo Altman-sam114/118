@@ -1076,6 +1076,9 @@ private struct ModelDetailView: View {
                             Text(mode.rawValue).tag(mode)
                         }
                     }
+                    .accessibilityLabel(Text("Native loading mode"))
+                    .accessibilityValue(Text(model.nativeLoadMode.rawValue))
+                    .accessibilityHint(Text("Choose whether \(model.name) loads as a complete model or as standalone diffusion with optional auxiliary files."))
 
                     DetailTextRow(title: "Mode", value: nativeLoadModeDescription)
 
@@ -1129,6 +1132,9 @@ private struct ModelDetailView: View {
                 Text(filename).tag(Optional(filename))
             }
         }
+        .accessibilityLabel(Text("\(title) auxiliary model"))
+        .accessibilityValue(Text(selection.wrappedValue ?? "None selected"))
+        .accessibilityHint(Text("Select an optional \(title) GGUF file for \(model.name)'s standalone diffusion loading."))
     }
 
     private var nativeLoadModeBinding: Binding<NativeModelLoadMode> {
