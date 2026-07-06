@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.100 / Generate 空模型状态摘要语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Generate Model section 无 ready model 的 `EmptyStateView` 调用点新增组合 accessibility 语义。
+  - 空状态卡片现在作为一个 VoiceOver 元素朗读 `No local model`、无 ready GGUF model 状态和使用 Open Models 下载/导入的下一步。
+  - 保留共享 `EmptyStateView` 类型、可见标题/说明/图标、`Open Models` button value/hint、44pt 命中区、`onShowModels()` 行为和 ready model 查询不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.100（Generate空模型状态摘要语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 model query、model selection、generation gate、download/import flow、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.99 / Generate 结果图库入口语义
 
 - 日期：2026-07-06

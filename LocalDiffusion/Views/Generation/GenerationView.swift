@@ -237,6 +237,10 @@ struct GenerationView: View {
                         title: "No local model",
                         message: "Download or import a GGUF model before starting generation."
                     )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("No local model"))
+                    .accessibilityValue(Text("No ready GGUF model is available for generation."))
+                    .accessibilityHint(Text("Use Open Models to download or import a ready GGUF model before generating."))
 
                     Button {
                         onShowModels()
