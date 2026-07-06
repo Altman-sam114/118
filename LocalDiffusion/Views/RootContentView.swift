@@ -24,7 +24,7 @@ enum AppSection: Hashable {
         case .models: "shippingbox"
         case .gallery: "square.grid.2x2"
         case .prompts: "text.book.closed"
-        case .plan: "creditcard"
+        case .plan: "checklist"
         }
     }
 

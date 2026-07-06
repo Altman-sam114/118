@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.70 / Plan 导航规划图标
+
+- 日期：2026-07-06
+- 核心变更：
+  - Root 层 Plan 主导航图标从 `creditcard` 改为中性的 `checklist`，用于 compact TabView 和 iPad sidebar。
+  - 保留 TabView/sidebar 结构、导航状态、sidebar 文本、Plan 页面文案和可访问性语义不变。
+  - 不修改 StoreKit 状态、购买、entitlement、Mac Catalyst、SwiftData、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.70（Plan导航规划图标）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator 视觉截图验收，不启用 StoreKit 购买或 entitlement，不启用 Mac Catalyst。
+
 ### v1.69 / Plan 概览规划图标
 
 - 日期：2026-07-06
