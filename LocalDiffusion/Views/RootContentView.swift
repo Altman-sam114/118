@@ -697,11 +697,11 @@ private struct PlanView: View {
         )
 
         PlanNoteRow(
-            text: "Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.",
+            text: "Mac support remains planned. The iPhone and iPad app is available in this build; a Mac/Catalyst app is not enabled until platform support, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation are ready.",
             systemImage: "checklist",
             iconColor: SciFiTheme.cyan,
             accessibilityLabel: "Mac support status",
-            accessibilityHint: "This iOS build does not currently ship a Mac or Catalyst app."
+            accessibilityHint: "Clarifies that the current build provides the iPhone and iPad app while Mac/Catalyst support remains planned and not enabled."
         )
     }
 

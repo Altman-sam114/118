@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.85 / Plan Platform Status Mac support note 文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Platform Status 中 `Mac support status` note 的 text 从 `Mac support requires Xcode platform changes, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.` 改为 `Mac support remains planned. The iPhone and iPad app is available in this build; a Mac/Catalyst app is not enabled until platform support, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation are ready.`。
+  - 同步 accessibility hint，明确当前 build 提供 iPhone/iPad app，而 Mac/Catalyst support 仍是 planned 且 not enabled。
+  - 保留 Platform Status summary rows、Mac support status label、icon、color、layout、Mac Readiness、Availability rows 和业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.85（PlanPlatformStatusMacSupportNote文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不修改 Xcode platform、native Mac/Catalyst slice、signing、notarization 或真实 Mac 验证。
+
 ### v1.84 / Plan Mac Readiness footer 文案
 
 - 日期：2026-07-06
