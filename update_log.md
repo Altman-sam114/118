@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.104 / Prompt 模板行提示摘要语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PromptTemplateRow` 的 row-level accessibility value 扩展为同时暴露 positive prompt、negative prompt、category、steps、sampler 和 canvas size。
+  - 空 positive prompt、空 negative prompt 和空 category 分别读作 `No positive prompt`、`No negative prompt` 和 `Category Uncategorized`，避免空字符串语义。
+  - 保留 row-level label/hint、Edit/Load 控件、metric pills、可见 row 文案、Dynamic Type 布局和模板加载/编辑行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.104（Prompt模板行提示摘要语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 template save/load/search/category/delete behavior、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.103 / Prompt 模板元数据输入语义
 
 - 日期：2026-07-07

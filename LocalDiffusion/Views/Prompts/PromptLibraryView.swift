@@ -430,7 +430,29 @@ private struct PromptTemplateRow: View {
     }
 
     private var templateAccessibilityValue: String {
-        "Prompt \(template.prompt). \(template.steps) steps. Sampler \(template.samplerRawValue). Size \(template.width) by \(template.height) pixels."
+        [
+            positivePromptAccessibilityValue,
+            negativePromptAccessibilityValue,
+            categoryAccessibilityValue,
+            "\(template.steps) steps",
+            "Sampler \(template.samplerRawValue)",
+            "Size \(template.width) by \(template.height) pixels"
+        ].joined(separator: ". ")
+    }
+
+    private var positivePromptAccessibilityValue: String {
+        let prompt = template.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        return prompt.isEmpty ? "No positive prompt" : "Positive prompt \(prompt)"
+    }
+
+    private var negativePromptAccessibilityValue: String {
+        let negativePrompt = template.negativePrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        return negativePrompt.isEmpty ? "No negative prompt" : "Negative prompt \(negativePrompt)"
+    }
+
+    private var categoryAccessibilityValue: String {
+        let category = template.category.trimmingCharacters(in: .whitespacesAndNewlines)
+        return category.isEmpty ? "Category Uncategorized" : "Category \(category)"
     }
 }
 
