@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.110 / Plan Mac QA 边界语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanView.macReadinessItems` 中 `Window and sidebar QA` 的 detail 明确 Mac window sizing、sidebar behavior、keyboard 和 pointer states 仍需要 dedicated QA，且超出当前 iPad layout 覆盖范围。
+  - 同一行 accessibility hint 明确 iPad regular layout 与 pointer affordance 不能替代 dedicated Mac 或 Catalyst window/sidebar/keyboard/pointer validation。
+  - 保留该行 title、`Needs QA` status、system image、排序、row renderer、Mac Readiness footer、Platform Status、Availability、Plan overview purchase boundary 和所有业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.110（PlanMacQA边界语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst、不修改 Xcode platform/scheme/signing/sandboxing/notarization/distribution、不新增 native Mac/Catalyst slice、不启用 StoreKit/purchase UI/entitlement persistence/paid gate、不修改 SwiftData schema、native backend、workflow 或测试规范。
+
 ### v1.109 / Plan 概览购买边界语义
 
 - 日期：2026-07-07

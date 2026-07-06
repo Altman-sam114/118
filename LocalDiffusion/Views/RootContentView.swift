@@ -476,10 +476,10 @@ private struct PlanView: View {
         ),
         MacReadinessItem(
             title: "Window and sidebar QA",
-            detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need QA validation.",
+            detail: "Mac window sizing, sidebar behavior, keyboard, and pointer states need dedicated QA beyond the current iPad layout.",
             status: .planned,
             systemImage: "rectangle.split.2x1",
-            accessibilityHint: "Clarifies future Mac UI needs dedicated window, sidebar, keyboard, and pointer validation."
+            accessibilityHint: "Clarifies iPad regular layout and pointer affordance do not replace dedicated Mac or Catalyst window, sidebar, keyboard, and pointer validation."
         ),
         MacReadinessItem(
             title: "Distribution and signing",
