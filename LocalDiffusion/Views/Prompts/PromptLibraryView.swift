@@ -107,6 +107,9 @@ struct PromptLibraryView: View {
                     } label: {
                         Label("Add", systemImage: "plus")
                     }
+                    .accessibilityLabel(Text("Add prompt template"))
+                    .accessibilityValue(Text("Ready"))
+                    .accessibilityHint(Text("Opens a new prompt template editor using the current generation parameters."))
                 }
             }
             .sheet(isPresented: $showingAddTemplate) {

@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.87 / Prompt Library Add toolbar 语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Prompt Library 顶部 `Add` toolbar button 增加 `Add prompt template` accessibility label。
+  - 新增 `Ready` accessibility value 和 hint，说明该操作会使用当前 generation parameters 打开新 prompt template editor。
+  - 保留 `showingAddTemplate`、sheet 展示、`initialParameters: generation.parameters`、模板保存字段、搜索、分类、加载和编辑行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.87（PromptLibraryAddToolbar语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改模板创建/保存/搜索/分类/加载逻辑，不启用 StoreKit、Mac Catalyst，不修改 SwiftData schema、Xcode project、native backend 或 workflow。
+
 ### v1.86 / Plan Current Build purchase note 文案
 
 - 日期：2026-07-06
