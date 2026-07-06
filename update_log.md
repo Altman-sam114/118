@@ -789,6 +789,26 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.57 / Plan 摘要状态提示语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Current Build 和 Platform Status 的 summary rows 增加行级 VoiceOver hint。
+  - Plan hint 明确当前 build 使用 Local plan。
+  - StoreKit products hint 明确当前未配置 StoreKit products 或购买流程。
+  - iPhone / iPad hint 明确当前 iPhone 和 iPad target 可用。
+  - Mac Catalyst hint 明确当前未启用 Mac Catalyst，也不发货 Mac app。
+  - 保持所有 Plan 可视文案、状态、row 顺序、compact Form、iPad 双栏/单列回退、StoreKit 未配置事实、Mac Catalyst 未启用事实和业务行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.57（Plan摘要状态提示语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、StoreKit 测试、Plan summary rows 实机 VoiceOver 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.56 / Plan 权益规则提示语义
 
 - 日期：2026-07-06

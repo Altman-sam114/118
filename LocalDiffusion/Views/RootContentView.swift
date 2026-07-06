@@ -644,13 +644,15 @@ private struct PlanView: View {
         PlanStatusSummaryRow(
             title: "Plan",
             systemImage: "internaldrive",
-            status: PlanStatusToken(title: "Local", systemImage: "checkmark.circle", color: SciFiTheme.mint)
+            status: PlanStatusToken(title: "Local", systemImage: "checkmark.circle", color: SciFiTheme.mint),
+            accessibilityHint: "Confirms this build uses the Local plan."
         )
 
         PlanStatusSummaryRow(
             title: "StoreKit products",
             systemImage: "cart",
-            status: PlanStatusToken(title: "Not configured", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber)
+            status: PlanStatusToken(title: "Not configured", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber),
+            accessibilityHint: "Clarifies StoreKit products and purchase flows are not configured in this build."
         )
 
         PlanNoteRow(
@@ -667,13 +669,15 @@ private struct PlanView: View {
         PlanStatusSummaryRow(
             title: "iPhone / iPad",
             systemImage: "iphone",
-            status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint)
+            status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint),
+            accessibilityHint: "Confirms the current iPhone and iPad target is available."
         )
 
         PlanStatusSummaryRow(
             title: "Mac Catalyst",
             systemImage: "desktopcomputer",
-            status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber)
+            status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber),
+            accessibilityHint: "Clarifies this build does not enable Mac Catalyst or ship a Mac app."
         )
 
         PlanNoteRow(
@@ -840,9 +844,22 @@ private struct PlanStatusSummaryRow: View {
     let title: String
     let systemImage: String
     let status: PlanStatusToken
+    let accessibilityHint: String?
+
+    init(
+        title: String,
+        systemImage: String,
+        status: PlanStatusToken,
+        accessibilityHint: String? = nil
+    ) {
+        self.title = title
+        self.systemImage = systemImage
+        self.status = status
+        self.accessibilityHint = accessibilityHint
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let row = VStack(alignment: .leading, spacing: 8) {
             Label {
                 Text(title)
                     .foregroundStyle(SciFiTheme.primaryText)
@@ -858,6 +875,12 @@ private struct PlanStatusSummaryRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue(status.title)
+
+        if let accessibilityHint {
+            row.accessibilityHint(accessibilityHint)
+        } else {
+            row
+        }
     }
 }
 
