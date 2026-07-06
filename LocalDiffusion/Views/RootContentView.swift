@@ -750,16 +750,17 @@ private struct PlanView: View {
             Divider()
                 .overlay(SciFiTheme.stroke)
 
-            Text("No purchase state is stored, no entitlement is granted, and no App Store product is requested from this screen.")
+            Text("No purchase state is stored, no entitlement is granted, no App Store product is requested from this screen, and paid candidates cannot be bought or unlocked here.")
                 .font(.callout)
                 .foregroundStyle(SciFiTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .sciFiPanel(isHighlighted: true)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Local Plan")
         .accessibilityValue(planOverviewAccessibilityValue)
-        .accessibilityHint("Summarizes the current local plan and paid capability planning status.")
+        .accessibilityHint("Summarizes the current Local plan, planning-only paid candidates, and purchase boundary.")
     }
 
     private var planOverviewIcon: some View {
@@ -789,7 +790,7 @@ private struct PlanView: View {
     }
 
     private var planOverviewAccessibilityValue: String {
-        "Local-first image generation app. Paid capability planning is visible, but StoreKit is not configured. No purchase state is stored, no entitlement is granted, and no App Store product is requested."
+        "Local-first image generation app. Paid capability planning is visible, but StoreKit is not configured. No purchase state is stored, no entitlement is granted, no App Store product is requested from this screen, and paid candidates cannot be bought or unlocked here."
     }
 
     private func compactSectionFooter(_ title: String, _ text: String) -> some View {

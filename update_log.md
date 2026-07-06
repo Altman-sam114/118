@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.109 / Plan 概览购买边界语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanView.planOverview` 底部 note 明确说明当前没有 purchase state、entitlement 或 App Store product request，且 paid candidates 不能在这里购买或解锁。
+  - `planOverviewAccessibilityValue` 同步朗读 Local-first app、paid capability planning visible、StoreKit not configured、无 purchase state/entitlement/App Store product request，以及 paid candidates cannot be bought or unlocked here。
+  - overview accessibility hint 说明该 panel 汇总 current Local plan、planning-only paid candidates 和 purchase boundary。
+  - 保留 Local Plan label、中性 checklist 图标、暗色科幻样式、compact Form、iPad regular 布局、Dynamic Type 回退、Plan row 数据和导航行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.109（Plan概览购买边界语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit、purchase UI、restore flow、receipt validation、subscriptions、entitlement persistence、paid gate、Mac Catalyst、native Mac/Catalyst slice、SwiftData schema、native backend、Xcode project 或 workflow。
+
 ### v1.108 / Models 添加表单字段语义
 
 - 日期：2026-07-07
