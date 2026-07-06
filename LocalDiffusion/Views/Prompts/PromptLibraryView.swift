@@ -533,9 +533,7 @@ struct PromptTemplateEditor: View {
                     Text(title)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(accent)
-                    Text("\(text.wrappedValue.count) chars")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(SciFiTheme.secondaryText)
+                    promptCharacterCount(text, title: title)
                 }
             } else {
                 HStack {
@@ -543,9 +541,7 @@ struct PromptTemplateEditor: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(accent)
                     Spacer()
-                    Text("\(text.wrappedValue.count) chars")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(SciFiTheme.secondaryText)
+                    promptCharacterCount(text, title: title)
                 }
             }
 
@@ -574,6 +570,20 @@ struct PromptTemplateEditor: View {
                 .accessibilityValue(Text(text.wrappedValue.isEmpty ? "Empty prompt" : text.wrappedValue))
                 .accessibilityHint(Text(accessibilityHint))
         }
+    }
+
+    private func promptCharacterCount(_ text: Binding<String>, title: String) -> some View {
+        let count = text.wrappedValue.count
+
+        return Text("\(count) chars")
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(SciFiTheme.secondaryText)
+            .accessibilityLabel(Text("\(title) character count"))
+            .accessibilityValue(Text(promptCharacterCountAccessibilityValue(count)))
+    }
+
+    private func promptCharacterCountAccessibilityValue(_ count: Int) -> String {
+        count == 1 ? "1 character" : "\(count) characters"
     }
 
     private func promptEditorMinHeight(_ minHeight: CGFloat) -> CGFloat {

@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.102 / Prompt 模板编辑字符计数语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - `PromptTemplateEditor` 的 prompt 字符计数抽为本地 helper。
+  - Positive Prompt / Negative Prompt 的 `N chars` 现在分别暴露 `<field> character count` accessibility label。
+  - 字符计数 accessibility value 使用 `0 characters` / `1 character` / `N characters`，保留可见 `N chars` 文案不变。
+  - 保留模板新增/编辑/保存、TextEditor binding、分类字段、ParameterEditor、搜索、分组和加载行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.102（Prompt模板编辑字符计数语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 template save/load/search/category behavior、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.101 / Generate 提示词字符计数语义
 
 - 日期：2026-07-06
