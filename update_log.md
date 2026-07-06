@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.93 / Gallery 文件夹即时保存语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery detail 的 Folder picker accessibility hint 改为明确说明选择会更改当前图片 folder 并立即保存。
+  - 保留 `Image folder` label、`currentFolderAccessibilityValue`、Picker options、`folderBinding` getter/setter 和视觉布局不变。
+  - Tags/Save Tags 的 draft tags、saved tags 与未保存状态语义保持不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.93（Gallery文件夹即时保存语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 folder binding、folder filters、folder editor、tag saving、file storage、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.92 / Gallery 组织标签草稿语义
 
 - 日期：2026-07-06

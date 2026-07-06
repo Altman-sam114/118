@@ -785,7 +785,7 @@ private struct ImageDetailView: View {
                 }
                 .accessibilityLabel(Text("Image folder"))
                 .accessibilityValue(Text(currentFolderAccessibilityValue))
-                .accessibilityHint("Assigns this image to a gallery folder.")
+                .accessibilityHint("Changes this image's folder and saves the selection immediately.")
 
                 TextField("Tags, comma separated", text: $tagText, axis: .vertical)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3...6 : 1...3)
