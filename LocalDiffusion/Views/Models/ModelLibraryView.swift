@@ -782,6 +782,9 @@ private struct UntrackedModelImportEditor: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityLabel(Text("Cancel model import"))
+                    .accessibilityValue(Text("No model imported"))
+                    .accessibilityHint(Text("Closes the import editor without adding \(file.filename) to the model library."))
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Import") {
@@ -789,9 +792,26 @@ private struct UntrackedModelImportEditor: View {
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel(Text("Import model"))
+                    .accessibilityValue(Text(importAccessibilityValue))
+                    .accessibilityHint(Text(importAccessibilityHint))
                 }
             }
         }
+    }
+
+    private var hasDisplayName: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var importAccessibilityValue: String {
+        hasDisplayName ? "Ready" : "Display name required"
+    }
+
+    private var importAccessibilityHint: String {
+        hasDisplayName
+        ? "Adds \(file.filename) to the model library using the current display name and family."
+        : "Enter a display name before importing \(file.filename)."
     }
 }
 

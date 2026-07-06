@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.66 / Models 未跟踪导入保存语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Models `UntrackedModelImportEditor` 的 Import 按钮新增 VoiceOver label/value/hint，区分 ready 与 display name required 状态。
+  - Models `UntrackedModelImportEditor` 的 Cancel 按钮新增 close-without-importing 语义。
+  - 未跟踪 GGUF 文件导入继续沿用原有 `onImport(name, family)`、disabled 和 dismiss 行为。
+  - 不修改未跟踪文件扫描、导入、删除、下载状态机、文件存储、SwiftData、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.66（Models未跟踪导入保存语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不实现 StoreKit 购买或 entitlement。
+
 ### v1.65 / Gallery 文件夹编辑器保存语义
 
 - 日期：2026-07-06
