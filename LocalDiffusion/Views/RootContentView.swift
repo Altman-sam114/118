@@ -390,10 +390,10 @@ private struct PlanView: View {
         ),
         PlanCapabilityItem(
             title: "StoreKit purchases",
-            detail: "Requires product IDs, entitlement rules, and App Store Connect.",
+            detail: "StoreKit purchase capability is not enabled in this build; planning-only paid candidates are not sold, purchased, or unlocked until product IDs, entitlement mapping, and App Store Connect are configured.",
             status: .requiresConfiguration,
             systemImage: "cart",
-            accessibilityHint: "Clarifies purchases require product IDs, entitlement rules, and App Store Connect before StoreKit can be enabled."
+            accessibilityHint: "Clarifies this build has no active StoreKit purchase capability, so planning-only paid candidates cannot be bought or unlocked."
         )
     ]
 

@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.82 / Plan StoreKit purchases 能力文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Capability Matrix 中 `StoreKit purchases` 的 detail 从 `Requires product IDs, entitlement rules, and App Store Connect.` 改为 `StoreKit purchase capability is not enabled in this build; planning-only paid candidates are not sold, purchased, or unlocked until product IDs, entitlement mapping, and App Store Connect are configured.`。
+  - 同步 accessibility hint，明确当前 build 没有 active StoreKit purchase capability，planning-only paid candidates 不能被购买或解锁。
+  - 保留该 Capability Matrix row title、status、icon、layout、StoreKit 未配置状态和业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.82（PlanStoreKitPurchases能力文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit，不添加购买 UI，不做真实购买验证。
+
 ### v1.81 / Plan StoreKit gate 请求文案
 
 - 日期：2026-07-06
