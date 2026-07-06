@@ -789,6 +789,24 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.59 / Gallery 文件夹动作上下文语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery folder row 的 Rename / Delete swipe actions 增加具体 folder 名 VoiceOver label 和 hint。
+  - 同一 folder row 的 Rename / Delete context menu actions 增加具体 folder 名 VoiceOver label 和 hint。
+  - 保持现有可视文案、SF Symbol、action 顺序、role、tint、swipe/context menu 触发方式和 action closure 不变。
+  - 不修改 Gallery folder filter、folder rename/delete 实现、确认弹窗、图片回退规则、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.59（Gallery文件夹动作上下文语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、iPad pointer/long-press 实机测试、Mac build、StoreKit 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.58 / Prompt 搜索入口语义
 
 - 日期：2026-07-06

@@ -204,6 +204,8 @@ struct GalleryView: View {
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
+                            .accessibilityLabel(Text("Delete folder: \(folder.name)"))
+                            .accessibilityHint(Text("Shows a confirmation before deleting \(folder.name)."))
 
                             Button {
                                 editingFolder = FolderEditorState(folder: folder)
@@ -211,6 +213,8 @@ struct GalleryView: View {
                                 Label("Rename", systemImage: "pencil")
                             }
                             .tint(.blue)
+                            .accessibilityLabel(Text("Rename folder: \(folder.name)"))
+                            .accessibilityHint(Text("Opens \(folder.name) for renaming."))
                         }
                         .contextMenu {
                             Button {
@@ -218,12 +222,16 @@ struct GalleryView: View {
                             } label: {
                                 Label("Rename", systemImage: "pencil")
                             }
+                            .accessibilityLabel(Text("Rename folder: \(folder.name)"))
+                            .accessibilityHint(Text("Opens \(folder.name) for renaming."))
 
                             Button(role: .destructive) {
                                 pendingFolderDeletion = FolderEditorState(folder: folder)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
+                            .accessibilityLabel(Text("Delete folder: \(folder.name)"))
+                            .accessibilityHint(Text("Shows a confirmation before deleting \(folder.name)."))
                         }
                 }
             }
