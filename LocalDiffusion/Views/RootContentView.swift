@@ -461,7 +461,7 @@ private struct PlanView: View {
 
     private let macReadinessItems = [
         MacReadinessItem(
-            title: "Xcode target platform",
+            title: "Apple platform support",
             detail: "Project still targets iPhoneOS and iPhone Simulator only.",
             status: .requiresConfiguration,
             systemImage: "desktopcomputer",
