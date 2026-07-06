@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.106 / Models 未跟踪导入字段语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `UntrackedModelImportEditor` 的 `Display name` TextField 新增 imported model display name 语义。
+  - Display name accessibility value 区分空值 `No display name` 与当前 trimmed name，并提示导入前必填、会作为 Models 列表显示名。
+  - `Family` Picker 新增 imported model family label、当前 family value 和写入导入 GGUF metadata 的 hint。
+  - 保留默认 display name 推断、family 推断、Import disabled gate、`onImport(name, family)`、dismiss 和未跟踪文件导入行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.106（Models未跟踪导入字段语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 untracked file scan/import/delete behavior、download state machine、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.105 / Prompt 分类标题语义
 
 - 日期：2026-07-07

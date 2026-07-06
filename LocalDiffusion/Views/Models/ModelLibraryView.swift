@@ -829,11 +829,17 @@ private struct UntrackedModelImportEditor: View {
 
                 Section("Model") {
                     TextField("Display name", text: $name)
+                        .accessibilityLabel(Text("Imported model display name"))
+                        .accessibilityValue(Text(displayNameAccessibilityValue))
+                        .accessibilityHint(Text("Required before importing and used as the model name in Models."))
                     Picker("Family", selection: $family) {
                         ForEach(ModelFamily.allCases) { family in
                             Text(family.rawValue).tag(family)
                         }
                     }
+                    .accessibilityLabel(Text("Imported model family"))
+                    .accessibilityValue(Text(familyAccessibilityValue))
+                    .accessibilityHint(Text("Sets the model family metadata for this imported GGUF file."))
                 }
                 .listRowBackground(SciFiTheme.panel)
             }
@@ -864,6 +870,15 @@ private struct UntrackedModelImportEditor: View {
 
     private var hasDisplayName: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var displayNameAccessibilityValue: String {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedName.isEmpty ? "No display name" : trimmedName
+    }
+
+    private var familyAccessibilityValue: String {
+        family.rawValue
     }
 
     private var importAccessibilityValue: String {
