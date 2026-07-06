@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.55 / Plan 能力矩阵提示语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Capability Matrix rows 增加行级 VoiceOver hint。
+  - Local generation workspace、Model and storage management、Gallery and prompt reuse hints 明确这些能力属于当前 Local plan 可用能力。
+  - Batch queue controls、Curated prompt packs、Workflow export hints 明确这些是 planning-only paid candidates，当前未售卖或未解锁。
+  - StoreKit purchases hint 明确需要 product IDs、entitlement rules 和 App Store Connect 后才能启用 StoreKit。
+  - 保持所有 Plan 可视文案、状态、row 顺序、compact Form、iPad 双栏/单列回退、StoreKit 未配置事实、Mac Catalyst 未启用事实和业务行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.55（Plan能力矩阵提示语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、StoreKit 测试、Plan Capability Matrix 实机 VoiceOver 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.54 / Plan Mac 就绪提示语义
 
 - 日期：2026-07-06

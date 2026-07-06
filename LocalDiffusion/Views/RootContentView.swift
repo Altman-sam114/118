@@ -231,6 +231,7 @@ private struct PlanCapabilityItem: Identifiable {
     let detail: String
     let status: PlanCapabilityStatus
     let systemImage: String
+    let accessibilityHint: String
 
     var id: String { title }
 }
@@ -348,43 +349,50 @@ private struct PlanView: View {
             title: "Local generation workspace",
             detail: "Prompt, parameter, run, cancel, and result handoff.",
             status: .available,
-            systemImage: "sparkles"
+            systemImage: "sparkles",
+            accessibilityHint: "Confirms this generation workspace is available in the current Local plan."
         ),
         PlanCapabilityItem(
             title: "Model and storage management",
             detail: "Download, import, resume, reconcile, and delete GGUF files.",
             status: .available,
-            systemImage: "shippingbox"
+            systemImage: "shippingbox",
+            accessibilityHint: "Confirms model and storage management are available in the current Local plan."
         ),
         PlanCapabilityItem(
             title: "Gallery and prompt reuse",
             detail: "Folders, tags, templates, reuse, and regeneration.",
             status: .available,
-            systemImage: "square.grid.2x2"
+            systemImage: "square.grid.2x2",
+            accessibilityHint: "Confirms gallery organization and prompt reuse are available in the current Local plan."
         ),
         PlanCapabilityItem(
             title: "Batch queue controls",
             detail: "Planning-only paid candidate for higher-throughput local generation; not sold or unlocked in this build.",
             status: .planned,
-            systemImage: "list.bullet.rectangle"
+            systemImage: "list.bullet.rectangle",
+            accessibilityHint: "Clarifies batch queue controls are planning-only paid candidates and are not sold or unlocked in this build."
         ),
         PlanCapabilityItem(
             title: "Curated prompt packs",
             detail: "Planning-only paid candidate for reusable style systems; not sold or unlocked in this build.",
             status: .planned,
-            systemImage: "text.book.closed"
+            systemImage: "text.book.closed",
+            accessibilityHint: "Clarifies curated prompt packs are planning-only paid candidates and are not sold or unlocked in this build."
         ),
         PlanCapabilityItem(
             title: "Workflow export",
             detail: "Planning-only paid candidate for portable generation recipes and production handoff; not sold or unlocked in this build.",
             status: .planned,
-            systemImage: "square.and.arrow.up"
+            systemImage: "square.and.arrow.up",
+            accessibilityHint: "Clarifies workflow export is a planning-only paid candidate and is not sold or unlocked in this build."
         ),
         PlanCapabilityItem(
             title: "StoreKit purchases",
             detail: "Requires product IDs, entitlement rules, and App Store Connect.",
             status: .requiresConfiguration,
-            systemImage: "cart"
+            systemImage: "cart",
+            accessibilityHint: "Clarifies purchases require product IDs, entitlement rules, and App Store Connect before StoreKit can be enabled."
         )
     ]
 
@@ -928,6 +936,7 @@ private struct CapabilityRow: View {
             systemImage: item.systemImage,
             status: item.status.token
         )
+        .accessibilityHint(item.accessibilityHint)
     }
 }
 
