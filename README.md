@@ -4,7 +4,7 @@ Local Diffusion is a native iOS 17 SwiftUI image generation app for fully local 
 
 ## Current implementation
 
-- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows with pointer hover affordance, an embedded Gallery filter rail that avoids nested split views, and a neutral planning/checklist Plan entry for paid-capability planning status.
+- SwiftUI app shell with adaptive tab navigation for iPhone and a single top-level split-view layout for iPad, including accessible sidebar rows with pointer hover affordance, an embedded Gallery filter rail that avoids nested split views, and a neutral planning/checklist Plan entry whose sidebar hint covers local plan, planning-only paid capability status, and platform readiness.
 - SwiftData metadata models for downloaded models, generated images, folders, tags, and prompt templates.
 - FileManager-backed Application Support storage for GGUF models and generated images, with files excluded from iCloud backup.
 - Hugging Face GGUF download flow with paste-and-parse Hugging Face file URLs, keyboard-aware Add Model submission, `.gguf` source validation, toolbar refresh/add menu VoiceOver context, local GGUF file import, progress, pause, resume, cancel, confirmed deletion, duplicate protection, persisted byte tracking, untracked-file import/cleanup with file-specific VoiceOver actions, an untracked GGUF import editor with Import/Cancel ready and display-name-required VoiceOver semantics, restart recovery for interrupted downloads, accessible labeled row controls with model-name context, empty-state VoiceOver context for no tracked models or untracked GGUF files plus the download/import next steps, readable Add Model errors, readable model list and detail status messages, and Dynamic Type-friendly model storage rows with a combined VoiceOver storage summary.
@@ -87,6 +87,9 @@ After every meaningful coding task:
 
 ### 2026-07-06
 
+- Completed: Clarified the iPad sidebar Plan hint so it names local plan, planning-only paid capability status, and platform readiness.
+- Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.71 version.
+- Risk: This is Root sidebar accessibility copy only; no visible UI, TabView/sidebar structure, navigation state, Plan copy, StoreKit, entitlement persistence, purchase flow, Mac Catalyst, SwiftData schema, native backend, Xcode project, or workflow behavior is changed.
 - Completed: Replaced the Root Plan navigation payment-coded icon with a neutral planning/checklist icon for compact tabs and iPad sidebar.
 - Verified: Local lightweight checks, Swift parse, iPhoneOS build, and cloud CI artifact review are required for the v1.70 version.
 - Risk: This is Root navigation visual semantics only; no TabView/sidebar structure, navigation state, Plan copy, StoreKit, entitlement persistence, purchase flow, Mac Catalyst, SwiftData schema, native backend, Xcode project, or workflow behavior is changed.

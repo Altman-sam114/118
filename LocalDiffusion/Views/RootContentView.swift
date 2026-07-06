@@ -34,7 +34,7 @@ enum AppSection: Hashable {
         case .models: "Opens model download and storage management."
         case .gallery: "Opens generated image browsing and reuse."
         case .prompts: "Opens saved prompt templates."
-        case .plan: "Opens local plan and platform readiness."
+        case .plan: "Opens local plan, planning-only paid capability status, and platform readiness."
         }
     }
 }
