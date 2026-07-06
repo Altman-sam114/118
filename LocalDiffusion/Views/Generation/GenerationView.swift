@@ -254,6 +254,9 @@ struct GenerationView: View {
                         Text(model.name).tag(Optional(model.id))
                     }
                 }
+                .accessibilityLabel(Text("Generation model"))
+                .accessibilityValue(Text(modelPickerAccessibilityValue))
+                .accessibilityHint(Text("Selects the ready GGUF model used for the next local image generation."))
             }
         }
         .listRowBackground(SciFiTheme.panel)
@@ -506,6 +509,13 @@ struct GenerationView: View {
             get: { selectedModel?.id },
             set: { viewModel.selectedModelID = $0 }
         )
+    }
+
+    private var modelPickerAccessibilityValue: String {
+        let modelName = selectedModel?.name ?? "No model selected"
+        let count = readyModels.count
+        let modelCountText = count == 1 ? "1 ready model" : "\(count) ready models"
+        return "\(modelName). \(modelCountText)."
     }
 
     private var canGenerate: Bool {

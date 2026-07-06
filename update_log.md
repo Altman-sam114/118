@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.68 / Generate 模型选择语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Generate Model section 的 ready model Picker 新增 VoiceOver label/value/hint。
+  - Picker value 暴露当前选中模型名和 ready model 数量。
+  - Picker hint 说明会选择下一次本地生成使用的 ready GGUF 模型。
+  - 不修改模型查询、`selectedModel` fallback、`selectedModelBinding`、生成门禁、导航行为、文件存储、SwiftData、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.68（Generate模型选择语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不实现 StoreKit 购买或 entitlement。
+
 ### v1.67 / Generate 空模型入口语义
 
 - 日期：2026-07-06
