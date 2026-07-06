@@ -304,7 +304,7 @@ private enum MacReadinessStatus {
         switch self {
         case .requiresConfiguration: "Requires configuration"
         case .requiresNativeBuild: "Requires native build"
-        case .planned: "Planned"
+        case .planned: "Needs QA"
         case .requiresDecision: "Requires decision"
         }
     }
