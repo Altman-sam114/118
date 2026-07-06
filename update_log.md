@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.80 / Plan Purchase UI 可用性文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Availability 中 `Purchase UI` 的 detail 从 `Purchase UI should only be added after StoreKit products and entitlement mapping exist.` 改为 `Purchase UI remains hidden until StoreKit products and entitlement mapping exist.`。
+  - 保留该 Availability row title、status、hint、icon、layout、StoreKit 未配置状态和业务逻辑不变。
+  - 不修改 StoreKit products、购买、entitlement persistence、paid gate、SwiftData、workflow、Mac Catalyst 或真实购买验证。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.80（PlanPurchaseUI可用性文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit，不添加购买 UI，不做真实购买验证。
+
 ### v1.79 / Mac 分发签名详情文案
 
 - 日期：2026-07-06
