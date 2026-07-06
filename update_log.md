@@ -22,6 +22,25 @@
 
 ## 历史记录
 
+### v1.64 / Gallery 详情操作语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery image detail 的 `Reuse Parameters` 操作新增 VoiceOver label/value/hint，并暴露当前图片模型和输出尺寸上下文。
+  - `Reuse and Generate` 操作新增当前图片上下文，并说明会加载参数后启动新的本地生成。
+  - `Share PNG` 操作新增当前图片上下文，并说明分享当前生成 PNG 文件。
+  - toolbar `Delete Image` 操作新增当前图片上下文，并说明会先确认再删除图片文件和 metadata。
+  - 不修改复用、再生成、分享、删除、确认弹窗、文件存储、SwiftData、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.64（Gallery详情操作语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不实现 StoreKit 购买或 entitlement。
+
 ### v1.63 / Prompt 编辑器保存语义
 
 - 日期：2026-07-06

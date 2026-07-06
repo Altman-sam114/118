@@ -743,7 +743,9 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .accessibilityHint("Loads these generation parameters back into Generate.")
+                .accessibilityLabel(Text("Reuse image parameters"))
+                .accessibilityValue(Text(imageActionAccessibilityValue))
+                .accessibilityHint(Text("Loads this image's generation parameters back into Generate."))
 
                 Button {
                     onRegenerate()
@@ -752,7 +754,9 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .accessibilityHint("Loads these parameters and starts a new local generation.")
+                .accessibilityLabel(Text("Reuse and generate image"))
+                .accessibilityValue(Text(imageActionAccessibilityValue))
+                .accessibilityHint(Text("Loads this image's parameters and starts a new local generation."))
 
                 if fileStore.fileExists(at: imageURL), fileStore.fileSize(at: imageURL) > 0 {
                     ShareLink(item: imageURL) {
@@ -760,7 +764,9 @@ private struct ImageDetailView: View {
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle())
                     .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .accessibilityHint("Shares the generated PNG file.")
+                    .accessibilityLabel(Text("Share generated PNG"))
+                    .accessibilityValue(Text(imageActionAccessibilityValue))
+                    .accessibilityHint(Text("Shares this generated PNG file."))
                 }
             }
             .listRowBackground(SciFiTheme.panel)
@@ -804,7 +810,9 @@ private struct ImageDetailView: View {
                 } label: {
                     Label("Delete Image", systemImage: "trash")
                 }
-                .accessibilityHint("Shows a confirmation before deleting the image file and metadata.")
+                .accessibilityLabel(Text("Delete generated image"))
+                .accessibilityValue(Text(imageActionAccessibilityValue))
+                .accessibilityHint(Text("Shows a confirmation before deleting this image file and metadata."))
             }
         }
         .confirmationDialog("Delete this generated image?", isPresented: $showingDeleteConfirmation) {
@@ -830,6 +838,10 @@ private struct ImageDetailView: View {
 
     private var imagePreviewAccessibilityValue: String {
         "Prompt \(image.prompt). Model \(image.modelName). Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight)."
+    }
+
+    private var imageActionAccessibilityValue: String {
+        "Model \(image.modelName). Seed \(image.seed). Requested \(image.width) by \(image.height) pixels. Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight) pixels."
     }
 
     private var currentFolderAccessibilityValue: String {
