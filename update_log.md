@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.90 / Prompt 模板行摘要语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - `PromptTemplateRow` 外层 panel 增加 row-level accessibility label，暴露 `Prompt template: 模板名`。
+  - 新增 row-level accessibility value，组合 positive prompt、steps、sampler 和 canvas size，方便 VoiceOver 用户快速扫描模板列表。
+  - 外层 row 使用 `.accessibilityElement(children: .contain)`，保留 Edit/Load 按钮和 metric pill 的独立辅助功能语义；不使用 `.combine` 或 `.ignore` 包裹交互控件。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.90（Prompt模板行摘要语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改模板查询、搜索、分组、排序、编辑、加载、删除、保存行为、SwiftData schema、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+
 ### v1.89 / Models 原生加载选择器语义
 
 - 日期：2026-07-06

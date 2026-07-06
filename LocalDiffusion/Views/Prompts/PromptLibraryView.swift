@@ -321,6 +321,10 @@ private struct PromptTemplateRow: View {
         }
         .padding(12)
         .sciFiPanel()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Prompt template: \(template.name)"))
+        .accessibilityValue(Text(templateAccessibilityValue))
+        .accessibilityHint(Text("Contains summary metrics plus Edit Template and Load Template controls."))
     }
 
     @ViewBuilder
@@ -412,6 +416,10 @@ private struct PromptTemplateRow: View {
             .accessibilityLabel(Text("Template canvas pixel size"))
             .accessibilityValue(Text("\(template.width) by \(template.height) pixels"))
             .accessibilityHint(Text("Shows the canvas width and height saved with this template."))
+    }
+
+    private var templateAccessibilityValue: String {
+        "Prompt \(template.prompt). \(template.steps) steps. Sampler \(template.samplerRawValue). Size \(template.width) by \(template.height) pixels."
     }
 }
 
