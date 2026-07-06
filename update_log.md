@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.60 / Models 工具栏入口语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Models toolbar `Refresh Storage` button 增加 VoiceOver hint，说明会核对模型目录以及 tracked / untracked GGUF 文件状态。
+  - Models toolbar `Add` menu 增加 VoiceOver label、当前 import 状态 value 和 hint，说明菜单包含 Hugging Face 下载与本地 GGUF 导入入口。
+  - Add menu 内 `Download from Hugging Face` 和 `Import GGUF File` actions 增加具体目的 hint；导入 action 暴露 import 中 / ready 状态。
+  - 保持现有可视文案、SF Symbol、toolbar placement、menu action closure、disabled 条件、下载、导入、刷新和 fileImporter 行为不变。
+  - 不修改下载状态机、文件导入、未跟踪文件处理、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.60（Models工具栏入口语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、iPad/Mac toolbar 实机测试、StoreKit 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.59 / Gallery 文件夹动作上下文语义
 
 - 日期：2026-07-06

@@ -80,6 +80,7 @@ struct ModelLibraryView: View {
                     } label: {
                         Label("Refresh Storage", systemImage: "arrow.clockwise")
                     }
+                    .accessibilityHint("Checks the model directory and refreshes tracked and untracked GGUF file status.")
                 }
 
                 ToolbarItem(placement: .primaryAction) {
@@ -89,16 +90,22 @@ struct ModelLibraryView: View {
                         } label: {
                             Label("Download from Hugging Face", systemImage: "arrow.down")
                         }
+                        .accessibilityHint("Opens the Hugging Face GGUF model download form.")
 
                         Button {
                             showingModelFileImporter = true
                         } label: {
                             Label("Import GGUF File", systemImage: "square.and.arrow.down")
                         }
+                        .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                        .accessibilityHint("Opens a file picker for a local GGUF model file.")
                         .disabled(isImportingModelFile)
                     } label: {
                         Label("Add", systemImage: "plus")
                     }
+                    .accessibilityLabel("Add model options")
+                    .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                    .accessibilityHint("Opens options to download a Hugging Face GGUF model or import a local GGUF file.")
                 }
             }
             .sheet(isPresented: $showingAddModel) {
