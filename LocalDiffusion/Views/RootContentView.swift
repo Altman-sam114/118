@@ -279,6 +279,7 @@ private struct PlanEntitlementRuleItem: Identifiable {
     let detail: String
     let status: PlanEntitlementRuleStatus
     let systemImage: String
+    let accessibilityHint: String
 
     var id: String { title }
 }
@@ -401,25 +402,29 @@ private struct PlanView: View {
             title: "Core local tools",
             detail: "Generate, Models, Gallery, and Prompts stay available in the current Local plan.",
             status: .protected,
-            systemImage: "lock.open"
+            systemImage: "lock.open",
+            accessibilityHint: "Confirms core local tools stay available in the current Local plan."
         ),
         PlanEntitlementRuleItem(
             title: "Paid candidates",
             detail: "Batch queue, curated prompt packs, and workflow export are planning-only until product decisions exist.",
             status: .candidate,
-            systemImage: "sparkles"
+            systemImage: "sparkles",
+            accessibilityHint: "Clarifies paid candidates are planning only and do not grant active entitlements in this build."
         ),
         PlanEntitlementRuleItem(
             title: "StoreKit purchase gate",
             detail: "Requires product IDs, entitlement mapping, restore flow, receipts, and App Store Connect.",
             status: .requiresConfiguration,
-            systemImage: "cart"
+            systemImage: "cart",
+            accessibilityHint: "Clarifies purchases require product IDs, entitlement mapping, restore flow, receipts, and App Store Connect."
         ),
         PlanEntitlementRuleItem(
             title: "Entitlement persistence",
             detail: "No purchase state is stored, no entitlement is granted, and no App Store product is requested.",
             status: .notImplemented,
-            systemImage: "xmark.seal"
+            systemImage: "xmark.seal",
+            accessibilityHint: "Clarifies this build stores no purchase state, grants no entitlement, and requests no App Store product."
         )
     ]
 
@@ -950,6 +955,7 @@ private struct EntitlementRuleRow: View {
             systemImage: item.systemImage,
             status: item.status.token
         )
+        .accessibilityHint(item.accessibilityHint)
     }
 }
 

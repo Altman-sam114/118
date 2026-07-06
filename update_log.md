@@ -789,6 +789,26 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.56 / Plan 权益规则提示语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Entitlement Rules rows 增加行级 VoiceOver hint。
+  - Core local tools hint 明确 Generate、Models、Gallery 和 Prompts 在当前 Local plan 保持可用。
+  - Paid candidates hint 明确 Batch queue、curated prompt packs 和 workflow export 仅规划，当前不授予 active entitlements。
+  - StoreKit purchase gate hint 明确需要 product IDs、entitlement mapping、restore flow、receipts 和 App Store Connect。
+  - Entitlement persistence hint 明确当前不存储 purchase state、不授予 entitlement、不请求 App Store product。
+  - 保持所有 Plan 可视文案、状态、row 顺序、compact Form、iPad 双栏/单列回退、StoreKit 未配置事实、Mac Catalyst 未启用事实和业务行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.56（Plan权益规则提示语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、StoreKit 测试、Plan Entitlement Rules 实机 VoiceOver 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.55 / Plan 能力矩阵提示语义
 
 - 日期：2026-07-06
