@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.77 / Mac 平台支持详情文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Mac Readiness 第一项 `Apple platform support` 的 detail 从 `Project still targets iPhoneOS and iPhone Simulator only.` 改为 `This build is still configured for the iPhone and iPad app target only.`。
+  - 保留该 Mac readiness item title、status、hint、icon、layout、Mac app Not enabled 状态和业务逻辑不变。
+  - 不修改 Mac Catalyst、Xcode project、native backend slice、StoreKit、购买、entitlement、SwiftData、workflow 或真实 Mac 验证。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.77（Mac平台支持详情文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不添加 native Mac/Catalyst slice，不做真实 Mac 验证。
+
 ### v1.76 / Mac 平台支持标题
 
 - 日期：2026-07-06

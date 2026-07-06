@@ -462,7 +462,7 @@ private struct PlanView: View {
     private let macReadinessItems = [
         MacReadinessItem(
             title: "Apple platform support",
-            detail: "Project still targets iPhoneOS and iPhone Simulator only.",
+            detail: "This build is still configured for the iPhone and iPad app target only.",
             status: .requiresConfiguration,
             systemImage: "desktopcomputer",
             accessibilityHint: "Clarifies Mac support requires enabling a Mac or Catalyst target platform configuration."
