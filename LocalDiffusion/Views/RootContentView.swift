@@ -483,7 +483,7 @@ private struct PlanView: View {
         ),
         MacReadinessItem(
             title: "Distribution and signing",
-            detail: "Developer ID, sandboxing, notarization, and App Store path require a product decision.",
+            detail: "Mac release channel, signing, sandboxing, and notarization still need a product decision.",
             status: .requiresDecision,
             systemImage: "person.badge.key",
             accessibilityHint: "Clarifies the Mac signing and distribution path needs a product decision."
