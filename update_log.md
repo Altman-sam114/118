@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.81 / Plan StoreKit gate 请求文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Entitlement Rules 中 `StoreKit purchase gate` 的 detail 从 `Requires product IDs, entitlement mapping, restore flow, receipts, and App Store Connect.` 改为 `No App Store product is requested until product IDs, entitlement mapping, restore flow, receipts, and App Store Connect are configured.`。
+  - 同步 accessibility hint，明确当前 build 在 StoreKit 前置条件存在前不会请求 App Store product 或展示真实购买流。
+  - 保留该 Entitlement Rules row title、status、icon、layout、StoreKit 未配置状态和业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.81（PlanStoreKitGate请求文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit，不添加购买 UI，不做真实购买验证。
+
 ### v1.80 / Plan Purchase UI 可用性文案
 
 - 日期：2026-07-06

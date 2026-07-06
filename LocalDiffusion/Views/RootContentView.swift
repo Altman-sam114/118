@@ -414,10 +414,10 @@ private struct PlanView: View {
         ),
         PlanEntitlementRuleItem(
             title: "StoreKit purchase gate",
-            detail: "Requires product IDs, entitlement mapping, restore flow, receipts, and App Store Connect.",
+            detail: "No App Store product is requested until product IDs, entitlement mapping, restore flow, receipts, and App Store Connect are configured.",
             status: .requiresConfiguration,
             systemImage: "cart",
-            accessibilityHint: "Clarifies purchases require product IDs, entitlement mapping, restore flow, receipts, and App Store Connect."
+            accessibilityHint: "Clarifies this build does not request an App Store product or show a real purchase flow until StoreKit prerequisites exist."
         ),
         PlanEntitlementRuleItem(
             title: "Entitlement persistence",
