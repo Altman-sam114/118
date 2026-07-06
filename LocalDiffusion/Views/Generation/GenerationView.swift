@@ -37,6 +37,8 @@ struct GenerationView: View {
                         Label("Save Template", systemImage: "bookmark")
                     }
                     .disabled(viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityValue(Text(saveTemplateAccessibilityValue))
+                    .accessibilityHint(Text(saveTemplateAccessibilityHint))
                 }
             }
             .sheet(isPresented: $showingSaveTemplate) {
@@ -500,6 +502,20 @@ struct GenerationView: View {
         selectedModel != nil &&
         viewModel.backendStatus.isReady &&
         !viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var canSaveTemplate: Bool {
+        !viewModel.parameters.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var saveTemplateAccessibilityValue: String {
+        canSaveTemplate ? "Ready" : "Positive prompt required"
+    }
+
+    private var saveTemplateAccessibilityHint: String {
+        canSaveTemplate
+        ? "Saves the current prompts and generation parameters as a Prompt Library template."
+        : "Enter a positive prompt before saving a template."
     }
 
     private var generationGate: GenerationGate {

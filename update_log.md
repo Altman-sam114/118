@@ -789,6 +789,25 @@
 - 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse、沙箱外 iPhoneOS build；GitHub Actions 结果包由 Agent C 下载核对。
 - 遗留事项：本轮仍未做 simulator VoiceOver/Dynamic Type 目检、StoreKit 测试、Mac build 或真机 GGUF 生成；真实 StoreKit、Mac Catalyst 和真机 GGUF 生成仍需后续专门轮次。
 
+### v1.61 / Generate 保存模板入口语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Generate toolbar `Save Template` button 增加 VoiceOver value，暴露 `Ready` / `Positive prompt required` 状态。
+  - Save Template hint 在 ready 状态说明会把当前 prompts 和 generation parameters 保存为 Prompt Library template。
+  - Save Template hint 在 positive prompt 为空时说明需要先填写 positive prompt。
+  - 保持现有可视文案、SF Symbol、toolbar placement、disabled 条件、sheet 打开、PromptTemplateEditor 初始化和模板保存 closure 不变。
+  - 不修改 PromptTemplate schema、模板保存字段、Prompt Library 加载逻辑、生成流程、SwiftData schema、文件存储、native backend、StoreKit、Mac Catalyst、Xcode project 或 CI workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.61（Generate保存模板入口语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不默认运行本机完整 `xcodebuild`、simulator VoiceOver 目检、iPad/Mac toolbar 实机测试、StoreKit 测试或真机 GGUF 生成；真实 StoreKit、Mac Catalyst、Mac UI smoke 和真机 GGUF 生成仍需后续专门轮次。
+
 ### v1.60 / Models 工具栏入口语义
 
 - 日期：2026-07-06
