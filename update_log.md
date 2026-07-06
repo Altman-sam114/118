@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.74 / Plan 可用性页脚语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan compact Availability section 新增 contextual footer note，并通过现有 `compactSectionFooter` 暴露 `Availability note` label/value。
+  - iPad regular Availability panel 新增同义 footer，说明该区块区分当前 Local tools、planning-only paid candidates、Purchase UI 前置条件和 Mac app 状态。
+  - 保留 Availability row title、detail、status、icon、hint、Plan facts、StoreKit 未配置、Mac app Not enabled 和业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.74（Plan可用性页脚语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit 购买或 entitlement，不启用 Mac Catalyst，不做真实 Mac 验证。
+
 ### v1.73 / Mac 就绪 QA 状态
 
 - 日期：2026-07-06

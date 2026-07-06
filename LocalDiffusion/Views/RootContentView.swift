@@ -585,7 +585,7 @@ private struct PlanView: View {
                 entitlementRulesContent
             }
 
-            PlanPanel("Availability") {
+            PlanPanel("Availability", footer: "Availability separates current Local tools from planning-only paid candidates, Purchase UI prerequisites, and Mac app status.") {
                 availabilityContent
             }
         }
@@ -643,8 +643,15 @@ private struct PlanView: View {
     }
 
     private var availabilitySection: some View {
-        Section("Availability") {
+        Section {
             availabilityContent
+        } header: {
+            Text("Availability")
+        } footer: {
+            compactSectionFooter(
+                "Availability",
+                "Availability separates current Local tools from planning-only paid candidates, Purchase UI prerequisites, and Mac app status."
+            )
         }
     }
 
