@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.67 / Generate 空模型入口语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Generate Model section 在无 ready model 时，`Open Models` 按钮新增 VoiceOver value/hint，明确当前没有 ready local model。
+  - `Open Models` hint 说明会打开 Models 以下载或导入 ready GGUF 模型。
+  - 该按钮新增 44pt 最小触控高度。
+  - 不修改模型查询、模型选择、生成门禁、导航行为、文件存储、SwiftData、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.67（Generate空模型入口语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不实现 StoreKit 购买或 entitlement。
+
 ### v1.66 / Models 未跟踪导入保存语义
 
 - 日期：2026-07-06

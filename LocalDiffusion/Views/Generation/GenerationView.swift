@@ -244,6 +244,9 @@ struct GenerationView: View {
                         Label("Open Models", systemImage: "shippingbox")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                    .frame(minHeight: 44)
+                    .accessibilityValue(Text("No ready local model"))
+                    .accessibilityHint(Text("Opens Models to download or import a ready GGUF model before generation."))
                 }
             } else {
                 Picker("Model", selection: selectedModelBinding) {
