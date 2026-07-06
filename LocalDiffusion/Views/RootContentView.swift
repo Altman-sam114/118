@@ -573,7 +573,7 @@ private struct PlanView: View {
 
     private var regularDetailColumn: some View {
         VStack(alignment: .leading, spacing: 16) {
-            PlanPanel("Mac Readiness", footer: "These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.") {
+            PlanPanel("Mac Readiness", footer: "These are blockers for a future Mac build. The current iPhone and iPad app is available; a Mac/Catalyst app is not enabled.") {
                 macReadinessContent
             }
 
@@ -611,7 +611,7 @@ private struct PlanView: View {
         } footer: {
             compactSectionFooter(
                 "Mac Readiness",
-                "These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app."
+                "These are blockers for a future Mac build. The current iPhone and iPad app is available; a Mac/Catalyst app is not enabled."
             )
         }
     }

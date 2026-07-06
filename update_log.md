@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.84 / Plan Mac Readiness footer 文案
+
+- 日期：2026-07-06
+- 核心变更：
+  - Plan Mac Readiness 的 compact section footer 和 iPad regular panel footer 从 `These are blockers for a future Mac build. This iOS target does not currently ship a Mac or Catalyst app.` 改为 `These are blockers for a future Mac build. The current iPhone and iPad app is available; a Mac/Catalyst app is not enabled.`。
+  - 让 Mac Readiness footer 与 v1.83 的 Mac app Availability 文案保持一致，明确当前 iPhone/iPad app 可用和 Mac/Catalyst app 未启用是两个不同事实。
+  - 保留 Mac Readiness title、rows、status、icons、layout、Availability rows、Platform Status 和业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.84（PlanMacReadinessFooter文案）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不修改 Xcode platform、native Mac/Catalyst slice、signing、notarization 或真实 Mac 验证。
+
 ### v1.83 / Plan Mac app 可用性文案
 
 - 日期：2026-07-06
