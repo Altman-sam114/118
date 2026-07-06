@@ -964,6 +964,9 @@ private struct FolderNameEditor: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityLabel(Text("Cancel folder editing"))
+                    .accessibilityValue(Text("No changes saved"))
+                    .accessibilityHint(Text("Closes the folder editor without saving the current folder name."))
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
@@ -971,8 +974,25 @@ private struct FolderNameEditor: View {
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel(Text("Save folder name"))
+                    .accessibilityValue(Text(folderSaveAccessibilityValue))
+                    .accessibilityHint(Text(folderSaveAccessibilityHint))
                 }
             }
         }
+    }
+
+    private var hasFolderName: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var folderSaveAccessibilityValue: String {
+        hasFolderName ? "Ready" : "Folder name required"
+    }
+
+    private var folderSaveAccessibilityHint: String {
+        hasFolderName
+        ? "Saves the current folder name."
+        : "Enter a folder name before saving."
     }
 }

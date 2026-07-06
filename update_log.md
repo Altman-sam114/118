@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.65 / Gallery 文件夹编辑器保存语义
+
+- 日期：2026-07-06
+- 核心变更：
+  - Gallery `FolderNameEditor` 的 Save 按钮新增 VoiceOver label/value/hint，区分 ready 与 folder name required 状态。
+  - Gallery `FolderNameEditor` 的 Cancel 按钮新增 close-without-saving 语义。
+  - New Folder 和 Rename Folder 继续沿用原有 trim、onSave 和 dismiss 行为。
+  - 不修改 folder create、rename、delete、filter、sort、文件存储、SwiftData、StoreKit、Mac Catalyst、native backend、Xcode project 或 workflow。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.65（Gallery文件夹编辑器保存语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst，不实现 StoreKit 购买或 entitlement。
+
 ### v1.64 / Gallery 详情操作语义
 
 - 日期：2026-07-06

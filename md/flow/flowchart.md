@@ -13,7 +13,7 @@ flowchart TD
   UI --> MODELUI["Models：下载 / 导入 / 删除 / toolbar refresh/add menu 语义 / 空状态 no-model/no-untracked 语义 / Add Model 键盘提交 / 未跟踪文件操作语义 / Storage Matrix VoiceOver 摘要 / Add Model error row / 带模型名上下文的 controls / 列表和详情 message rows"]
   UI --> PROMPTUI["Prompts：模板分类 / 搜索入口 submit 和匹配范围语义 / 分类菜单 pointer hover 和上下文语义 / 空状态语义 / 模板 metric steps/sampler/size 语义 / 可读编辑器 / Save/Cancel ready/name-required 语义 / 带模板名上下文的 controls / 共享参数重置、Seed 输入、随机 seed、尺寸 preset、宽高、sampler、steps 和 CFG 语义"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView / 可访问 sidebar rows / pointer hover affordance"]
-  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 可读 filter rail 和 pointer hover / folder actions 上下文语义 / 空状态筛选上下文语义 / Sort 当前值语义 / 可读图块和 pointer hover / 详情操作图片上下文语义 / 详情和组织控件"]
+  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad 可读 filter rail 和 pointer hover / folder actions 和 editor 语义 / 空状态筛选上下文语义 / Sort 当前值语义 / 可读图块和 pointer hover / 详情操作图片上下文语义 / 详情和组织控件"]
   NAV --> PLANUI["Plan：compact Form / iPad 双栏 / summary row hints / panel heading 和 note 语义 / 可访问状态徽章和 note rows / 能力矩阵 Paid candidates Planning only 和 row hints / entitlement rule hints / availability hints 含 Paid candidates Planning only 与 Mac app Not enabled / Mac readiness blocker hints"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
