@@ -287,6 +287,7 @@ private struct PlanAvailabilityItem: Identifiable {
     let detail: String
     let status: PlanStatusToken
     let systemImage: String
+    let accessibilityHint: String
 
     var id: String { title }
 }
@@ -418,25 +419,29 @@ private struct PlanView: View {
             title: "Core local tools",
             detail: "Generate, Models, Gallery, and Prompts remain available in the Local plan.",
             status: PlanStatusToken(title: "Available", systemImage: "checkmark.circle", color: SciFiTheme.mint),
-            systemImage: "lock.open"
+            systemImage: "lock.open",
+            accessibilityHint: "Confirms the core local tools are available in the current Local plan."
         ),
         PlanAvailabilityItem(
             title: "Paid candidates",
             detail: "Batch queue, curated prompt packs, and workflow export are not sold or unlocked in this build; they still need product decisions, StoreKit products, and entitlement mapping.",
             status: PlanStatusToken(title: "Planning only", systemImage: "clock", color: SciFiTheme.cyan),
-            systemImage: "sparkles"
+            systemImage: "sparkles",
+            accessibilityHint: "Clarifies these paid candidates are planning only and are not sold or unlocked in this build."
         ),
         PlanAvailabilityItem(
             title: "Purchase UI",
             detail: "Purchase UI should only be added after StoreKit products and entitlement mapping exist.",
             status: PlanStatusToken(title: "Requires configuration", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber),
-            systemImage: "cart"
+            systemImage: "cart",
+            accessibilityHint: "Clarifies purchase UI requires StoreKit products and entitlement mapping before it can be added."
         ),
         PlanAvailabilityItem(
             title: "Mac app",
             detail: "This iOS target does not currently ship a Mac or Catalyst app. Mac support still requires platform settings, a native backend Mac/Catalyst slice, signing decisions, and dedicated UI validation.",
             status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber),
-            systemImage: "desktopcomputer"
+            systemImage: "desktopcomputer",
+            accessibilityHint: "Clarifies this iOS target does not currently ship a Mac or Catalyst app."
         )
     ]
 
@@ -943,5 +948,6 @@ private struct AvailabilityRow: View {
             systemImage: item.systemImage,
             status: item.status
         )
+        .accessibilityHint(item.accessibilityHint)
     }
 }
