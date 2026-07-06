@@ -469,7 +469,7 @@ private struct PlanView: View {
         ),
         MacReadinessItem(
             title: "Native backend slice",
-            detail: "XCFramework needs a Mac or Catalyst library before Mac builds.",
+            detail: "The native inference framework still needs a Mac or Catalyst slice before Mac builds can run.",
             status: .requiresNativeBuild,
             systemImage: "cpu",
             accessibilityHint: "Clarifies a Mac or Catalyst native backend slice must exist before Mac builds can run."
