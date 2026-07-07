@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.130 / Gallery 图块 Prompt 可读性
+
+- 日期：2026-07-07
+- 核心变更：
+  - `ImageTile` 的 prompt `Text(image.prompt)` 在既有 line limit 后增加 `.fixedSize(horizontal: false, vertical: true)`。
+  - Gallery 图块 prompt 文本现在可在普通 2 行 / accessibility Dynamic Type 3 行预算内垂直展开，减少窄 tile 或大字号下被压缩的风险。
+  - 保留图块 thumbnail、metadata、NavigationLink、accessibility label/value/hint、filter/sort、Gallery detail、SwiftData 和文件存储逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.130（Gallery图块Prompt可读性）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager 截图目检，不修改 tile navigation、thumbnail rendering、metadata、accessibility 文案、filter/sort、Gallery detail actions、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.129 / Gallery 图块模型名回退
 
 - 日期：2026-07-07

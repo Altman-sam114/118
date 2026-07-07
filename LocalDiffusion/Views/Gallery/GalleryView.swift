@@ -637,6 +637,7 @@ private struct ImageTile: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(SciFiTheme.primaryText)
                 .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                .fixedSize(horizontal: false, vertical: true)
 
             metadataView
                 .font(.caption)
