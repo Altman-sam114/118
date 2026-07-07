@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.123 / Stepper 标签窄宽度回退
+
+- 日期：2026-07-07
+- 核心变更：
+  - `ParameterEditor.stepsControl`、`widthControl` 和 `heightControl` 的 Stepper label 改为自定义 title/value label。
+  - 新增 `stepperLabel(title:value:)`，普通 Dynamic Type 优先横排显示 title/value，横向空间不足时回退纵向。
+  - accessibility Dynamic Type 仍直接使用纵向 title/value。
+  - 保留 Steps、Width、Height 的 binding、范围、步进、归一化、辅助功能语义和所有参数值逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.123（Stepper标签窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager 截图目检，不修改 Stepper binding、范围、步进、参数归一化、Seed、Randomize Seed、Size preset、CFG、sampler、generation gate、model selection、prompt editing、generation save flow、Gallery handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.122 / CFG 标题窄宽度回退
 
 - 日期：2026-07-07

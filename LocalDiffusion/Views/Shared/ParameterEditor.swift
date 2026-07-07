@@ -41,10 +41,11 @@ struct ParameterEditor: View {
 
     private var stepsControl: some View {
         Stepper(
-            "Steps: \(parameters.steps)",
             value: $parameters.steps,
             in: GenerationParameters.minimumSteps...GenerationParameters.maximumSteps
-        )
+        ) {
+            stepperLabel(title: "Steps", value: "\(parameters.steps)")
+        }
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Steps")
         .accessibilityValue("\(parameters.steps)")
@@ -170,11 +171,12 @@ struct ParameterEditor: View {
 
     private var widthControl: some View {
         Stepper(
-            "Width: \(parameters.width)",
             value: widthBinding,
             in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
             step: GenerationParameters.dimensionStep
-        )
+        ) {
+            stepperLabel(title: "Width", value: "\(parameters.width)")
+        }
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Width")
         .accessibilityValue("\(parameters.width)")
@@ -183,11 +185,12 @@ struct ParameterEditor: View {
 
     private var heightControl: some View {
         Stepper(
-            "Height: \(parameters.height)",
             value: heightBinding,
             in: GenerationParameters.minimumDimension...GenerationParameters.maximumDimension,
             step: GenerationParameters.dimensionStep
-        )
+        ) {
+            stepperLabel(title: "Height", value: "\(parameters.height)")
+        }
         .foregroundStyle(SciFiTheme.primaryText)
         .accessibilityLabel("Height")
         .accessibilityValue("\(parameters.height)")
@@ -219,6 +222,32 @@ struct ParameterEditor: View {
                 HStack {
                     Text(title)
                     Spacer()
+                    Text(value)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(value)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func stepperLabel(title: String, value: String) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                Text(value)
+                    .foregroundStyle(SciFiTheme.secondaryText)
+            }
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(title)
+                    Spacer(minLength: 8)
                     Text(value)
                         .foregroundStyle(SciFiTheme.secondaryText)
                 }
