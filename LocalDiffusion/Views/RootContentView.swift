@@ -842,6 +842,7 @@ private struct PlanPanel<Content: View>: View {
 
 private struct PlanStatusBadge: View {
     let status: PlanStatusToken
+    var fillsWidth = true
 
     var body: some View {
         Label {
@@ -854,7 +855,7 @@ private struct PlanStatusBadge: View {
         .foregroundStyle(status.color)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: fillsWidth ? .infinity : nil, alignment: .leading)
         .background(status.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
@@ -865,6 +866,8 @@ private struct PlanStatusBadge: View {
 }
 
 private struct PlanStatusSummaryRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     let systemImage: String
     let status: PlanStatusToken
@@ -883,17 +886,15 @@ private struct PlanStatusSummaryRow: View {
     }
 
     var body: some View {
-        let row = VStack(alignment: .leading, spacing: 8) {
-            Label {
-                Text(title)
-                    .foregroundStyle(SciFiTheme.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: systemImage)
-                    .foregroundStyle(SciFiTheme.cyan)
+        let row = Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                verticalRow
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    horizontalRow
+                    verticalRow
+                }
             }
-
-            PlanStatusBadge(status: status)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
@@ -904,6 +905,37 @@ private struct PlanStatusSummaryRow: View {
             row.accessibilityHint(accessibilityHint)
         } else {
             row
+        }
+    }
+
+    private var horizontalRow: some View {
+        HStack(alignment: .center, spacing: 10) {
+            summaryLabel
+                .fixedSize(horizontal: true, vertical: false)
+
+            Spacer(minLength: 8)
+
+            PlanStatusBadge(status: status, fillsWidth: false)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    private var verticalRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            summaryLabel
+
+            PlanStatusBadge(status: status)
+        }
+    }
+
+    private var summaryLabel: some View {
+        Label {
+            Text(title)
+                .foregroundStyle(SciFiTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: systemImage)
+                .foregroundStyle(SciFiTheme.cyan)
         }
     }
 }
