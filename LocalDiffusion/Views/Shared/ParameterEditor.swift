@@ -77,9 +77,17 @@ struct ParameterEditor: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(SciFiTheme.primaryText)
         } else {
-            HStack {
-                seedField
-                randomizeSeedButton
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    seedField
+                    randomizeSeedButton
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    seedField
+                    randomizeSeedButton
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .foregroundStyle(SciFiTheme.primaryText)
         }
@@ -127,10 +135,18 @@ struct ParameterEditor: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(SciFiTheme.primaryText)
         } else {
-            HStack {
-                Text("Size")
-                Spacer()
-                sizePresetMenu
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Size")
+                    Spacer()
+                    sizePresetMenu
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Size")
+                    sizePresetMenu
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .foregroundStyle(SciFiTheme.primaryText)
         }

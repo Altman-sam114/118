@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.121 / 参数控件窄宽度回退
+
+- 日期：2026-07-07
+- 核心变更：
+  - `ParameterEditor.seedControl` 的普通 Dynamic Type 分支改为使用 `ViewThatFits(in: .horizontal)`，优先横排 Seed + Randomize Seed，横向空间不足时回退纵向。
+  - `ParameterEditor.sizePresetControl` 的普通 Dynamic Type 分支改为使用 `ViewThatFits(in: .horizontal)`，优先横排 Size + preset menu，横向空间不足时回退纵向。
+  - accessibility Dynamic Type 仍直接使用纵向布局。
+  - 保留 Seed、Randomize Seed、Canvas Size preset 的绑定、按钮/menu 行为、辅助功能语义、44pt 命中区和所有参数值逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Shared/ParameterEditor.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.121（参数控件窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager 截图目检，不修改 steps、CFG、width、height、sampler、generation gate、model selection、prompt editing、parameter values、generation save flow、Gallery handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.120 / Generate iPad 布局宽度回退
 
 - 日期：2026-07-07
