@@ -445,10 +445,10 @@ private struct PlanView: View {
         ),
         PlanAvailabilityItem(
             title: "Purchase UI",
-            detail: "Purchase UI remains hidden until StoreKit products and entitlement mapping exist.",
+            detail: "Purchase UI remains hidden; this build shows no purchase sheet, buy button, or unlock entry point until StoreKit products, entitlement mapping, and restore/receipt decisions exist.",
             status: PlanStatusToken(title: "Requires configuration", systemImage: "wrench.and.screwdriver", color: SciFiTheme.amber),
             systemImage: "cart",
-            accessibilityHint: "Clarifies purchase UI requires StoreKit products and entitlement mapping before it can be added."
+            accessibilityHint: "Clarifies there is no purchase sheet, buy button, or unlock entry point in this build, and Purchase UI requires StoreKit products, entitlement mapping, and restore or receipt decisions before it can be added."
         ),
         PlanAvailabilityItem(
             title: "Mac app",

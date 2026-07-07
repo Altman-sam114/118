@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.111 / Plan Purchase UI 边界语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanView.availabilityItems` 中 `Purchase UI` 行的 detail 明确当前 Purchase UI hidden，且没有 purchase sheet、buy button 或 unlock entry point。
+  - 同一行 accessibility hint 明确当前没有可购买或解锁入口，并说明后续需要 StoreKit products、entitlement mapping、restore/receipt decisions。
+  - 保留该行 title、`Requires configuration` status、system image、排序、row renderer、Plan overview、Current Build、Capability Matrix、Entitlement Rules、Mac Readiness、Platform Status 和所有业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.111（PlanPurchaseUI边界语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit、不新增 purchase sheet/buy button/unlock entry point、不启用 entitlement persistence/paid gate、不启用 Mac Catalyst、不修改 Xcode project、native backend、SwiftData schema、workflow 或测试规范。
+
 ### v1.110 / Plan Mac QA 边界语义
 
 - 日期：2026-07-07
