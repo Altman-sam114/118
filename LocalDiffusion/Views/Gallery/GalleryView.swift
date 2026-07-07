@@ -158,19 +158,7 @@ struct GalleryView: View {
     private var embeddedWideLayout: some View {
         NavigationStack(path: $detailPath) {
             galleryNavigationBehavior(
-                HStack(spacing: 0) {
-                    filterList
-                        .scrollContentBackground(.hidden)
-                        .background(SciFiTheme.panelSoft)
-                        .frame(width: filterRailWidth)
-
-                    Rectangle()
-                        .fill(SciFiTheme.stroke)
-                        .frame(width: 1)
-                        .accessibilityHidden(true)
-
-                    imageGrid
-                }
+                embeddedGalleryContent
                 .navigationTitle("Gallery")
                 .sciFiScreen()
                 .toolbar {
@@ -181,6 +169,46 @@ struct GalleryView: View {
                     newFolderToolbarItem
                 }
             )
+        }
+    }
+
+    private var embeddedGalleryContent: some View {
+        ViewThatFits(in: .horizontal) {
+            embeddedGallerySplitContent
+                .frame(minWidth: embeddedWideMinimumWidth)
+            embeddedGalleryStackedContent
+        }
+    }
+
+    private var embeddedGallerySplitContent: some View {
+        HStack(spacing: 0) {
+            filterList
+                .scrollContentBackground(.hidden)
+                .background(SciFiTheme.panelSoft)
+                .frame(width: filterRailWidth)
+
+            Rectangle()
+                .fill(SciFiTheme.stroke)
+                .frame(width: 1)
+                .accessibilityHidden(true)
+
+            imageGrid
+        }
+    }
+
+    private var embeddedGalleryStackedContent: some View {
+        VStack(spacing: 0) {
+            filterList
+                .scrollContentBackground(.hidden)
+                .background(SciFiTheme.panelSoft)
+                .frame(height: filterShelfHeight)
+
+            Rectangle()
+                .fill(SciFiTheme.stroke)
+                .frame(height: 1)
+                .accessibilityHidden(true)
+
+            imageGrid
         }
     }
 
@@ -294,6 +322,14 @@ struct GalleryView: View {
 
     private var filterRailWidth: CGFloat {
         dynamicTypeSize.isAccessibilitySize ? 320 : 280
+    }
+
+    private var filterShelfHeight: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? 320 : 240
+    }
+
+    private var embeddedWideMinimumWidth: CGFloat {
+        filterRailWidth + imageGridMinimumWidth + 96
     }
 
     private var selectedFilterLabel: some View {

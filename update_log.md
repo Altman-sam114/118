@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.131 / Gallery 宽屏筛选回退
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GalleryView.embeddedWideLayout` 的内容改为通过 `embeddedGalleryContent` 使用 `ViewThatFits(in: .horizontal)` 选择布局。
+  - 空间足够时保留既有左侧 filter rail + divider + image grid。
+  - 横向空间不足时回退为顶部 filter shelf + divider + image grid，保留筛选能力并给 grid 更多宽度。
+  - standalone Gallery 的 NavigationSplitView 布局、filter state、sort state、folder actions、image grid、detail navigation、SwiftData 和文件存储逻辑保持不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.131（Gallery宽屏筛选回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager 截图目检，不修改 standalone Gallery split、filter state、sort state、folder actions、image grid data、detail navigation、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.130 / Gallery 图块 Prompt 可读性
 
 - 日期：2026-07-07
