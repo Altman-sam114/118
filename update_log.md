@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.118 / Plan Platform Mac 发行流水线边界语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanView.platformStatusContent` 中 `Mac support status` note 的 text 明确 Mac support 仍是 planned，当前 iPhone/iPad app 可用、Mac/Catalyst app 未启用。
+  - 同一 note 明确当前没有 separate Mac binary、Mac signing profile、sandbox entitlement 或 notarization pipeline。
+  - 同步 accessibility hint，让 VoiceOver 用户听到当前没有这些 Mac 发行流水线产物或有效 Mac distribution path。
+  - 保留 Platform Status summary rows、note label、system image、icon color、排序、row renderer、Mac Readiness、Availability 和所有业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.118（PlanPlatformMac发行流水线边界语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 Mac Catalyst、不新增 separate Mac target、separate Mac binary、Mac signing profile、sandbox entitlement、notarization pipeline、desktop distribution channel、signing、sandboxing、notarization 或 native Mac/Catalyst slice、不启用 StoreKit、不修改 Xcode project、native backend、SwiftData schema、workflow 或测试规范。
+
 ### v1.117 / Plan Mac 签名发行边界语义
 
 - 日期：2026-07-07
