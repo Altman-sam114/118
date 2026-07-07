@@ -728,6 +728,7 @@ private struct ImageDetailView: View {
                         }
                         .accessibilityLabel("Generated image preview")
                         .accessibilityValue(imagePreviewAccessibilityValue)
+                        .accessibilityHint("Use the detail controls to reuse, regenerate, share, organize, or delete this result.")
                 }
                 .listRowBackground(SciFiTheme.panel)
             }

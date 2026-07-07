@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.128 / Gallery 预览下一步语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GalleryDetailView` 的详情大图预览新增 accessibility hint。
+  - 该 hint 提示可使用详情控件 reuse、regenerate、share、organize 或 delete 该结果。
+  - 保留 image preview 的显示、尺寸、clip、overlay、accessibility label/value、Reuse/Regenerate/Share、Folder picker、Tags、Delete、Gallery navigation、SwiftData 和文件存储逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.128（Gallery预览下一步语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager / VoiceOver 实机朗读检查，不修改 image rendering、Gallery actions、folder/tags、delete flow、SwiftData schema、file storage、Generate handoff、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.127 / Result Gallery 命中区
 
 - 日期：2026-07-07
