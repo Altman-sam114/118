@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.119 / Generate 控制台状态汇总语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GenerationView.consoleStatusPills` 新增组合 VoiceOver label/value/hint，统一暴露 render console status。
+  - 组合 value 汇总 backend online/offline、backend title/message、selected model 或 no ready model selected，以及 ready model count。
+  - 组合 hint 根据 backend offline、no selected model、ready 三种状态提示下一步。
+  - 保留 status pill 可见文案、颜色、图标、Dynamic Type 分支、iPad 双栏布局、GenerationGatePanel、model picker、run button、progress、result、参数控件和所有生成逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.119（Generate控制台状态汇总语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不修改 generation gate、model selection、prompt editing、parameter values、generation save flow、Gallery handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。Explorer 子 agent 另行建议的 Generate iPad `ViewThatFits` 布局回退可作为 v1.120 候选。
+
 ### v1.118 / Plan Platform Mac 发行流水线边界语义
 
 - 日期：2026-07-07

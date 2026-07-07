@@ -9,7 +9,7 @@
 ```mermaid
 flowchart TD
   U["用户操作：下载模型、输入 Prompt、点击生成、查看 Plan"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts / Plan"]
-  UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / Save Template readiness 语义 / 可读 prompt editor 和字段化字符计数语义 / 可读参数控件 / 参数重置语义 / Seed 输入语义 / 随机 seed 语义 / 尺寸 preset 和宽高像素语义 / sampler 算法语义 / steps 去噪语义 / CFG guidance 语义 / 空模型状态卡片摘要和入口语义 / 模型选择语义 / 运行状态和运行入口下一步语义 / 结果 Gallery handoff saved/unavailable 语义"]
+  UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台 / Save Template readiness 语义 / 可读 prompt editor 和字段化字符计数语义 / 可读参数控件 / 参数重置语义 / Seed 输入语义 / 随机 seed 语义 / 尺寸 preset 和宽高像素语义 / sampler 算法语义 / steps 去噪语义 / CFG guidance 语义 / 空模型状态卡片摘要和入口语义 / 模型选择语义 / 控制台 backend/model readiness 汇总语义 / 运行状态和运行入口下一步语义 / 结果 Gallery handoff saved/unavailable 语义"]
   UI --> MODELUI["Models：下载 / 导入 / 删除 / tracked model 删除确认语义 / toolbar refresh/add menu 语义 / 空状态 no-model/no-untracked 语义 / Add Model 键盘提交和字段 label/value/hint / 未跟踪文件操作和删除确认语义 / 未跟踪 GGUF import editor 字段和 toolbar 语义 / Storage Matrix VoiceOver 摘要 / Add Model error row / 带模型名上下文的 row controls 和详情操作按钮 / Native Loading 当前值语义 / 列表和详情 message rows"]
   UI --> PROMPTUI["Prompts：模板分类 / 分类标题 heading 和当前可见模板数量语义 / Add prompt template toolbar 语义 / 搜索入口 submit 和匹配范围语义 / 分类菜单 pointer hover 和上下文语义 / 分类清除确认语义 / 空状态语义 / 模板 row positive/negative/category/参数摘要 / 模板 metric steps/sampler/size 语义 / 模板 name/category 和分类重命名 name 输入语义 / 可读编辑器和字段化字符计数语义 / Save/Cancel ready/name-required 语义 / 带模板名上下文的 controls / 共享参数重置、Seed 输入、随机 seed、尺寸 preset、宽高、sampler、steps 和 CFG 语义"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView / neutral Plan navigation icon / Plan sidebar planning hint / 可访问 sidebar rows / pointer hover affordance"]

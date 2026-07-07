@@ -184,11 +184,19 @@ struct GenerationView: View {
                 backendStatusPill
                 modelStatusPill
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Render console status"))
+            .accessibilityValue(Text(consoleStatusAccessibilityValue))
+            .accessibilityHint(Text(consoleStatusAccessibilityHint))
         } else {
             HStack {
                 backendStatusPill
                 modelStatusPill
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Render console status"))
+            .accessibilityValue(Text(consoleStatusAccessibilityValue))
+            .accessibilityHint(Text(consoleStatusAccessibilityHint))
         }
     }
 
@@ -529,6 +537,36 @@ struct GenerationView: View {
         let count = readyModels.count
         let modelCountText = count == 1 ? "1 ready model" : "\(count) ready models"
         return "\(modelName). \(modelCountText)."
+    }
+
+    private var consoleStatusAccessibilityValue: String {
+        let backendState = viewModel.backendStatus.isReady ? "Backend online" : "Backend offline"
+        let backendText = "\(backendState). \(viewModel.backendStatus.title). \(viewModel.backendStatus.message)"
+        let modelText: String
+        if let selectedModel {
+            modelText = "Selected model \(selectedModel.name). \(readyModelCountText)."
+        } else {
+            modelText = "No ready model selected. \(readyModelCountText)."
+        }
+
+        return "\(backendText) \(modelText)"
+    }
+
+    private var consoleStatusAccessibilityHint: String {
+        if !viewModel.backendStatus.isReady {
+            return "Generation cannot start until the local inference backend is available."
+        }
+
+        if selectedModel == nil {
+            return "Open Models to download or import a ready GGUF model before generation."
+        }
+
+        return "Console is ready to use the selected model with the current prompts and parameters."
+    }
+
+    private var readyModelCountText: String {
+        let count = readyModels.count
+        return count == 1 ? "1 ready model" : "\(count) ready models"
     }
 
     private var canGenerate: Bool {
