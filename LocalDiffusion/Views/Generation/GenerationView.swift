@@ -322,6 +322,7 @@ struct GenerationView: View {
                     Label("Cancel", systemImage: "xmark.circle")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+                .frame(minHeight: 44)
                 .disabled(viewModel.isCancelling)
                 .accessibilityLabel(Text("Cancel generation"))
                 .accessibilityValue(Text(viewModel.isCancelling ? "Cancelling" : "Active"))
@@ -333,6 +334,7 @@ struct GenerationView: View {
                     Label(gate.primaryActionTitle, systemImage: gate.primaryActionImage)
                 }
                 .buttonStyle(SciFiPrimaryButtonStyle())
+                .frame(minHeight: 44)
                 .disabled(!canGenerate)
                 .accessibilityLabel(Text("Generate image"))
                 .accessibilityValue(Text(primaryGenerateAccessibilityValue(for: gate)))
@@ -346,6 +348,7 @@ struct GenerationView: View {
                         Label("Open Models", systemImage: "shippingbox")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+                    .frame(minHeight: 44)
                     .accessibilityValue(Text("Model required"))
                     .accessibilityHint(Text("Opens Models to download or import a ready GGUF model before generation."))
                 case .focusPrompt:
@@ -355,6 +358,7 @@ struct GenerationView: View {
                         Label("Edit Prompt", systemImage: "text.cursor")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle())
+                    .frame(minHeight: 44)
                     .accessibilityValue(Text("Positive prompt required"))
                     .accessibilityHint(Text("Moves focus to Positive Signal so you can enter the prompt used for generation."))
                 case .none:
