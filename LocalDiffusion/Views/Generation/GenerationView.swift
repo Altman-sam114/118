@@ -309,6 +309,7 @@ struct GenerationView: View {
                 ProgressView(value: viewModel.progress.fraction) {
                     Text(viewModel.progress.stage)
                         .foregroundStyle(SciFiTheme.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .tint(SciFiTheme.cyan)
                 .accessibilityElement(children: .ignore)
