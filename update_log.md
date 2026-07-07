@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.120 / Generate iPad 布局宽度回退
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GenerationView.generationLayout` 的 iPad regular 非 accessibility Dynamic Type 分支改为使用 `ViewThatFits(in: .horizontal)`。
+  - Generate 现在优先显示既有双栏创作台，横向空间不足时回退既有单列表单。
+  - accessibility Dynamic Type 仍直接使用单列，compact size class 仍走 compact/single-column。
+  - 保留 `wideGenerationLayout`、`singleColumnGenerationLayout`、section 内容、可见文案、辅助功能语义、generation gate、model picker、prompt editor、参数控件、progress、result、Gallery handoff 和所有生成逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.120（GenerateiPad布局宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Stage Manager / Split View 截图目检，不修改双栏内部宽度、section 顺序、generation gate、model selection、prompt editing、parameter values、generation save flow、Gallery handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.119 / Generate 控制台状态汇总语义
 
 - 日期：2026-07-07

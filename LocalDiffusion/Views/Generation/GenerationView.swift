@@ -77,7 +77,10 @@ struct GenerationView: View {
             if dynamicTypeSize.isAccessibilitySize {
                 singleColumnGenerationLayout
             } else {
-                wideGenerationLayout
+                ViewThatFits(in: .horizontal) {
+                    wideGenerationLayout
+                    singleColumnGenerationLayout
+                }
             }
         } else {
             compactGenerationLayout
