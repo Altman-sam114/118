@@ -662,11 +662,20 @@ private struct ImageTile: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         } else {
-            HStack(alignment: .firstTextBaseline) {
-                Text(image.createdAt, style: .date)
-                Spacer(minLength: 8)
-                Text(image.modelName)
-                    .lineLimit(1)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(image.createdAt, style: .date)
+                    Spacer(minLength: 8)
+                    Text(image.modelName)
+                        .lineLimit(1)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(image.createdAt, style: .date)
+                    Text(image.modelName)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
