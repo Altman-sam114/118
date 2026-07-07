@@ -941,6 +941,8 @@ private struct PlanStatusSummaryRow: View {
 }
 
 private struct PlanNoteRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let text: String
     let systemImage: String
     let iconColor: Color
@@ -948,20 +950,46 @@ private struct PlanNoteRow: View {
     let accessibilityHint: String
 
     var body: some View {
-        Label {
-            Text(text)
-                .font(.callout)
-                .foregroundStyle(SciFiTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-        } icon: {
-            Image(systemName: systemImage)
-                .foregroundStyle(iconColor)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                verticalRow
+            } else {
+                horizontalRow
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(text)
         .accessibilityHint(accessibilityHint)
+    }
+
+    private var horizontalRow: some View {
+        Label {
+            noteText
+        } icon: {
+            noteIcon
+        }
+    }
+
+    private var verticalRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            noteIcon
+
+            noteText
+        }
+    }
+
+    private var noteIcon: some View {
+        Image(systemName: systemImage)
+            .foregroundStyle(iconColor)
+    }
+
+    private var noteText: some View {
+        Text(text)
+            .font(.callout)
+            .foregroundStyle(SciFiTheme.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
