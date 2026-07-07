@@ -392,6 +392,7 @@ struct GenerationView: View {
                     Label("View in Gallery", systemImage: "square.grid.2x2")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
+                .frame(minHeight: 44)
                 .disabled(viewModel.latestGeneratedImageID == nil)
                 .accessibilityLabel(Text("View saved image in Gallery"))
                 .accessibilityValue(Text(galleryHandoffAccessibilityValue))

@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.127 / Result Gallery 命中区
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GenerationView.resultSection` 中 `View in Gallery` 按钮增加 `.frame(minHeight: 44)`。
+  - Generate Result 区 Gallery handoff 操作现在显式保持 44pt 最小命中区，和 Run 区关键操作的触控约束保持一致。
+  - 保留 `onShowGallery()` action、`latestGeneratedImageID == nil` disabled 条件、button style、可见文案、辅助功能 label/value/hint、result image preview、Gallery handoff 语义和所有生成逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.127（ResultGallery命中区）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager / VoiceOver 触控验证，不修改 button style、button action、disabled 状态、accessibility 文案、result image preview、Gallery navigation、generation save flow、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.126 / Run 操作命中区
 
 - 日期：2026-07-07
