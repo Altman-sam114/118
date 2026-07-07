@@ -407,10 +407,10 @@ private struct PlanView: View {
         ),
         PlanEntitlementRuleItem(
             title: "Paid candidates",
-            detail: "Batch queue, curated prompt packs, and workflow export are planning-only until product decisions exist.",
+            detail: "Batch queue, curated prompt packs, and workflow export are planning-only; this build grants no trial entitlement, preview entitlement, feature flag, or unlock gate for them.",
             status: .candidate,
             systemImage: "sparkles",
-            accessibilityHint: "Clarifies paid candidates are planning only and do not grant active entitlements in this build."
+            accessibilityHint: "Clarifies paid candidates are planning only and have no trial entitlement, preview entitlement, feature flag, or unlock gate in this build."
         ),
         PlanEntitlementRuleItem(
             title: "StoreKit purchase gate",

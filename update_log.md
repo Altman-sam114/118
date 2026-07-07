@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.112 / Plan Paid Candidates 权益边界语义
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanView.entitlementRuleItems` 中 `Paid candidates` 行的 detail 明确 Batch queue、curated prompt packs 和 workflow export 仍是 planning-only。
+  - 同一行明确当前 build 不授予 trial entitlement、preview entitlement、feature flag 或 unlock gate。
+  - 同步 accessibility hint，让 VoiceOver 用户听到这些 paid candidates 当前没有试用、预览权益、功能标记或解锁路径。
+  - 保留该行 title、`Planning only` status、system image、排序、row renderer、Plan overview、Current Build、Capability Matrix、Availability、Mac Readiness、Platform Status 和所有业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.112（PlanPaidCandidates权益边界语义）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator VoiceOver 实机朗读检查，不启用 StoreKit、不新增 trial/preview entitlement、feature flag、unlock gate、purchase UI、entitlement persistence 或 paid gate、不启用 Mac Catalyst、不修改 Xcode project、native backend、SwiftData schema、workflow 或测试规范。
+
 ### v1.111 / Plan Purchase UI 边界语义
 
 - 日期：2026-07-07
