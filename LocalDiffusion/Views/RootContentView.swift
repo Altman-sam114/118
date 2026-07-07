@@ -421,10 +421,10 @@ private struct PlanView: View {
         ),
         PlanEntitlementRuleItem(
             title: "Entitlement persistence",
-            detail: "No purchase state is stored, no entitlement is granted, and no App Store product is requested.",
+            detail: "No purchase state is stored, no entitlement is granted, and there is no local entitlement cache, cross-launch restoration, server-side entitlement source, or receipt-backed state.",
             status: .notImplemented,
             systemImage: "xmark.seal",
-            accessibilityHint: "Clarifies this build stores no purchase state, grants no entitlement, and requests no App Store product."
+            accessibilityHint: "Clarifies this build has no entitlement persistence, local entitlement cache, cross-launch restoration, server-side entitlement source, or receipt-backed state."
         )
     ]
 
