@@ -452,10 +452,10 @@ private struct PlanView: View {
         ),
         PlanAvailabilityItem(
             title: "Mac app",
-            detail: "The iPhone and iPad app is available in this build; a Mac/Catalyst app is not enabled.",
+            detail: "The iPhone and iPad app is available in this build; a Mac/Catalyst app is not enabled, and there is no separate Mac binary, Catalyst entitlement set, or desktop distribution channel.",
             status: PlanStatusToken(title: "Not enabled", systemImage: "xmark.circle", color: SciFiTheme.amber),
             systemImage: "desktopcomputer",
-            accessibilityHint: "Clarifies Mac support is separate from the current iPhone and iPad app and still requires platform settings, a native Mac/Catalyst backend slice, signing decisions, and dedicated UI validation."
+            accessibilityHint: "Clarifies Mac support is separate from the current iPhone and iPad app, with no separate Mac binary, Catalyst entitlement set, or desktop distribution channel in this build."
         )
     ]
 
