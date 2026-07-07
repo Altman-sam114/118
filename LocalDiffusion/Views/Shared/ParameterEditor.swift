@@ -215,11 +215,19 @@ struct ParameterEditor: View {
                     .foregroundStyle(SciFiTheme.secondaryText)
             }
         } else {
-            HStack {
-                Text(title)
-                Spacer()
-                Text(value)
-                    .foregroundStyle(SciFiTheme.secondaryText)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(title)
+                    Spacer()
+                    Text(value)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(value)
+                        .foregroundStyle(SciFiTheme.secondaryText)
+                }
             }
         }
     }
