@@ -483,10 +483,10 @@ private struct PlanView: View {
         ),
         MacReadinessItem(
             title: "Distribution and signing",
-            detail: "Mac release channel, signing, sandboxing, and notarization still need a product decision.",
+            detail: "Mac release channel, signing, sandboxing, and notarization still need a product decision; this build has no Mac signing profile, sandbox entitlement, or notarization pipeline.",
             status: .requiresDecision,
             systemImage: "person.badge.key",
-            accessibilityHint: "Clarifies the Mac signing and distribution path needs a product decision."
+            accessibilityHint: "Clarifies this build has no Mac signing profile, sandbox entitlement, notarization pipeline, or active Mac distribution path."
         )
     ]
 
