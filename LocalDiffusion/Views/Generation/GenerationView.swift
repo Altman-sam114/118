@@ -236,7 +236,7 @@ struct GenerationView: View {
             return [GridItem(.flexible())]
         }
 
-        return [GridItem(.flexible()), GridItem(.flexible())]
+        return [GridItem(.adaptive(minimum: 150), spacing: 10)]
     }
 
     private var modelSection: some View {

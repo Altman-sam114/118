@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.124 / 控制台指标自适应列
+
+- 日期：2026-07-07
+- 核心变更：
+  - `GenerationView.consoleMetricColumns` 的普通 Dynamic Type 分支改为 adaptive grid。
+  - Steps 和 Canvas 控制台 metrics 现在可在空间足够时保持多列，横向空间受限时自然回退为更可读的单列。
+  - accessibility Dynamic Type 仍直接使用单列。
+  - 保留 console metric 内容、数值来源、颜色、图标、顺序、辅助功能语义和所有生成逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.124（控制台指标自适应列）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator Split View / Stage Manager 截图目检，不修改 console metric 内容、generation gate、model selection、prompt editing、ParameterEditor、run/progress/result、Gallery handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.123 / Stepper 标签窄宽度回退
 
 - 日期：2026-07-07
