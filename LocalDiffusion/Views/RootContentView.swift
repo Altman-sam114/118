@@ -966,33 +966,72 @@ private struct PlanNoteRow: View {
 }
 
 private struct PlanStatusRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     let detail: String
     let systemImage: String
     let status: PlanStatusToken
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label {
-                Text(title)
-                    .foregroundStyle(SciFiTheme.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: systemImage)
-                    .foregroundStyle(SciFiTheme.cyan)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                verticalRow
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    horizontalRow
+                    verticalRow
+                }
             }
-
-            Text(detail)
-                .font(.callout)
-                .foregroundStyle(SciFiTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-
-            PlanStatusBadge(status: status)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title). \(detail)")
         .accessibilityValue(status.title)
+    }
+
+    private var horizontalRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 10) {
+                headerLabel
+                    .fixedSize(horizontal: true, vertical: false)
+
+                Spacer(minLength: 8)
+
+                PlanStatusBadge(status: status, fillsWidth: false)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+
+            detailText
+        }
+    }
+
+    private var verticalRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            headerLabel
+
+            detailText
+
+            PlanStatusBadge(status: status)
+        }
+    }
+
+    private var headerLabel: some View {
+        Label {
+            Text(title)
+                .foregroundStyle(SciFiTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: systemImage)
+                .foregroundStyle(SciFiTheme.cyan)
+        }
+    }
+
+    private var detailText: some View {
+        Text(detail)
+            .font(.callout)
+            .foregroundStyle(SciFiTheme.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

@@ -22,6 +22,25 @@
 
 ## 历史记录
 
+### v1.133 / Plan 状态行标题徽章回退
+
+- 日期：2026-07-07
+- 核心变更：
+  - `PlanStatusRow` 读取 `dynamicTypeSize`，普通 Dynamic Type 下使用 `ViewThatFits(in: .horizontal)`。
+  - Mac readiness、Capability Matrix、Entitlement Rules 和 Availability 的 shared status rows 现在优先横向显示标题和状态徽章，detail 文本继续在下方换行。
+  - 横向空间不足或 accessibility Dynamic Type 下回退为既有纵向布局。
+  - 复用 `PlanStatusBadge(fillsWidth: false)` 的非全宽徽章能力；其他 full-width badge 行为保持不变。
+  - 保留 Plan 可见文案、row 顺序、状态 token、VoiceOver label/value/hint、StoreKit 未配置边界、paid candidates planning-only 状态、Mac/Catalyst 未启用说明和所有业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.133（Plan状态行标题徽章回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator / iPad Stage Manager / Mac Catalyst 窗口截图目检，不修改 StoreKit products、purchase UI、restore flow、receipts、entitlement persistence、paid gate、Mac Catalyst、Xcode project platform settings、native backend、SwiftData schema、workflow 或测试规范。
+
 ### v1.132 / Plan 状态摘要行宽度回退
 
 - 日期：2026-07-07
