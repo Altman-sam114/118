@@ -741,9 +741,16 @@ private struct PlanView: View {
                     planOverviewCopy
                 }
             } else {
-                HStack(alignment: .top, spacing: 12) {
-                    planOverviewIcon
-                    planOverviewCopy
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 12) {
+                        planOverviewIcon
+                        planOverviewCopy
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        planOverviewIcon
+                        planOverviewCopy
+                    }
                 }
             }
 
