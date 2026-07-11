@@ -726,10 +726,17 @@ private struct UntrackedModelFileRow: View {
                 actions
             }
         } else {
-            HStack(alignment: .firstTextBaseline) {
-                fileInfo
-                Spacer()
-                actions
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline) {
+                    fileInfo
+                    Spacer()
+                    actions
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    fileInfo
+                    actions
+                }
             }
         }
     }
