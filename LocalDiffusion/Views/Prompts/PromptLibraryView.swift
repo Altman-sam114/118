@@ -405,10 +405,18 @@ private struct PromptTemplateRow: View {
                 sizePill
             }
         } else {
-            HStack(spacing: 8) {
-                stepsPill
-                samplerPill
-                sizePill
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    stepsPill
+                    samplerPill
+                    sizePill
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    stepsPill
+                    samplerPill
+                    sizePill
+                }
             }
         }
     }
