@@ -148,9 +148,16 @@ struct GenerationView: View {
                 consoleOverviewCopy
             }
         } else {
-            HStack(alignment: .top, spacing: 12) {
-                consoleOverviewIcon
-                consoleOverviewCopy
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 12) {
+                    consoleOverviewIcon
+                    consoleOverviewCopy
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    consoleOverviewIcon
+                    consoleOverviewCopy
+                }
             }
         }
     }
