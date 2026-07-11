@@ -275,11 +275,20 @@ private struct PromptCategoryHeader: View {
                 }
             }
         } else {
-            HStack {
-                title
-                Spacer()
-                if !group.isUncategorized {
-                    categoryActions
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    title
+                    Spacer()
+                    if !group.isUncategorized {
+                        categoryActions
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    title
+                    if !group.isUncategorized {
+                        categoryActions
+                    }
                 }
             }
         }
