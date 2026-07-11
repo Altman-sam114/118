@@ -661,10 +661,17 @@ private struct StorageSummaryRow: View {
                 readyPill
             }
         } else {
-            HStack {
-                titleBlock
-                Spacer(minLength: 12)
-                readyPill
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    titleBlock
+                    Spacer(minLength: 12)
+                    readyPill
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    titleBlock
+                    readyPill
+                }
             }
         }
     }
