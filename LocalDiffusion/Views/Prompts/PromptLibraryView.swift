@@ -596,12 +596,21 @@ struct PromptTemplateEditor: View {
                     promptCharacterCount(text, title: title)
                 }
             } else {
-                HStack {
-                    Text(title)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(accent)
-                    Spacer()
-                    promptCharacterCount(text, title: title)
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text(title)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(accent)
+                        Spacer()
+                        promptCharacterCount(text, title: title)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(accent)
+                        promptCharacterCount(text, title: title)
+                    }
                 }
             }
 
