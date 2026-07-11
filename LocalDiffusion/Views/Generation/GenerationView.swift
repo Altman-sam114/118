@@ -453,10 +453,17 @@ struct GenerationView: View {
                 promptEditorMetadata(text: text, title: title)
             }
         } else {
-            HStack {
-                promptEditorTitle(title, accent: accent)
-                Spacer()
-                promptEditorMetadata(text: text, title: title)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    promptEditorTitle(title, accent: accent)
+                    Spacer()
+                    promptEditorMetadata(text: text, title: title)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    promptEditorTitle(title, accent: accent)
+                    promptEditorMetadata(text: text, title: title)
+                }
             }
         }
     }
