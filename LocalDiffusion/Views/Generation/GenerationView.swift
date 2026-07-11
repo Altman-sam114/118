@@ -199,9 +199,16 @@ struct GenerationView: View {
             .accessibilityValue(Text(consoleStatusAccessibilityValue))
             .accessibilityHint(Text(consoleStatusAccessibilityHint))
         } else {
-            HStack {
-                backendStatusPill
-                modelStatusPill
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    backendStatusPill
+                    modelStatusPill
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    backendStatusPill
+                    modelStatusPill
+                }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Render console status"))
