@@ -928,10 +928,17 @@ private struct ModelRow: View {
                 statusPill
             }
         } else {
-            HStack(alignment: .firstTextBaseline) {
-                modelIdentity
-                Spacer()
-                statusPill
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline) {
+                    modelIdentity
+                    Spacer()
+                    statusPill
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    modelIdentity
+                    statusPill
+                }
             }
         }
     }

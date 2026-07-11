@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.136 / Models 行标题窄宽度回退
+
+- 日期：2026-07-12
+- 核心变更：
+  - `ModelRow.header` 的普通 Dynamic Type 分支改为 `ViewThatFits(in: .horizontal)`。
+  - 优先横排 model identity + status pill，横向空间不足时回退纵向堆叠。
+  - accessibility Dynamic Type 现有纵向布局保持不变。
+  - 保留 progress、footer controls、status 计算、下载/暂停/取消/删除/详情行为和 panel 样式不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.136（Models行标题窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator / iPad Stage Manager / Split View / VoiceOver 实机目检，不修改 download manager、Add Model sheet、detail sheet、untracked import、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.135 / Prompt 模板指标窄宽度回退
 
 - 日期：2026-07-12
