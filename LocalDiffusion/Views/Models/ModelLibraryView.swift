@@ -968,10 +968,18 @@ private struct ModelRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else {
-            HStack {
-                sizeLabel
-                Spacer()
-                controls
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    sizeLabel
+                    Spacer()
+                    controls
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    sizeLabel
+                    controls
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
