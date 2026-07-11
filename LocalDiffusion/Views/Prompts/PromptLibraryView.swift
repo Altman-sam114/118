@@ -354,10 +354,17 @@ private struct PromptTemplateRow: View {
                 actions
             }
         } else {
-            HStack {
-                templateCopy
-                Spacer()
-                actions
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    templateCopy
+                    Spacer()
+                    actions
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    templateCopy
+                    actions
+                }
             }
         }
     }

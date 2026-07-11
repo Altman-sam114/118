@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.140 / Prompt 模板行标题窄宽度回退
+
+- 日期：2026-07-12
+- 核心变更：
+  - `PromptTemplateRow.header` 的普通 Dynamic Type 分支改为 `ViewThatFits(in: .horizontal)`。
+  - 优先横排 templateCopy + Edit/Load actions，横向空间不足时回退纵向堆叠。
+  - accessibility Dynamic Type 现有纵向布局保持不变。
+  - 保留 metric pills、row-level accessibility summary、Edit/Load 行为、文案和 panel 样式不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.140（Prompt模板行标题窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator / iPad Stage Manager / Split View / VoiceOver 实机目检，不修改 category header、template editor、search、ParameterEditor、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.139 / Models 存储矩阵标题窄宽度回退
 
 - 日期：2026-07-12
