@@ -22,6 +22,25 @@
 
 ## 历史记录
 
+### v1.149 / Gallery 详情参数行窄宽度回退
+
+- 日期：2026-07-12
+- 核心变更：
+  - `GalleryDetailParameterRow` 非 stack 路径改为 `ViewThatFits(in: .horizontal)`。
+  - 普通 Dynamic Type 且非 long-form 时优先横排 title/value，横向空间不足时回退纵向。
+  - accessibility / long-form 的既有纵向 `shouldStack` 路径保持不变。
+  - 同步 `flow.md` 中 Plan overview 的普通字号 icon/copy 窄宽度回退描述（补齐 v1.148 文档遗漏）。
+  - 保留 accessibility label/value、字体颜色、detail actions 和 Gallery 业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.149（Gallery详情参数行窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：需要运行本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse；GitHub Actions 结果包由 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator / iPad Stage Manager / Split View 截图目检，不修改 Gallery filter/sort/tile、delete、folder/tags、Generate handoff、SwiftData schema、file storage、native backend、StoreKit、Mac Catalyst、Xcode project、workflow 或测试规范。
+
 ### v1.148 / Plan 概览窄宽度回退
 
 - 日期：2026-07-12

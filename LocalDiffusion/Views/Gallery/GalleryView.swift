@@ -964,11 +964,18 @@ private struct GalleryDetailParameterRow: View {
                     valueText
                 }
             } else {
-                HStack(alignment: .firstTextBaseline) {
-                    titleText
-                    Spacer(minLength: 12)
-                    valueText
-                        .multilineTextAlignment(.trailing)
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline) {
+                        titleText
+                        Spacer(minLength: 12)
+                        valueText
+                            .multilineTextAlignment(.trailing)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        titleText
+                        valueText
+                    }
                 }
             }
         }
