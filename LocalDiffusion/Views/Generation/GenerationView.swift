@@ -482,9 +482,16 @@ struct GenerationView: View {
                 clearPromptButton(text: text, title: title)
             }
         } else {
-            HStack(spacing: 8) {
-                promptCharacterCount(text, title: title)
-                clearPromptButton(text: text, title: title)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    promptCharacterCount(text, title: title)
+                    clearPromptButton(text: text, title: title)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    promptCharacterCount(text, title: title)
+                    clearPromptButton(text: text, title: title)
+                }
             }
         }
     }
