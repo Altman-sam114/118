@@ -536,9 +536,16 @@ struct SciFiMetric: View {
                     metricCopy
                 }
             } else {
-                HStack(spacing: 10) {
-                    metricIcon
-                    metricCopy
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) {
+                        metricIcon
+                        metricCopy
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        metricIcon
+                        metricCopy
+                    }
                 }
             }
         }
