@@ -1022,11 +1022,10 @@ private struct ImageDetailView: View {
     }
 
     private func saveTags() {
-        guard hasUnsavedTagChanges else { return }
-
         let previousTags = image.tags
         let draftText = tagText
         let normalizedTags = draftText.tagsFromCSV()
+        guard normalizedTags != previousTags else { return }
 
         organizationSaveError = nil
         image.tags = normalizedTags
