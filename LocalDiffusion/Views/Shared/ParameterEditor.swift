@@ -501,22 +501,44 @@ struct SciFiStatusPill: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                verticalPill
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    horizontalPill
+                    verticalPill
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(color.opacity(0.12), in: Capsule())
+        .overlay {
+            Capsule().stroke(color.opacity(0.35), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var horizontalPill: some View {
         Label(title, systemImage: systemImage)
             .font(.caption.weight(.semibold))
             .foregroundStyle(color)
-            .lineLimit(titleLineLimit)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(color.opacity(0.12), in: Capsule())
-            .overlay {
-                Capsule().stroke(color.opacity(0.35), lineWidth: 1)
-            }
-            .accessibilityElement(children: .combine)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
     }
 
-    private var titleLineLimit: Int? {
-        dynamicTypeSize.isAccessibilitySize ? nil : 1
+    private var verticalPill: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.semibold))
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(color)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
