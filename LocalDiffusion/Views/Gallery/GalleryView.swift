@@ -98,13 +98,25 @@ struct GalleryView: View {
             }
         }
         .sheet(isPresented: $showingAddFolder) {
-            FolderNameEditor(title: "New Folder", initialName: "") { folderName in
+            FolderNameEditor(
+                title: "New Folder",
+                initialName: "",
+                folders: folders,
+                editingFolderID: nil,
+                originalName: nil
+            ) { folderName in
                 modelContext.insert(GalleryFolder(name: folderName))
                 try? modelContext.save()
             }
         }
         .sheet(item: $editingFolder) { folderState in
-            FolderNameEditor(title: "Rename Folder", initialName: folderState.name) { newName in
+            FolderNameEditor(
+                title: "Rename Folder",
+                initialName: folderState.name,
+                folders: folders,
+                editingFolderID: folderState.id,
+                originalName: folderState.name
+            ) { newName in
                 renameFolder(id: folderState.id, name: newName)
                 editingFolder = nil
             }
@@ -1030,15 +1042,152 @@ private struct FolderEditorState: Identifiable {
     }
 }
 
+private struct FolderNameValidation {
+    enum Status: Equatable {
+        case required
+        case conflict
+        case valid
+    }
+
+    let trimmedName: String
+    let status: Status
+
+    init(
+        name: String,
+        editingFolderID: UUID?,
+        originalName: String?,
+        folders: [GalleryFolder]
+    ) {
+        let candidate = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        trimmedName = candidate
+
+        guard !candidate.isEmpty else {
+            status = .required
+            return
+        }
+
+        if let originalName,
+           candidate == originalName.trimmingCharacters(in: .whitespacesAndNewlines) {
+            status = .valid
+            return
+        }
+
+        let hasConflict = folders.contains { folder in
+            guard folder.id != editingFolderID else { return false }
+            let existingName = folder.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return candidate.localizedCaseInsensitiveCompare(existingName) == .orderedSame
+        }
+        status = hasConflict ? .conflict : .valid
+    }
+
+    var validatedName: String? {
+        status == .valid ? trimmedName : nil
+    }
+
+    var visibleMessage: String {
+        switch status {
+        case .required:
+            "Folder name is required."
+        case .conflict:
+            "A folder with this name already exists. Choose a different name."
+        case .valid:
+            "Folder name is available."
+        }
+    }
+
+    var systemImage: String {
+        switch status {
+        case .required:
+            "exclamationmark.circle.fill"
+        case .conflict:
+            "xmark.circle.fill"
+        case .valid:
+            "checkmark.circle.fill"
+        }
+    }
+
+    var color: Color {
+        switch status {
+        case .required:
+            SciFiTheme.amber
+        case .conflict:
+            SciFiTheme.danger
+        case .valid:
+            SciFiTheme.mint
+        }
+    }
+
+    var fieldAccessibilityValue: String {
+        trimmedName.isEmpty ? "No folder name" : trimmedName
+    }
+
+    var fieldAccessibilityHint: String {
+        switch status {
+        case .required:
+            "Enter a folder name before saving."
+        case .conflict:
+            "This folder name is already in use. Choose a different name."
+        case .valid:
+            "This folder name is available and can be saved."
+        }
+    }
+
+    var statusAccessibilityValue: String {
+        switch status {
+        case .required:
+            "Folder name required"
+        case .conflict:
+            "Folder name already in use"
+        case .valid:
+            "Folder name available"
+        }
+    }
+
+    var saveAccessibilityValue: String {
+        switch status {
+        case .required:
+            "Folder name required"
+        case .conflict:
+            "Folder name already in use"
+        case .valid:
+            "Ready"
+        }
+    }
+
+    var saveAccessibilityHint: String {
+        switch status {
+        case .required:
+            "Enter a folder name before saving."
+        case .conflict:
+            "Choose a different folder name before saving."
+        case .valid:
+            "Saves the current folder name."
+        }
+    }
+}
+
 private struct FolderNameEditor: View {
     let title: String
+    let folders: [GalleryFolder]
+    let editingFolderID: UUID?
+    let originalName: String?
     let onSave: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var name: String
 
-    init(title: String, initialName: String, onSave: @escaping (String) -> Void) {
+    init(
+        title: String,
+        initialName: String,
+        folders: [GalleryFolder],
+        editingFolderID: UUID?,
+        originalName: String?,
+        onSave: @escaping (String) -> Void
+    ) {
         self.title = title
+        self.folders = folders
+        self.editingFolderID = editingFolderID
+        self.originalName = originalName
         self.onSave = onSave
         _name = State(initialValue: initialName)
     }
@@ -1049,8 +1198,17 @@ private struct FolderNameEditor: View {
                 Section("Folder") {
                     TextField("Folder name", text: $name)
                         .accessibilityLabel(Text("Folder name"))
-                        .accessibilityValue(Text(folderNameAccessibilityValue))
-                        .accessibilityHint(Text("Required before saving and used as the Gallery folder name."))
+                        .accessibilityValue(Text(validation.fieldAccessibilityValue))
+                        .accessibilityHint(Text(validation.fieldAccessibilityHint))
+
+                    Label(validation.visibleMessage, systemImage: validation.systemImage)
+                        .font(.footnote)
+                        .foregroundStyle(validation.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text("Folder name status"))
+                        .accessibilityValue(Text(validation.statusAccessibilityValue))
+                        .accessibilityHint(Text(validation.fieldAccessibilityHint))
                 }
                 .listRowBackground(SciFiTheme.panel)
             }
@@ -1067,34 +1225,25 @@ private struct FolderNameEditor: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(name.trimmingCharacters(in: .whitespacesAndNewlines))
+                        guard let folderName = validation.validatedName else { return }
+                        onSave(folderName)
                         dismiss()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(validation.validatedName == nil)
                     .accessibilityLabel(Text("Save folder name"))
-                    .accessibilityValue(Text(folderSaveAccessibilityValue))
-                    .accessibilityHint(Text(folderSaveAccessibilityHint))
+                    .accessibilityValue(Text(validation.saveAccessibilityValue))
+                    .accessibilityHint(Text(validation.saveAccessibilityHint))
                 }
             }
         }
     }
 
-    private var hasFolderName: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var folderNameAccessibilityValue: String {
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmedName.isEmpty ? "No folder name" : trimmedName
-    }
-
-    private var folderSaveAccessibilityValue: String {
-        hasFolderName ? "Ready" : "Folder name required"
-    }
-
-    private var folderSaveAccessibilityHint: String {
-        hasFolderName
-        ? "Saves the current folder name."
-        : "Enter a folder name before saving."
+    private var validation: FolderNameValidation {
+        FolderNameValidation(
+            name: name,
+            editingFolderID: editingFolderID,
+            originalName: originalName,
+            folders: folders
+        )
     }
 }

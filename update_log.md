@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.155 / Gallery 文件夹名称冲突校验
+
+- 日期：2026-07-26
+- 基线：`v1.154`，commit `5dbd29b5f235042723040a00b524392a78b5c373`。
+- 核心变更：
+  - New Folder 和 Rename Folder 共用一个纯派生 required/conflict/valid state；候选与现有名称均 trim 后使用 `localizedCaseInsensitiveCompare`，并由同一状态驱动 inline 文案、Save `.disabled`、action guard 和 TextField/inline/Save VoiceOver。
+  - Rename 的候选精确等于进入编辑器时 trim 后原名时允许保存；其他变化排除当前 folder UUID 后检查冲突。已有重复数据不迁移，仍按 UUID 分别显示、筛选并保留图片归属。
+  - required、conflict 和 available 状态在字段附近真实可见且允许换行，Form、Cancel、trim 后持久化以及既有删除、筛选、归属和标签行为保持不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.155（Gallery文件夹名称冲突校验）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、全部 plist 解析、workflow YAML 解析、普通 12 文件 Swift parse 和 native 12 文件 Swift parse；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator、真实 VoiceOver、iPad、Full Keyboard Access、Dynamic Type 或历史重复数据交互目检；现有 `try? modelContext.save()` 仍不展示持久化失败反馈。SwiftData schema、历史数据、文件夹删除/筛选/图片归属、native backend、Xcode project、workflow 和测试规范不变。
+
 ### v1.154 / Gallery 标签保存真实启用状态
 
 - 日期：2026-07-26
