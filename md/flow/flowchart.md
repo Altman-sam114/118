@@ -10,7 +10,7 @@
 flowchart TD
   U["用户操作：下载模型、输入 Prompt、点击生成、查看 Plan"] --> UI["SwiftUI 页面：Generate / Models / Gallery / Prompts / Plan"]
   UI --> GENUI["Generate：compact 单列表单 / iPad 双栏创作台优先且窄 regular 宽度回退单列 / Save Template readiness 语义 / 可读 prompt editor/字段化字符计数语义和 header/metadata 窄宽度回退 / 可读参数控件 / 参数重置语义 / Seed 输入和随机 seed 窄宽度回退语义 / 尺寸 preset 窄宽度回退和宽高像素语义 / Stepper label 窄宽度回退语义 / sampler 算法语义 / steps 去噪语义 / CFG guidance 和 header 窄宽度回退语义 / 空模型状态卡片摘要和入口语义 / 模型选择语义 / 控制台 overview 窄宽度回退 / 控制台 status pills 窄宽度回退 / 控制台 backend/model readiness 汇总语义 / 控制台 metrics 自适应列数 / SciFiMetric 窄宽度回退 / 进度阶段文本可读 / Run 操作 44pt 命中区 / 运行状态和运行入口下一步语义 / 结果 Gallery handoff 44pt 与 saved/unavailable 语义"]
-  UI --> MODELUI["Models：下载 / 导入 / 删除 / tracked model 删除确认语义 / toolbar refresh/add menu 语义 / 空状态 no-model/no-untracked 语义 / Add Model 键盘提交和字段 label/value/hint / 未跟踪文件操作和删除确认语义 / 未跟踪 GGUF import editor 字段和 toolbar 语义 / Storage Matrix VoiceOver 摘要 / Add Model error row / 带模型名上下文的 row controls 和详情操作按钮 / Native Loading 当前值语义 / 列表和详情 message rows / tracked model 行 header/footer 窄宽度回退 / 未跟踪文件行窄宽度回退 / Storage Matrix header 窄宽度回退"]
+  UI --> MODELUI["Models：下载 / 导入 / 删除 / tracked model 删除确认语义 / toolbar refresh/add menu 语义 / 空状态 no-model/no-untracked 语义 / Add Model 键盘提交和字段 label/value/hint / 未跟踪文件操作和删除确认语义 / 未跟踪 GGUF import editor 字段和 toolbar 语义 / Storage Matrix VoiceOver 摘要 / Add Model error row / 带模型名上下文的 row controls 和详情操作按钮 / Native Loading 当前值语义 / 列表和详情 message rows / tracked model 行 header/footer 窄宽度回退 / 未跟踪文件行窄宽度回退 / Storage Matrix header 窄宽度回退 / Storage metrics ordinary 两列优先、窄宽度纵排、accessibility 直接纵排"]
   UI --> PROMPTUI["Prompts：模板分类 / 分类标题 heading/当前可见模板数量语义和窄宽度回退 / Add prompt template toolbar 语义 / 搜索入口 submit 和匹配范围语义 / 分类菜单 pointer hover 和上下文语义 / 分类清除确认语义 / 空状态语义 / 模板 row positive/negative/category/参数摘要 / 模板行 header 窄宽度回退 / 模板 metric steps/sampler/size 语义和窄宽度回退 / 模板 name/category 和分类重命名 name 输入语义 / 可读编辑器/字段化字符计数语义和 prompt header 窄宽度回退 / Save/Cancel ready/name-required 语义 / 带模板名上下文的 controls / 共享参数重置、Seed 输入、随机 seed、尺寸 preset、Stepper label 和 CFG header 窄宽度回退语义"]
   UI --> SHAREDUI["Shared UI：Sci-Fi theme / panels / buttons / parameter editor / SciFiMetric 窄宽度回退 / SciFiStatusPill 普通字号横排优先、窄宽度纵排回退、无障碍字号多行纵排 / 组合辅助功能语义"]
   UI --> NAV["Root 导航：iPhone TabView / iPad 单层 SplitView / neutral Plan navigation icon / Plan sidebar planning hint / 可访问 sidebar rows / pointer hover affordance"]
@@ -66,7 +66,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["用户打开 Models：空状态下载/导入入口语义 / Add Model 键盘提交和字段语义 / tracked model 删除确认语义 / 未跟踪文件操作、导入字段和删除确认语义 / Storage Matrix 摘要 / 带模型名上下文的控件 / Native Loading 当前值语义 / 大字号堆叠"] --> B{"模型来源"}
+  A["用户打开 Models：空状态下载/导入入口语义 / Add Model 键盘提交和字段语义 / tracked model 删除确认语义 / 未跟踪文件操作、导入字段和删除确认语义 / Storage Matrix 摘要 / metrics ordinary ViewThatFits 两列优先或纵排 fallback / accessibility metrics 直接纵排 / 带模型名上下文的控件 / Native Loading 当前值语义 / 大字号堆叠"] --> B{"模型来源"}
   B -- "Hugging Face GGUF URL" --> C["解析仓库、文件名、revision、URL"]
   C --> D["创建 LocalModel 元数据"]
   D --> E["HuggingFaceDownloadManager 下载"]

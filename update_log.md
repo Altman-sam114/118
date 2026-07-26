@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.152 / StorageMatrix 指标窄宽度回退
+
+- 日期：2026-07-26
+- 基线：`v1.151`，commit `81ee7bfbf1984b1d09529d4a665fd46c4081d604`。
+- 核心变更：
+  - 普通 Dynamic Type 使用 `ViewThatFits(in: .horizontal)`，优先显示按真实固有宽度参与适配的现有两列 Grid，宽度不足时回退纵向指标。
+  - accessibility Dynamic Type 直接使用纵向指标；每项 title/value 纵排，value 可垂直换行。
+  - 保留指标顺序、文案、颜色、formatter、panel、accessibility 摘要、header、ready pill 和全部模型业务逻辑不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Models/ModelLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.152（StorageMatrix指标窄宽度回退）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、全部 plist 解析、workflow YAML 解析、普通 12 文件 Swift parse 和 native 12 文件 Swift parse；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮不做 xcodebuild、simulator、VoiceOver、iPad Split View 或实机截图目检；不修改存储统计、模型状态、SwiftData、文件存储、native backend、Xcode project、workflow 或业务逻辑。
+
 ### v1.151 / Plan 核心工具始终可用语义
 
 - 日期：2026-07-26

@@ -624,26 +624,7 @@ private struct StorageSummaryRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
-
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
-                GridRow {
-                    Text("Tracked")
-                    Text(trackedText)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                }
-                GridRow {
-                    Text("On Disk")
-                    Text(directoryText)
-                        .foregroundStyle(SciFiTheme.primaryText)
-                }
-                GridRow {
-                    Text("Untracked")
-                    Text(untrackedText)
-                        .foregroundStyle(untrackedCount == 0 ? SciFiTheme.secondaryText : SciFiTheme.amber)
-                }
-            }
-            .font(.caption)
-            .foregroundStyle(SciFiTheme.secondaryText)
+            metrics
         }
         .padding(14)
         .sciFiPanel(isHighlighted: readyCount > 0)
@@ -651,6 +632,65 @@ private struct StorageSummaryRow: View {
         .accessibilityLabel("Model storage summary")
         .accessibilityValue(accessibilitySummaryValue)
         .accessibilityHint("Summarizes tracked, on-disk, and untracked model storage.")
+    }
+
+    @ViewBuilder
+    private var metrics: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            stackedMetrics
+        } else {
+            ViewThatFits(in: .horizontal) {
+                twoColumnMetrics
+                    .fixedSize(horizontal: true, vertical: false)
+
+                stackedMetrics
+            }
+        }
+    }
+
+    private var twoColumnMetrics: some View {
+        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
+            GridRow {
+                Text("Tracked")
+                Text(trackedText)
+                    .foregroundStyle(SciFiTheme.primaryText)
+            }
+            GridRow {
+                Text("On Disk")
+                Text(directoryText)
+                    .foregroundStyle(SciFiTheme.primaryText)
+            }
+            GridRow {
+                Text("Untracked")
+                Text(untrackedText)
+                    .foregroundStyle(untrackedCount == 0 ? SciFiTheme.secondaryText : SciFiTheme.amber)
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(SciFiTheme.secondaryText)
+    }
+
+    private var stackedMetrics: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            stackedMetric(title: "Tracked", value: trackedText, valueColor: SciFiTheme.primaryText)
+            stackedMetric(title: "On Disk", value: directoryText, valueColor: SciFiTheme.primaryText)
+            stackedMetric(
+                title: "Untracked",
+                value: untrackedText,
+                valueColor: untrackedCount == 0 ? SciFiTheme.secondaryText : SciFiTheme.amber
+            )
+        }
+    }
+
+    private func stackedMetric(title: String, value: String, valueColor: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .foregroundStyle(SciFiTheme.secondaryText)
+            Text(value)
+                .foregroundStyle(valueColor)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.caption)
     }
 
     @ViewBuilder
