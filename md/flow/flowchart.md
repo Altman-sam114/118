@@ -18,7 +18,7 @@ flowchart TD
   COMMANDS --> FOCUSED["FocusedBinding：Root scene selection"]
   FOCUSED --> NAV
   FOCUSED -. "StartupFailureView 无 binding：五项 disabled" .-> STARTUP["Storage Offline"]
-  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail 窄宽度可回退顶部 shelf 和 pointer hover / folder actions 和 delete confirmation 语义 / New/Rename 共用 trim + localized case-insensitive 的 required/conflict/valid 状态 / inline、Save gate/action guard 和 VoiceOver 同源 / Rename 精确 trim 原名允许，其他变化排除自身 UUID / 历史重复不迁移且继续按 UUID 保留归属 / 空状态筛选上下文语义 / Sort 当前值语义 / 图块 prompt 垂直可读、date/model metadata 窄宽度回退、label/value 拆分和 pointer hover / 详情参数行窄宽度回退 / 详情预览下一步 hint / 详情操作和删除确认图片上下文语义 / Folder 即时保存且失败恢复旧 optional folder / Save Tags 仅 normalized 草稿不同于已保存 tags 时启用，成功回显 canonical tags，失败恢复旧 saved tags 并保留原文草稿 / 两者共用可识别 alert 且不做 context rollback / tag filter 只读已保存 tags"]
+  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail 窄宽度可回退顶部 shelf 和 pointer hover / folder actions 和 delete confirmation 语义 / New/Rename 共用名称校验 / 空状态和 Sort 语义 / 图块与详情窄宽度回退 / Folder 与 Tags 保存失败局部恢复 / 图片删除使用父级单 request + 同卷隐藏 staging token + 独立 UUID ModelContext / metadata 失败 restore / cleanup pending 只 Retry Cleanup / 完整 success 才清导航和 dismiss"]
   NAV --> PLANUI["Plan：compact Form / compact footer note context 含 Availability / iPad 双栏 / neutral planning overview icon with narrow-width icon/copy fallback / overview purchase boundary 语义 / summary row hints 和普通字号横排/窄宽度纵排回退 / shared status row 标题状态横排与 detail 换行回退 / note rows 无障碍字号 icon/text 纵向回退 / Current Build paid candidates planning-only purchase note / Platform Status Mac support planned note with no separate Mac binary/Mac signing profile/sandbox entitlement/notarization pipeline / panel heading 和 note 语义 / 可访问状态徽章和 note rows / 能力矩阵 Paid candidates Planning only、StoreKit purchases not enabled 和 row hints / entitlement rule hints 含 Generate、Models、Gallery、Prompts always available 且在本 build 中 not purchase-gated、paid candidates 无 trial/preview entitlement、feature flag 或 unlock gate、StoreKit no App Store product request 且无 restore button/receipt validation path/entitlement mapping resolution、entitlement persistence 无 local cache/cross-launch restoration/server-side source/receipt-backed state / availability hints 含 Paid candidates Planning only、Purchase UI hidden 且无 purchase sheet/buy/unlock/restore/subscription management/product loading state、Mac app iPhone/iPad available but Mac/Catalyst not enabled and no separate Mac binary/Catalyst entitlement set/desktop distribution channel / Mac readiness footer iPhone/iPad available and Mac/Catalyst not enabled / Apple platform support iPhone/iPad target detail / native inference Mac/Catalyst slice detail / release signing decision detail with no Mac signing profile/sandbox entitlement/notarization pipeline / Needs QA / iPad layout pointer affordance 不替代 Mac/Catalyst QA validation blocker hints"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
@@ -43,7 +43,7 @@ flowchart TD
   MOCK --> PNG
   OFF --> ERR["用户可见错误"]
   PNG --> SAVE["保存图片文件并插入 GeneratedImage"]
-  SAVE --> GALLERY["Gallery 展示、可读筛选、可读图块和 pointer hover、folder create/rename 名称冲突 gate 且历史记录不迁移、folder 和图片删除确认上下文、Folder 即时保存失败恢复、Save Tags normalized dirty-state gate、成功 canonical 回显与失败草稿保留、复用参数"]
+  SAVE --> GALLERY["Gallery 展示、筛选、组织、复用，以及可恢复图片删除"]
   GALLERY --> UI
 ```
 
@@ -70,7 +70,29 @@ flowchart TD
   I -- "失败" --> N["显示 alert，状态改为 Failed"]
 ```
 
-## 3. 模型准备数据流
+## 3. Gallery 图片删除执行流
+
+读图说明：PNG 先在 images 同卷隐藏目录暂存，再由独立 SwiftData context 按 UUID 删除 metadata。metadata 失败优先恢复；metadata 已无后 cleanup 失败属于部分完成，只能重试 cleanup。完整收敛前不清理导航。
+
+```mermaid
+flowchart TD
+  A["确认 Delete：父级建立唯一 UUID request"] --> B["AppFileStore 校验 filename/path 并 stage move"]
+  B --> C{"stage 结果"}
+  C -- "失败且无 staged payload" --> SF["metadata 不动；详情保留；可重新 Delete"]
+  C -- "staged 位置需恢复" --> RP["Restore Pending：保留 token；只 Retry Restore"]
+  C -- "staged 或 sourceMissing token" --> D["短生命周期 ModelContext 按 UUID fetch"]
+  D --> E{"metadata delete/save"}
+  E -- "失败 + staged payload" --> R["restore 同一 token"]
+  R -- "成功" --> RF["metadata 保留；PNG 已恢复；可重新 Delete"]
+  R -- "失败" --> RP
+  E -- "失败 + source missing" --> MF["metadata 保留；只 Retry Delete Metadata"]
+  E -- "成功或 already absent" --> F["finalize 同一 token"]
+  F -- "失败" --> CP["Cleanup Pending：metadata 已无；保留 staged PNG；只 Retry Cleanup"]
+  F -- "成功/no payload/already finalized" --> S["完整 success：metadata/original/staged 均无"]
+  S --> N["仅清匹配 detailPath/focus 并 dismiss"]
+```
+
+## 4. 模型准备数据流
 
 读图说明：模型可以来自 Hugging Face URL 或本地 GGUF 导入。SwiftData 保存的是元数据，大文件保存在 Application Support；两者必须保持一致。
 
@@ -90,7 +112,7 @@ flowchart TD
   K --> L["ready 模型出现在 Generate Picker"]
 ```
 
-## 4. Agent 云端迭代流程图
+## 5. Agent 云端迭代流程图
 
 读图说明：人工先提出目标，Agent A 只负责分析和写实现提示词；Agent B 在 `main` 上实现、轻量检查、提交并 push；GitHub Actions 生成未加密结果包；Agent C 下载结果包并核对最新 `origin/main` 的 commit、run 和日志。不通过就退回 Agent B 在 `main` 上追加修复 commit；通过才交给人工复核。
 
@@ -115,7 +137,7 @@ flowchart TD
   H2 --> H
 ```
 
-## 5. Agent X 主控循环流程图
+## 6. Agent X 主控循环流程图
 
 读图说明：人工用 `agentx:` 给出总目标后，Agent X 只负责拆分轮次和判断下一步。每一轮仍必须经过 Agent A 提示词、Agent B 实现并 push、GitHub Actions artifact、Agent C 下载复判。Agent X 只能基于 Agent C 的最新结果决定继续、退回、暂停或完成。
 
@@ -142,7 +164,7 @@ flowchart TD
   D -- "通过且总目标完成" --> DONE["完成：输出总目标完成结论"]
 ```
 
-## 6. CI 结果包数据流
+## 7. CI 结果包数据流
 
 读图说明：这张图只看 `main` push 后云端产物如何形成。Agent C 后续只核对此结果包，不把旧 artifact、旧输出或 Agent B 文字汇报当作验收依据。
 
@@ -171,7 +193,7 @@ flowchart TD
   I --> J["Agent C 下载并核对 branch / commitSha / runId / runAttempt"]
 ```
 
-## 7. 测试分层选择图
+## 8. 测试分层选择图
 
 读图说明：默认本地只做轻量检查，完整构建和可追溯结果包交给 GitHub Actions。只有人工明确要求本机 build、simulator 或 native 重验证时，才把这些作为本机默认路径。
 

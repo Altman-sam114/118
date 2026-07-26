@@ -25,6 +25,56 @@ private func galleryImageCountText(_ count: Int) -> String {
     count == 1 ? "1 image" : "\(count) images"
 }
 
+private struct GalleryDeletionRequest {
+    let id = UUID()
+    let imageID: UUID
+    let imageFilename: String
+    let imageContext: String
+}
+
+private enum GalleryDeletionPhase: Equatable {
+    case idle
+    case staging(UUID)
+    case deletingMetadata(UUID)
+    case restoring(UUID)
+    case finalizing(UUID)
+    case failed(UUID)
+    case metadataFailedSourceMissing(UUID)
+    case restorePending(UUID)
+    case cleanupPending(UUID)
+
+    var blocksNewDeletion: Bool {
+        switch self {
+        case .idle, .failed:
+            false
+        case .staging, .deletingMetadata, .restoring, .finalizing,
+             .metadataFailedSourceMissing, .restorePending, .cleanupPending:
+            true
+        }
+    }
+
+}
+
+private struct GalleryDeletionError: Identifiable {
+    enum Recovery {
+        case none
+        case retryMetadata
+        case retryRestore
+        case retryCleanup
+    }
+
+    let id = UUID()
+    let requestID: UUID
+    let title: String
+    let message: String
+    let recovery: Recovery
+}
+
+private enum GalleryMetadataDeletionDisposition: Equatable {
+    case deleted
+    case alreadyAbsent
+}
+
 struct GalleryView: View {
     let fileStore: AppFileStore
     @Binding var focusedImageID: UUID?
@@ -44,6 +94,10 @@ struct GalleryView: View {
     @State private var editingFolder: FolderEditorState?
     @State private var pendingFolderDeletion: FolderEditorState?
     @State private var detailPath: [UUID] = []
+    @State private var activeDeletionRequest: GalleryDeletionRequest?
+    @State private var deletionPhase: GalleryDeletionPhase = .idle
+    @State private var deletionToken: ImageDeletionToken?
+    @State private var deletionError: GalleryDeletionError?
 
     init(
         fileStore: AppFileStore,
@@ -141,6 +195,7 @@ struct GalleryView: View {
         } message: {
             Text("Images in this folder will remain in the gallery and move back to All Images.")
         }
+        .alert(item: $deletionError, content: deletionAlert)
     }
 
     private var standaloneLayout: some View {
@@ -438,7 +493,8 @@ struct GalleryView: View {
             ImageDetailView(
                 image: image,
                 folders: folders,
-                fileStore: fileStore
+                fileStore: fileStore,
+                deletionPhase: deletionPhase(for: imageID)
             ) {
                 generation.load(image: image)
                 onReuse()
@@ -451,8 +507,18 @@ struct GalleryView: View {
                 onReuse()
             } onDelete: {
                 deleteImage(image)
+            } onRetryMetadata: {
+                retryMetadataDeletion()
+            } onRetryRestore: {
+                retryDeletionRestore()
             }
             .id(image.id)
+        } else if activeDeletionRequest?.imageID == imageID,
+                  case .cleanupPending = deletionPhase {
+            GalleryDeletionCleanupView(
+                imageContext: activeDeletionRequest?.imageContext ?? "Generated image",
+                onRetryCleanup: retryDeletionCleanup
+            )
         } else {
             EmptyStateView(
                 systemImage: "photo.badge.exclamationmark",
@@ -516,14 +582,278 @@ struct GalleryView: View {
         images.filter { $0.tags.contains(tag) }.count
     }
 
-    private func deleteImage(_ image: GeneratedImage) {
-        try? fileStore.removeImageFile(named: image.imageFilename)
-        modelContext.delete(image)
-        if focusedImageID == image.id {
+    @discardableResult
+    private func deleteImage(_ image: GeneratedImage) -> Bool {
+        guard !deletionPhase.blocksNewDeletion else { return false }
+
+        let request = GalleryDeletionRequest(
+            imageID: image.id,
+            imageFilename: image.imageFilename,
+            imageContext: "Model \(image.modelName). Seed \(image.seed). Requested \(image.width) by \(image.height) pixels. Output \(image.resolvedOutputWidth) by \(image.resolvedOutputHeight) pixels."
+        )
+        activeDeletionRequest = request
+        deletionPhase = .staging(request.id)
+        deletionToken = nil
+        deletionError = nil
+
+        let token: ImageDeletionToken
+        do {
+            token = try fileStore.stageImageDeletion(named: request.imageFilename)
+        } catch AppFileStoreError.deletionStageLocationUncertain(let uncertainToken, let underlying) {
+            guard isCurrentDeletion(request) else { return false }
+            deletionToken = uncertainToken
+            deletionPhase = .restorePending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Restore Required",
+                message: "\(request.imageContext) Staging reported an error after the PNG moved. Gallery metadata was not changed, and the staged PNG was kept. Retry Restore before deleting again.\n\n\(underlying.localizedDescription)",
+                recovery: .retryRestore
+            )
+            return false
+        } catch {
+            guard isCurrentDeletion(request) else { return false }
+            deletionPhase = .failed(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Not Deleted",
+                message: "\(request.imageContext) The PNG could not be staged, so Gallery metadata was not changed. Resolve the file error, then try Delete again.\n\n\(error.localizedDescription)",
+                recovery: .none
+            )
+            return false
+        }
+
+        guard isCurrentDeletion(request) else { return false }
+        deletionToken = token
+        return deleteMetadataAndFinalize(request: request, token: token)
+    }
+
+    private func deleteMetadataAndFinalize(
+        request: GalleryDeletionRequest,
+        token: ImageDeletionToken
+    ) -> Bool {
+        guard isCurrentDeletion(request, token: token) else { return false }
+        deletionPhase = .deletingMetadata(request.id)
+
+        let metadataDisposition: GalleryMetadataDeletionDisposition
+        do {
+            metadataDisposition = try deleteImageMetadata(withID: request.imageID)
+        } catch {
+            guard isCurrentDeletion(request, token: token) else { return false }
+            if token.payload == .sourceMissing {
+                deletionPhase = .metadataFailedSourceMissing(request.id)
+                deletionError = GalleryDeletionError(
+                    requestID: request.id,
+                    title: "Metadata Not Deleted",
+                    message: "\(request.imageContext) The PNG was already missing before this request, and its Gallery metadata could not be deleted. Retry Delete Metadata to converge both sides.\n\n\(error.localizedDescription)",
+                    recovery: .retryMetadata
+                )
+                return false
+            }
+            return restoreAfterMetadataFailure(request: request, token: token, metadataError: error)
+        }
+
+        return finalizeDeletion(
+            request: request,
+            token: token,
+            metadataDisposition: metadataDisposition
+        )
+    }
+
+    private func deleteImageMetadata(withID imageID: UUID) throws -> GalleryMetadataDeletionDisposition {
+        let deletionContext = ModelContext(modelContext.container)
+        deletionContext.autosaveEnabled = false
+        let targetID = imageID
+        var descriptor = FetchDescriptor<GeneratedImage>(
+            predicate: #Predicate<GeneratedImage> { image in
+                image.id == targetID
+            }
+        )
+        descriptor.fetchLimit = 1
+
+        guard let storedImage = try deletionContext.fetch(descriptor).first else {
+            return .alreadyAbsent
+        }
+        deletionContext.delete(storedImage)
+        try deletionContext.save()
+        return .deleted
+    }
+
+    private func restoreAfterMetadataFailure(
+        request: GalleryDeletionRequest,
+        token: ImageDeletionToken,
+        metadataError: Error
+    ) -> Bool {
+        guard isCurrentDeletion(request, token: token) else { return false }
+        deletionPhase = .restoring(request.id)
+        do {
+            _ = try fileStore.restoreImageDeletion(token)
+            guard isCurrentDeletion(request, token: token) else { return false }
+            deletionPhase = .failed(request.id)
+            deletionToken = nil
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Not Deleted",
+                message: "\(request.imageContext) Gallery metadata could not be deleted. The original PNG was restored, so the deletion did not complete. You can try Delete again.\n\n\(metadataError.localizedDescription)",
+                recovery: .none
+            )
+        } catch {
+            guard isCurrentDeletion(request, token: token) else { return false }
+            deletionPhase = .restorePending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Restore Pending",
+                message: "\(request.imageContext) Gallery metadata remains, and the PNG is still staged because restore failed. Only Retry Restore is safe before another deletion attempt.\n\nMetadata: \(metadataError.localizedDescription)\nRestore: \(error.localizedDescription)",
+                recovery: .retryRestore
+            )
+        }
+        return false
+    }
+
+    private func finalizeDeletion(
+        request: GalleryDeletionRequest,
+        token: ImageDeletionToken,
+        metadataDisposition: GalleryMetadataDeletionDisposition
+    ) -> Bool {
+        guard isCurrentDeletion(request, token: token) else { return false }
+        deletionPhase = .finalizing(request.id)
+        do {
+            _ = try fileStore.finalizeImageDeletion(token)
+            guard isCurrentDeletion(request, token: token) else { return false }
+            completeDeletion(request)
+            return true
+        } catch {
+            guard isCurrentDeletion(request, token: token) else { return false }
+            deletionPhase = .cleanupPending(request.id)
+            let metadataSummary = metadataDisposition == .alreadyAbsent
+                ? "Gallery metadata was already absent."
+                : "Gallery metadata was deleted."
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Cleanup Pending",
+                message: "\(request.imageContext) \(metadataSummary) The staged PNG could not be removed, so deletion is not fully complete. Only Retry Cleanup is safe.\n\n\(error.localizedDescription)",
+                recovery: .retryCleanup
+            )
+            return false
+        }
+    }
+
+    private func retryMetadataDeletion() {
+        guard let request = activeDeletionRequest,
+              let token = deletionToken,
+              case .metadataFailedSourceMissing(let requestID) = deletionPhase,
+              requestID == request.id,
+              token.payload == .sourceMissing else {
+            return
+        }
+        deletionError = nil
+        _ = deleteMetadataAndFinalize(request: request, token: token)
+    }
+
+    private func retryDeletionRestore() {
+        guard let request = activeDeletionRequest,
+              let token = deletionToken,
+              case .restorePending(let requestID) = deletionPhase,
+              requestID == request.id,
+              token.payload == .staged else {
+            return
+        }
+
+        deletionPhase = .restoring(request.id)
+        deletionError = nil
+        do {
+            _ = try fileStore.restoreImageDeletion(token)
+            guard isCurrentDeletion(request, token: token) else { return }
+            deletionPhase = .failed(request.id)
+            deletionToken = nil
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Restored",
+                message: "\(request.imageContext) The PNG was restored and Gallery metadata remains. The deletion did not complete; you can try Delete again.",
+                recovery: .none
+            )
+        } catch {
+            guard isCurrentDeletion(request, token: token) else { return }
+            deletionPhase = .restorePending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Restore Pending",
+                message: "\(request.imageContext) Gallery metadata remains and the staged PNG could not be restored. Retry Restore again; no metadata deletion or cleanup was attempted.\n\n\(error.localizedDescription)",
+                recovery: .retryRestore
+            )
+        }
+    }
+
+    private func retryDeletionCleanup() {
+        guard let request = activeDeletionRequest,
+              let token = deletionToken,
+              case .cleanupPending(let requestID) = deletionPhase,
+              requestID == request.id else {
+            return
+        }
+
+        deletionPhase = .finalizing(request.id)
+        deletionError = nil
+        do {
+            _ = try fileStore.finalizeImageDeletion(token)
+            guard isCurrentDeletion(request, token: token) else { return }
+            completeDeletion(request)
+        } catch {
+            guard isCurrentDeletion(request, token: token) else { return }
+            deletionPhase = .cleanupPending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Cleanup Pending",
+                message: "\(request.imageContext) Gallery metadata is absent, but the staged PNG still could not be removed. Retry Cleanup again.\n\n\(error.localizedDescription)",
+                recovery: .retryCleanup
+            )
+        }
+    }
+
+    private func completeDeletion(_ request: GalleryDeletionRequest) {
+        guard isCurrentDeletion(request) else { return }
+        if focusedImageID == request.imageID {
             focusedImageID = nil
         }
-        detailPath.removeAll { $0 == image.id }
-        try? modelContext.save()
+        detailPath.removeAll { $0 == request.imageID }
+        activeDeletionRequest = nil
+        deletionToken = nil
+        deletionError = nil
+        deletionPhase = .idle
+    }
+
+    private func isCurrentDeletion(
+        _ request: GalleryDeletionRequest,
+        token: ImageDeletionToken? = nil
+    ) -> Bool {
+        guard activeDeletionRequest?.id == request.id else { return false }
+        if let token {
+            return deletionToken?.id == token.id
+        }
+        return true
+    }
+
+    private func deletionPhase(for imageID: UUID) -> GalleryDeletionPhase {
+        activeDeletionRequest?.imageID == imageID ? deletionPhase : .idle
+    }
+
+    private func deletionAlert(_ error: GalleryDeletionError) -> Alert {
+        let retryButton: Alert.Button
+        switch error.recovery {
+        case .none:
+            return Alert(title: Text(error.title), message: Text(error.message), dismissButton: .cancel(Text("OK")))
+        case .retryMetadata:
+            retryButton = .default(Text("Retry Delete Metadata"), action: retryMetadataDeletion)
+        case .retryRestore:
+            retryButton = .default(Text("Retry Restore"), action: retryDeletionRestore)
+        case .retryCleanup:
+            retryButton = .default(Text("Retry Cleanup"), action: retryDeletionCleanup)
+        }
+        return Alert(
+            title: Text(error.title),
+            message: Text(error.message),
+            primaryButton: retryButton,
+            secondaryButton: .cancel()
+        )
     }
 
     private func reconcileImageFiles() {
@@ -740,6 +1070,45 @@ private struct ImageTile: View {
     }
 }
 
+private struct GalleryDeletionCleanupView: View {
+    let imageContext: String
+    let onRetryCleanup: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "trash.slash")
+                .font(.largeTitle)
+                .foregroundStyle(SciFiTheme.amber)
+                .accessibilityHidden(true)
+
+            Text("Image Cleanup Pending")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(SciFiTheme.primaryText)
+
+            Text("Gallery metadata is absent, but the staged PNG still needs cleanup.")
+                .font(.body)
+                .foregroundStyle(SciFiTheme.secondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button(action: onRetryCleanup) {
+                Label("Retry Cleanup", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+            .frame(minHeight: 44)
+            .accessibilityValue(imageContext)
+            .accessibilityHint("Retries only removal of the staged PNG. Gallery metadata is not changed.")
+        }
+        .padding(24)
+        .frame(maxWidth: 480)
+        .sciFiPanel(isHighlighted: true)
+        .padding()
+        .navigationTitle("Cleanup Pending")
+        .sciFiScreen()
+        .bottomTabBarClearance()
+    }
+}
+
 private struct ImageDetailView: View {
     private struct OrganizationSaveError: Identifiable {
         enum Operation {
@@ -781,9 +1150,12 @@ private struct ImageDetailView: View {
     let image: GeneratedImage
     let folders: [GalleryFolder]
     let fileStore: AppFileStore
+    let deletionPhase: GalleryDeletionPhase
     let onReuse: () -> Void
     let onRegenerate: () -> Void
-    let onDelete: () -> Void
+    let onDelete: () -> Bool
+    let onRetryMetadata: () -> Void
+    let onRetryRestore: () -> Void
 
     @State private var tagText: String
     @State private var showingDeleteConfirmation = false
@@ -796,16 +1168,22 @@ private struct ImageDetailView: View {
         image: GeneratedImage,
         folders: [GalleryFolder],
         fileStore: AppFileStore,
+        deletionPhase: GalleryDeletionPhase,
         onReuse: @escaping () -> Void,
         onRegenerate: @escaping () -> Void,
-        onDelete: @escaping () -> Void
+        onDelete: @escaping () -> Bool,
+        onRetryMetadata: @escaping () -> Void,
+        onRetryRestore: @escaping () -> Void
     ) {
         self.image = image
         self.folders = folders
         self.fileStore = fileStore
+        self.deletionPhase = deletionPhase
         self.onReuse = onReuse
         self.onRegenerate = onRegenerate
         self.onDelete = onDelete
+        self.onRetryMetadata = onRetryMetadata
+        self.onRetryRestore = onRetryRestore
         _tagText = State(initialValue: image.tags.joined(separator: ", "))
     }
 
@@ -912,6 +1290,8 @@ private struct ImageDetailView: View {
                 .accessibilityHint(Text(saveTagsAccessibilityHint))
             }
             .listRowBackground(SciFiTheme.panel)
+
+            deletionStatusSection
         }
         .navigationTitle("Image Detail")
         .sciFiScreen()
@@ -925,17 +1305,20 @@ private struct ImageDetailView: View {
                 }
                 .accessibilityLabel(Text("Delete generated image"))
                 .accessibilityValue(Text(imageActionAccessibilityValue))
-                .accessibilityHint(Text("Shows a confirmation before deleting this image file and metadata."))
+                .accessibilityHint(Text(deleteToolbarAccessibilityHint))
+                .disabled(deletionPhase.blocksNewDeletion)
             }
         }
         .confirmationDialog("Delete this generated image?", isPresented: $showingDeleteConfirmation) {
             Button("Delete Image", role: .destructive) {
-                onDelete()
-                dismiss()
+                if onDelete() {
+                    dismiss()
+                }
             }
             .accessibilityLabel(Text("Confirm deleting generated image"))
             .accessibilityValue(Text(imageActionAccessibilityValue))
-            .accessibilityHint(Text("Deletes this image file and its saved generation metadata."))
+            .accessibilityHint(Text("Safely stages this image file, then deletes its saved generation metadata. The detail closes only after cleanup finishes."))
+            .disabled(deletionPhase.blocksNewDeletion)
 
             Button("Cancel", role: .cancel) {}
                 .accessibilityLabel(Text("Cancel deleting generated image"))
@@ -952,6 +1335,84 @@ private struct ImageDetailView: View {
                     organizationSaveError = nil
                 }
             )
+        }
+    }
+
+    @ViewBuilder
+    private var deletionStatusSection: some View {
+        switch deletionPhase {
+        case .idle:
+            EmptyView()
+        case .staging, .deletingMetadata, .restoring, .finalizing:
+            Section("Deletion") {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text(deletionProgressText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Image deletion in progress")
+                .accessibilityValue(deletionProgressText)
+            }
+            .listRowBackground(SciFiTheme.panel)
+        case .failed:
+            Section("Deletion") {
+                Label("Deletion did not complete. The image remains in the Gallery and can be deleted again.", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(SciFiTheme.amber)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .listRowBackground(SciFiTheme.panel)
+        case .metadataFailedSourceMissing:
+            Section("Deletion") {
+                Label("The PNG was already missing and its Gallery metadata remains.", systemImage: "photo.badge.exclamationmark")
+                    .foregroundStyle(SciFiTheme.amber)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(action: onRetryMetadata) {
+                    Label("Retry Delete Metadata", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityHint("Retries only the saved Gallery metadata deletion because no PNG payload exists.")
+            }
+            .listRowBackground(SciFiTheme.panel)
+        case .restorePending:
+            Section("Deletion") {
+                Label("Gallery metadata remains and the PNG is staged until restore succeeds.", systemImage: "arrow.uturn.backward.circle")
+                    .foregroundStyle(SciFiTheme.amber)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(action: onRetryRestore) {
+                    Label("Retry Restore", systemImage: "arrow.uturn.backward")
+                }
+                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityHint("Retries only restoring the staged PNG. It does not delete metadata or clean up the staged file.")
+            }
+            .listRowBackground(SciFiTheme.panel)
+        case .cleanupPending:
+            EmptyView()
+        }
+    }
+
+    private var deletionProgressText: String {
+        switch deletionPhase {
+        case .staging:
+            "Staging the PNG on the same volume."
+        case .deletingMetadata:
+            "Deleting Gallery metadata."
+        case .restoring:
+            "Restoring the staged PNG."
+        case .finalizing:
+            "Cleaning up the staged PNG."
+        case .idle, .failed, .metadataFailedSourceMissing, .restorePending, .cleanupPending:
+            "Waiting."
+        }
+    }
+
+    private var deleteToolbarAccessibilityHint: String {
+        if deletionPhase.blocksNewDeletion {
+            "Another deletion or recovery step must finish before Delete is available."
+        } else {
+            "Shows a confirmation before safely staging this image file and deleting its metadata."
         }
     }
 

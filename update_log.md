@@ -22,6 +22,25 @@
 
 ## 历史记录
 
+### v1.159 / Gallery 删除可恢复一致性
+
+- 日期：2026-07-26
+- 基线：`v1.158`，commit `12d52932fa323f484f1ae23bc0fa9ead3a8797c1`。
+- 核心变更：
+  - `AppFileStore` 增加可注入 root、严格 PNG filename/token path 边界，以及 images 同卷隐藏 staging token；stage/restore/finalize 返回 source missing、already restored/finalized、conflict、payload missing 和底层操作错误等真实结果，不覆盖文件或吞错。
+  - Gallery 父级持有唯一 active request/phase/token/error；metadata 使用独立短生命周期 `ModelContext(modelContext.container)` 按 UUID fetch/delete/save，不在主 context delete、rollback 或 reinsert。
+  - metadata 失败优先 restore；restore 失败只 Retry Restore。metadata absent 继续 finalize；finalize 失败明确为 logical delete + cleanup pending，只 Retry Cleanup。错误不依赖可能被 `@Query` 移除的详情，完整成功才清匹配 detail path/focus 并 dismiss。
+- 关键文件：
+  - `LocalDiffusion/Services/AppFileStore.swift`
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.159（Gallery删除可恢复一致性）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、project plist、workflow YAML、普通/native 固定 12 文件 Swift parse；额外 12 文件 iOS typecheck 通过。生产 `AppFileStore` 在 `/private/tmp` 的真实文件 probe 覆盖 bytes、同卷路径、restore/finalize 幂等、source missing、token 唯一、边界、隐藏 staging、stage/restore/finalize 故障与原 token 重试；in-memory SwiftData probe 实际通过独立 context UUID delete/save 和 already-absent fetch。完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮未执行 simulator、人工 iPhone/iPad、Dynamic Type、真实 VoiceOver、快速重复交互、可控 SwiftData save-failure UI 或进程中断验证。token 只在当前 UI 会话持有，stage/save/finalize 间终止仍可能留下隐藏 staged PNG；本轮不修改启动 reconciliation。
+
 ### v1.158 / Generate 控制台概览真实状态
 
 - 日期：2026-07-26
