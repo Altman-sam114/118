@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.154 / Gallery 标签保存真实启用状态
+
+- 日期：2026-07-26
+- 基线：`v1.153`，commit `893c9abb528b4c49bcfbf5c42933cad8958d76e9`。
+- 核心变更：
+  - Save Tags 只在 normalized 草稿数组与已保存 tags 数组不同时启用，VoiceOver value、hint 与系统 disabled trait 共享同一 dirty state。
+  - 显式保存只解析一次 normalized tags，沿用现有 `GeneratedImage.tags` setter 和 `modelContext.save()`，随后把输入框同步为实际 `image.tags` canonical CSV 并恢复禁用。
+  - 图片详情以 `image.id` 建立草稿身份边界，切换图片时使用新图片的已保存 tags 初始化，同一图片普通重现不覆盖未保存编辑；Folder 立即保存、tag filter 只读已保存 tags 和其他 Gallery 行为保持不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.154（Gallery标签保存真实启用状态）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、全部 plist 解析、workflow YAML 解析、普通 12 文件 Swift parse 和 native 12 文件 Swift parse；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator、真实 VoiceOver、iPad pointer、Full Keyboard Access、Dynamic Type、图片切换交互或真机目检；现有 `try? modelContext.save()` 仍不展示持久化失败反馈。SwiftData schema、normalization、folder/filter、native backend、Xcode project、workflow 和测试规范不变。
+
 ### v1.153 / Prompt 模板删除显式入口与确认
 
 - 日期：2026-07-26

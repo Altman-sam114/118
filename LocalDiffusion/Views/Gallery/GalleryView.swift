@@ -440,6 +440,7 @@ struct GalleryView: View {
             } onDelete: {
                 deleteImage(image)
             }
+            .id(image.id)
         } else {
             EmptyStateView(
                 systemImage: "photo.badge.exclamationmark",
@@ -850,17 +851,15 @@ private struct ImageDetailView: View {
                     .accessibilityLabel(Text("Image tags"))
                     .accessibilityValue(Text(tagTextAccessibilityValue))
                     .accessibilityHint(Text("Separate tags with commas, then use Save Tags to store them."))
-                Button {
-                    image.tags = tagText.tagsFromCSV()
-                    try? modelContext.save()
-                } label: {
+                Button(action: saveTags) {
                     Label("Save Tags", systemImage: "tag")
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle())
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .disabled(!hasUnsavedTagChanges)
                 .accessibilityLabel(Text("Save image tags"))
                 .accessibilityValue(Text(saveTagsAccessibilityValue))
-                .accessibilityHint("Saves the current comma-separated tags for this image.")
+                .accessibilityHint(Text(saveTagsAccessibilityHint))
             }
             .listRowBackground(SciFiTheme.panel)
         }
@@ -942,6 +941,19 @@ private struct ImageDetailView: View {
     private var saveTagsAccessibilityValue: String {
         let changeState = hasUnsavedTagChanges ? "Unsaved changes" : "No changes"
         return "\(changeState). Draft tags: \(tagsAccessibilityDescription(draftTags)). Saved tags: \(tagsAccessibilityDescription(savedTags))."
+    }
+
+    private var saveTagsAccessibilityHint: String {
+        hasUnsavedTagChanges
+        ? "Saves the current comma-separated tags for this image."
+        : "The current draft matches the saved tags, so there are no changes to save."
+    }
+
+    private func saveTags() {
+        let normalizedTags = tagText.tagsFromCSV()
+        image.tags = normalizedTags
+        try? modelContext.save()
+        tagText = image.tags.joined(separator: ", ")
     }
 
     private func tagsAccessibilityDescription(_ tags: [String]) -> String {
