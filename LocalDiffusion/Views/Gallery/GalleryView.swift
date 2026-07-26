@@ -741,6 +741,43 @@ private struct ImageTile: View {
 }
 
 private struct ImageDetailView: View {
+    private struct OrganizationSaveError: Identifiable {
+        enum Operation {
+            case folder
+            case tags
+
+            var title: String {
+                switch self {
+                case .folder:
+                    "Folder Not Saved"
+                case .tags:
+                    "Tags Not Saved"
+                }
+            }
+
+            var recoveryMessage: String {
+                switch self {
+                case .folder:
+                    "The previous folder was restored. Dismiss this alert, then choose a folder again to retry."
+                case .tags:
+                    "The previously saved tags were restored, and your draft was preserved. Dismiss this alert, then use Save Tags again to retry."
+                }
+            }
+        }
+
+        let id = UUID()
+        let operation: Operation
+        let underlyingDescription: String
+
+        var title: String {
+            operation.title
+        }
+
+        var message: String {
+            "The change could not be saved. \(operation.recoveryMessage)\n\n\(underlyingDescription)"
+        }
+    }
+
     let image: GeneratedImage
     let folders: [GalleryFolder]
     let fileStore: AppFileStore
@@ -750,6 +787,7 @@ private struct ImageDetailView: View {
 
     @State private var tagText: String
     @State private var showingDeleteConfirmation = false
+    @State private var organizationSaveError: OrganizationSaveError?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.modelContext) private var modelContext
@@ -906,14 +944,36 @@ private struct ImageDetailView: View {
         } message: {
             Text("The image file and its saved generation metadata will be removed.")
         }
+        .alert(item: $organizationSaveError) { saveError in
+            Alert(
+                title: Text(saveError.title),
+                message: Text(saveError.message),
+                dismissButton: .cancel(Text("OK")) {
+                    organizationSaveError = nil
+                }
+            )
+        }
     }
 
     private var folderBinding: Binding<UUID?> {
         Binding(
             get: { image.folderID },
             set: { newValue in
+                let previousFolderID = image.folderID
+                guard newValue != previousFolderID else { return }
+
+                organizationSaveError = nil
                 image.folderID = newValue
-                try? modelContext.save()
+                do {
+                    try modelContext.save()
+                    organizationSaveError = nil
+                } catch {
+                    image.folderID = previousFolderID
+                    organizationSaveError = OrganizationSaveError(
+                        operation: .folder,
+                        underlyingDescription: error.localizedDescription
+                    )
+                }
             }
         )
     }
@@ -962,10 +1022,26 @@ private struct ImageDetailView: View {
     }
 
     private func saveTags() {
-        let normalizedTags = tagText.tagsFromCSV()
+        guard hasUnsavedTagChanges else { return }
+
+        let previousTags = image.tags
+        let draftText = tagText
+        let normalizedTags = draftText.tagsFromCSV()
+
+        organizationSaveError = nil
         image.tags = normalizedTags
-        try? modelContext.save()
-        tagText = image.tags.joined(separator: ", ")
+        do {
+            try modelContext.save()
+            tagText = image.tags.joined(separator: ", ")
+            organizationSaveError = nil
+        } catch {
+            image.tags = previousTags
+            tagText = draftText
+            organizationSaveError = OrganizationSaveError(
+                operation: .tags,
+                underlyingDescription: error.localizedDescription
+            )
+        }
     }
 
     private func tagsAccessibilityDescription(_ tags: [String]) -> String {

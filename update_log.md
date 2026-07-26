@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.156 / Gallery 详情组织保存失败恢复
+
+- 日期：2026-07-26
+- 基线：`v1.155`，commit `a6e9912c4a88bd63f2bc30c93075b8bc738e4b66`。
+- 核心变更：
+  - Folder setter 在赋值前捕获旧 optional `folderID`，相同值直接返回；新操作清旧错误并显式保存，失败只恢复旧归属，不 rollback 或二次保存。
+  - Save Tags 继续由 normalized dirty state 守卫，只解析一次并捕获旧 tags 与字符级草稿；成功 canonical 回填，失败恢复旧 saved tags、保留原文草稿和可重试 dirty state。
+  - Folder 与 Tags 共用一个详情局部、可识别错误状态和原生 alert；新操作与成功清除过期错误，反馈区分操作并说明恢复结果与重试方式。
+- 关键文件：
+  - `LocalDiffusion/Views/Gallery/GalleryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.156（Gallery详情组织保存失败恢复）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、全部 plist 解析、workflow YAML 解析、普通 12 文件 Swift parse 和 native 12 文件 Swift parse；保存故障转移矩阵按源码静态核对，完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮未执行可控 `ModelContext.save()` 故障注入、simulator、真实 VoiceOver、iPhone/iPad、Dynamic Type、删除确认与 alert 竞争或真机交互验证；Swift parse 和静态审查不能替代这些运行时检查。失败恢复有意只修改当次目标字段，不清理同一 context 中可能存在的其他未保存变化。
+
 ### v1.155 / Gallery 文件夹名称冲突校验
 
 - 日期：2026-07-26
