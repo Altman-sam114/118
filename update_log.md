@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.158 / Generate 控制台概览真实状态
+
+- 日期：2026-07-26
+- 基线：`v1.157`，commit `61dfe98d0347bebaf1d80fee3b063223425110da`。
+- 核心变更：
+  - Generate console overview 新增局部纯派生 `ConsoleOverviewState`，严格按 backend offline、backend ready/no selected ready model、debug mock/model、native/model 的优先级生成 icon、accent、背景、描边、title、detail 和组合 VoiceOver。
+  - Offline 与 no-model 状态使用 warning 色并优先于 mock/native；mock 明确仅生成 UI development placeholder，native 状态才说明 linked stable-diffusion.cpp ready。模型文案只说明 selected ready，不声称预加载。
+  - `Debug Mock Inference` 判定集中为一个 helper，overview 与 `generationGate` ready title 复用；gate 其他分支、`canGenerate`、v1.145 overview 布局和 v1.146 pills 保持不变。
+- 关键文件：
+  - `LocalDiffusion/Views/Generation/GenerationView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.158（Generate控制台概览真实状态）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、project plist 解析、workflow YAML 解析、普通/native 固定 12 文件 Swift parse，以及读取最终生产状态逻辑的四态 mapping probe；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮未执行 simulator、人工 iPhone/iPad Dynamic Type 或真实 VoiceOver 逐态检查；静态 mapping probe、Swift parse 和云端 build 不能替代布局、朗读顺序或全部 backend 配置的运行时验证。
+
 ### v1.157 / iPad 硬件键盘主导航快捷键
 
 - 日期：2026-07-26

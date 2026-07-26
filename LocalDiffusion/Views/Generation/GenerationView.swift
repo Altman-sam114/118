@@ -2,6 +2,85 @@ import SwiftData
 import SwiftUI
 import UIKit
 
+private enum ConsoleOverviewAccent {
+    case warning
+    case debugMock
+    case nativeReady
+
+    var color: Color {
+        switch self {
+        case .warning:
+            SciFiTheme.amber
+        case .debugMock:
+            SciFiTheme.magenta
+        case .nativeReady:
+            SciFiTheme.cyan
+        }
+    }
+}
+
+private struct ConsoleOverviewState {
+    let systemImage: String
+    let accent: ConsoleOverviewAccent
+    let title: String
+    let detail: String
+    let accessibilityLabel: String
+    let accessibilityValue: String
+    let accessibilityHint: String
+
+    static func derive(
+        backendStatus: InferenceBackendStatus,
+        selectedModelName: String?,
+        isDebugMockBackend: Bool
+    ) -> ConsoleOverviewState {
+        if !backendStatus.isReady {
+            return ConsoleOverviewState(
+                systemImage: "exclamationmark.triangle",
+                accent: .warning,
+                title: "Render Backend Offline",
+                detail: "Backend unavailable: \(backendStatus.title). \(backendStatus.message)",
+                accessibilityLabel: "Local render console",
+                accessibilityValue: "Backend offline. \(backendStatus.title). \(backendStatus.message)",
+                accessibilityHint: "Generation cannot start until the local inference backend is available."
+            )
+        }
+
+        guard let selectedModelName else {
+            return ConsoleOverviewState(
+                systemImage: "shippingbox",
+                accent: .warning,
+                title: "Ready Model Required",
+                detail: "Backend ready. No selected ready GGUF model. Open Models to download, import, or select one.",
+                accessibilityLabel: "Local render console",
+                accessibilityValue: "Backend ready. No ready model selected.",
+                accessibilityHint: "Open Models to download, import, or select a ready GGUF model before generation."
+            )
+        }
+
+        if isDebugMockBackend {
+            return ConsoleOverviewState(
+                systemImage: "hammer",
+                accent: .debugMock,
+                title: "Debug Mock Ready",
+                detail: "Selected ready model \(selectedModelName). Debug mock generates UI development placeholders; native inference is not in use.",
+                accessibilityLabel: "Local render console",
+                accessibilityValue: "Debug mock ready. Selected ready model \(selectedModelName). Output is a UI development placeholder; native inference is not in use.",
+                accessibilityHint: "Use this placeholder only for UI development, not production inference validation."
+            )
+        }
+
+        return ConsoleOverviewState(
+            systemImage: "sparkles",
+            accent: .nativeReady,
+            title: "Native Render Ready",
+            detail: "Selected ready model \(selectedModelName). The linked stable-diffusion.cpp native backend is ready on this device.",
+            accessibilityLabel: "Local render console",
+            accessibilityValue: "Native backend ready. Selected ready model \(selectedModelName). stable-diffusion.cpp is linked on this device.",
+            accessibilityHint: "Configure prompts and parameters before generating."
+        )
+    }
+}
+
 struct GenerationView: View {
     let fileStore: AppFileStore
     let onShowGallery: () -> Void
@@ -142,45 +221,53 @@ struct GenerationView: View {
 
     @ViewBuilder
     private var consoleOverview: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: 12) {
-                consoleOverviewIcon
-                consoleOverviewCopy
-            }
-        } else {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 12) {
-                    consoleOverviewIcon
-                    consoleOverviewCopy
-                }
+        let state = consoleOverviewState
 
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 12) {
-                    consoleOverviewIcon
-                    consoleOverviewCopy
+                    consoleOverviewIcon(state: state)
+                    consoleOverviewCopy(state: state)
+                }
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 12) {
+                        consoleOverviewIcon(state: state)
+                        consoleOverviewCopy(state: state)
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        consoleOverviewIcon(state: state)
+                        consoleOverviewCopy(state: state)
+                    }
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(state.accessibilityLabel))
+        .accessibilityValue(Text(state.accessibilityValue))
+        .accessibilityHint(Text(state.accessibilityHint))
     }
 
-    private var consoleOverviewIcon: some View {
-        Image(systemName: "sparkles")
+    private func consoleOverviewIcon(state: ConsoleOverviewState) -> some View {
+        Image(systemName: state.systemImage)
             .font(.system(size: 28, weight: .semibold))
-            .foregroundStyle(SciFiTheme.cyan)
+            .foregroundStyle(state.accent.color)
             .frame(width: 54, height: 54)
-            .background(SciFiTheme.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            .background(state.accent.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(SciFiTheme.cyan.opacity(0.38), lineWidth: 1)
+                    .stroke(state.accent.color.opacity(0.38), lineWidth: 1)
             }
             .accessibilityHidden(true)
     }
 
-    private var consoleOverviewCopy: some View {
+    private func consoleOverviewCopy(state: ConsoleOverviewState) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Local Render Console")
+            Text(state.title)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(SciFiTheme.primaryText)
-            Text("GGUF model loaded locally. Tune prompts and fire the native backend from this device.")
+            Text(state.detail)
                 .font(.subheadline)
                 .foregroundStyle(SciFiTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -606,6 +693,18 @@ struct GenerationView: View {
         return count == 1 ? "1 ready model" : "\(count) ready models"
     }
 
+    private var isDebugMockBackend: Bool {
+        viewModel.backendStatus.title == "Debug Mock Inference"
+    }
+
+    private var consoleOverviewState: ConsoleOverviewState {
+        ConsoleOverviewState.derive(
+            backendStatus: viewModel.backendStatus,
+            selectedModelName: selectedModel?.name,
+            isDebugMockBackend: isDebugMockBackend
+        )
+    }
+
     private var canGenerate: Bool {
         selectedModel != nil &&
         viewModel.backendStatus.isReady &&
@@ -676,7 +775,7 @@ struct GenerationView: View {
             )
         }
 
-        let title = viewModel.backendStatus.title == "Debug Mock Inference" ? "Mock Backend Ready" : "Ready to Render"
+        let title = isDebugMockBackend ? "Mock Backend Ready" : "Ready to Render"
         return GenerationGate(
             title: title,
             message: "\(selectedModel?.name ?? "Model") is ready.",

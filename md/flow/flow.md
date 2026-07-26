@@ -223,7 +223,11 @@
 
 ```text
 用户在 Generate 输入 prompt 和参数
+  -> console overview 由 backendStatus + selected ready model 纯派生
+  -> overview 按 backend offline -> ready/no model -> debug mock/model -> native/model 映射视觉与组合 VoiceOver
+  -> 集中的 debug mock title helper 同时供 overview 和 generationGate ready title 使用
   -> GenerationView 计算 generationGate
+  -> generationGate 独立处理 backend、model 和 positive prompt readiness
   -> 用户点击 Generate
   -> GenerationViewModel 校验 LocalModel 和文件
   -> 参数 normalizedForGeneration
@@ -235,6 +239,8 @@
   -> 更新最新图片 id
   -> Gallery 可打开结果
 ```
+
+Console overview 只表达 backend/model readiness，不表示 positive prompt 已满足，也不证明 selected model 已预加载进内存。Offline 和 no-model 状态优先；debug mock 明确只生成 UI development placeholder，native 状态才说明 linked stable-diffusion.cpp backend ready。v1.145 的横排、窄宽度纵排和 accessibility Dynamic Type 纵排路径共用同一派生 state，v1.146 status pills 保持独立且行为不变。
 
 ### 2.3 取消流程
 
