@@ -11,6 +11,7 @@ struct PromptLibraryView: View {
     @State private var editingTemplate: PromptTemplate?
     @State private var editingCategory: PromptCategoryEditorState?
     @State private var pendingCategoryClear: PromptCategoryEditorState?
+    @State private var pendingTemplateDeletion: PromptTemplateDeletionState?
     @State private var searchText = ""
 
     private var groupedTemplates: [PromptCategoryGroup] {
@@ -73,16 +74,18 @@ struct PromptLibraryView: View {
                                     onLoad()
                                 } onEdit: {
                                     editingTemplate = template
+                                } onDelete: {
+                                    requestDeleteTemplate(template)
                                 }
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             }
                             .onDelete { offsets in
-                                for index in offsets {
-                                    modelContext.delete(group.templates[index])
-                                }
-                                try? modelContext.save()
+                                guard offsets.count == 1,
+                                      let index = offsets.first,
+                                      group.templates.indices.contains(index) else { return }
+                                requestDeleteTemplate(group.templates[index])
                             }
                         } header: {
                             PromptCategoryHeader(group: group) {
@@ -171,7 +174,44 @@ struct PromptLibraryView: View {
             } message: {
                 Text("Templates stay in the library and move to Uncategorized.")
             }
+            .confirmationDialog(
+                "Delete template?",
+                isPresented: templateDeletionBinding,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Template", role: .destructive) {
+                    performPendingTemplateDeletion()
+                }
+                .accessibilityLabel(Text("Delete Template: \(pendingTemplateDeletionName)"))
+                .accessibilityValue(Text(pendingTemplateDeletionName))
+                .accessibilityHint(Text("Permanently deletes this saved template from the Prompt Library."))
+
+                Button("Cancel", role: .cancel) {
+                    pendingTemplateDeletion = nil
+                }
+                .accessibilityLabel(Text("Cancel deleting template: \(pendingTemplateDeletionName)"))
+                .accessibilityValue(Text(pendingTemplateDeletionName))
+                .accessibilityHint(Text("Keeps this template and closes the confirmation."))
+            } message: {
+                Text("\(pendingTemplateDeletionName) will be removed from the Prompt Library. This cannot be undone.")
+            }
         }
+    }
+
+    private func requestDeleteTemplate(_ template: PromptTemplate) {
+        pendingTemplateDeletion = PromptTemplateDeletionState(
+            templateID: template.id,
+            templateName: template.name
+        )
+    }
+
+    private func performPendingTemplateDeletion() {
+        guard let pendingTemplateDeletion else { return }
+        defer { self.pendingTemplateDeletion = nil }
+        guard let template = templates.first(where: { $0.id == pendingTemplateDeletion.templateID }) else { return }
+
+        modelContext.delete(template)
+        try? modelContext.save()
     }
 
     private func renameCategory(_ oldCategory: String, to newCategory: String) {
@@ -208,6 +248,21 @@ struct PromptLibraryView: View {
 
     private var pendingCategoryClearName: String {
         pendingCategoryClear?.category ?? "Unavailable category"
+    }
+
+    private var templateDeletionBinding: Binding<Bool> {
+        Binding(
+            get: { pendingTemplateDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingTemplateDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var pendingTemplateDeletionName: String {
+        pendingTemplateDeletion?.templateName ?? "Unavailable template"
     }
 
     private var emptySearchAccessibilityValue: String {
@@ -251,6 +306,15 @@ private struct PromptCategoryEditorState: Identifiable {
 
     var id: String {
         category
+    }
+}
+
+private struct PromptTemplateDeletionState: Identifiable {
+    let templateID: UUID
+    let templateName: String
+
+    var id: UUID {
+        templateID
     }
 }
 
@@ -339,6 +403,7 @@ private struct PromptTemplateRow: View {
     let template: PromptTemplate
     let onLoad: () -> Void
     let onEdit: () -> Void
+    let onDelete: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -352,7 +417,7 @@ private struct PromptTemplateRow: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Prompt template: \(template.name)"))
         .accessibilityValue(Text(templateAccessibilityValue))
-        .accessibilityHint(Text("Contains summary metrics plus Edit Template and Load Template controls."))
+        .accessibilityHint(Text("Contains summary metrics plus Edit Template, Load Template, and Delete Template controls. Deleting requires confirmation."))
     }
 
     @ViewBuilder
@@ -360,19 +425,19 @@ private struct PromptTemplateRow: View {
         if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 10) {
                 templateCopy
-                actions
+                stackedActions
             }
         } else {
             ViewThatFits(in: .horizontal) {
                 HStack {
                     templateCopy
                     Spacer()
-                    actions
+                    horizontalActions
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     templateCopy
-                    actions
+                    responsiveActions
                 }
             }
         }
@@ -390,26 +455,68 @@ private struct PromptTemplateRow: View {
         }
     }
 
-    private var actions: some View {
-        HStack(spacing: 8) {
-            Button(action: onEdit) {
-                Label("Edit Template", systemImage: "pencil")
-            }
-            .labelStyle(.iconOnly)
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
-            .frame(minWidth: 44, minHeight: 44)
-            .accessibilityLabel(Text("Edit Template: \(template.name)"))
-            .accessibilityHint(Text("Opens \(template.name) for editing."))
-
-            Button(action: onLoad) {
-                Label("Load Template", systemImage: "arrow.down.doc")
-            }
-            .labelStyle(.iconOnly)
-            .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
-            .frame(minWidth: 44, minHeight: 44)
-            .accessibilityLabel(Text("Load Template: \(template.name)"))
-            .accessibilityHint(Text("Loads \(template.name) into Generate."))
+    @ViewBuilder
+    private var responsiveActions: some View {
+        ViewThatFits(in: .horizontal) {
+            horizontalActions
+            stackedActions
         }
+    }
+
+    private var horizontalActions: some View {
+        HStack(spacing: 8) {
+            editButton
+            loadButton
+            deleteButton
+        }
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private var stackedActions: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            editButton
+            loadButton
+            deleteButton
+        }
+    }
+
+    private var editButton: some View {
+        Button(action: onEdit) {
+            Label("Edit Template", systemImage: "pencil")
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityLabel(Text("Edit Template: \(template.name)"))
+        .accessibilityValue(Text(template.name))
+        .accessibilityHint(Text("Opens \(template.name) for editing."))
+        .help("Edit Template")
+    }
+
+    private var loadButton: some View {
+        Button(action: onLoad) {
+            Label("Load Template", systemImage: "arrow.down.doc")
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityLabel(Text("Load Template: \(template.name)"))
+        .accessibilityValue(Text(template.name))
+        .accessibilityHint(Text("Loads \(template.name) into Generate."))
+        .help("Load Template")
+    }
+
+    private var deleteButton: some View {
+        Button(action: onDelete) {
+            Label("Delete Template", systemImage: "trash")
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.danger))
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityLabel(Text("Delete Template: \(template.name)"))
+        .accessibilityValue(Text(template.name))
+        .accessibilityHint(Text("Shows a confirmation before deleting \(template.name)."))
+        .help("Delete Template")
     }
 
     @ViewBuilder

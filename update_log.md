@@ -22,6 +22,24 @@
 
 ## 历史记录
 
+### v1.153 / Prompt 模板删除显式入口与确认
+
+- 日期：2026-07-26
+- 基线：`v1.152`，commit `80356cee0b0c98ccd7c41c312b5e7aac8d61a59d`。
+- 核心变更：
+  - Prompt 模板行新增稳定可见的 trash Delete，并保留 Edit、Load 原行为和顺序。
+  - 显式 Delete 与 swipe 共用 UUID + 模板名请求状态和带模板名确认；仅 destructive Confirm 按稳定 UUID 删除当前 query 中的唯一目标，Cancel、dismiss 或目标不存在均不删除。
+  - 三个操作保持 44pt、pointer、键盘和模板名 VoiceOver 语义；普通字号横排优先、窄宽度纵排回退，accessibility Dynamic Type 直接纵排。
+- 关键文件：
+  - `LocalDiffusion/Views/Prompts/PromptLibraryView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.153（Prompt模板删除显式入口与确认）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、全部 plist 解析、workflow YAML 解析、普通 12 文件 Swift parse 和 native 12 文件 Swift parse；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮不做 simulator、真实 VoiceOver、iPad pointer、Full Keyboard Access、窄 Split View 或实机截图目检；不修改 PromptTemplate schema、Edit/Load、搜索、分类、editor、generation、native backend、Xcode project、workflow 或测试规范。
+
 ### v1.152 / StorageMatrix 指标窄宽度回退
 
 - 日期：2026-07-26
