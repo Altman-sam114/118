@@ -49,6 +49,8 @@
 
 - `RootContentView` 管理 Generate、Models、Gallery、Prompts、Plan 五个入口。
 - iPhone 使用 TabView，iPad 使用 NavigationSplitView。
+- iPadOS 17+ Scene `Navigate` commands 通过 `@FocusedBinding` 写回 Root 现有唯一 selection；Command-1...5 使用 `AppSection` 的集中顺序/数字元数据依次选择 Generate、Models、Gallery、Prompts、Plan。
+- Root 在 compact/regular 共同根级以 `.focusedSceneValue` 暴露同一个 selection binding，因此 TabView、NavigationSplitView、跨页回调和键盘命令保持同步；`StartupFailureView` 不提供 binding，五项命令全部 disabled。
 - iPad sidebar row 提供明确 selected/not-selected 辅助功能值、workspace hint 和 44pt 最小触控高度。
 - iPad regular 由 Root 持有唯一顶层 split；Gallery 在 Root detail 中使用嵌入式宽屏布局，避免 split 嵌套，并可在横向空间不足时把左侧 filter rail 回退为顶部 filter shelf。
 - 创建并注入 `GenerationViewModel`。
@@ -67,6 +69,7 @@
 禁止：
 
 - 页面直接绕过 Root 修改全局导航状态。
+- 为键盘命令创建第二份 selection、fallback selection 或全局导航 store。
 
 ### 1.3 模型与文件存储层
 

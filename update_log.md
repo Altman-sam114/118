@@ -22,6 +22,25 @@
 
 ## 历史记录
 
+### v1.157 / iPad 硬件键盘主导航快捷键
+
+- 日期：2026-07-26
+- 基线：`v1.156`，commit `a5bd1578486d44b50241a6f0a773d63eb43559e3`。
+- 核心变更：
+  - Scene `Navigate` commands 通过 `@FocusedBinding` 写回 `RootContentView` 现有唯一 selection，Command-1...5 依次导航 Generate、Models、Gallery、Prompts、Plan。
+  - `AppSection` 的声明顺序、数字 raw value、标题、图标和快捷键集中为同一元数据源，compact `TabView`、regular `NavigationSplitView` 和 commands 共用该顺序。
+  - Root 在共同根级注入 `.focusedSceneValue`；`StartupFailureView` 不注入 binding，因此五项命令全部 disabled。工程继续保持 `SUPPORTS_MACCATALYST = NO`。
+- 关键文件：
+  - `LocalDiffusion/App/LocalDiffusionApp.swift`
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.157（iPad硬件键盘主导航快捷键）.md`
+  - `update_log.md`
+- 验证结果：本地执行 `git diff --check`、project plist 解析、workflow YAML 解析、普通/native 固定 12 文件 Swift parse、iOS 17 focused commands typecheck probe，以及读取最终生产 `AppSection` raw-value 元数据的 mapping probe；完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮未执行人工 iPad 硬件键盘、系统快捷键发现界面、TextField/TextEditor 焦点、compact/regular 尺寸切换或可控 SwiftData 启动失败交互验证；静态 probe 和云端 build 不能替代这些运行时检查。Mac Catalyst 未启用。
+
 ### v1.156 / Gallery 详情组织保存失败恢复
 
 - 日期：2026-07-26

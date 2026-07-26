@@ -1,12 +1,18 @@
 import SwiftData
 import SwiftUI
 
-enum AppSection: Hashable {
-    case generate
+enum AppSection: Int, CaseIterable, Hashable, Identifiable {
+    case generate = 1
     case models
     case gallery
     case prompts
     case plan
+
+    var id: Self { self }
+
+    var keyboardShortcut: KeyEquivalent {
+        KeyEquivalent(Character(String(rawValue)))
+    }
 
     var title: String {
         switch self {
@@ -39,8 +45,34 @@ enum AppSection: Hashable {
     }
 }
 
+private struct AppSectionSelectionKey: FocusedValueKey {
+    typealias Value = Binding<AppSection>
+}
+
+extension FocusedValues {
+    var appSectionSelection: Binding<AppSection>? {
+        get { self[AppSectionSelectionKey.self] }
+        set { self[AppSectionSelectionKey.self] = newValue }
+    }
+}
+
+struct AppSectionCommands: Commands {
+    @FocusedBinding(\.appSectionSelection) private var selection
+
+    var body: some Commands {
+        CommandMenu("Navigate") {
+            ForEach(AppSection.allCases) { section in
+                Button("Show \(section.title)") {
+                    selection = section
+                }
+                .keyboardShortcut(section.keyboardShortcut, modifiers: .command)
+                .disabled(selection == nil)
+            }
+        }
+    }
+}
+
 struct RootContentView: View {
-    private let sections: [AppSection] = [.generate, .models, .gallery, .prompts, .plan]
     private let fileStore: AppFileStore
 
     @Environment(\.modelContext) private var modelContext
@@ -72,6 +104,7 @@ struct RootContentView: View {
         .preferredColorScheme(.dark)
         .tint(SciFiTheme.cyan)
         .background(SciFiBackground().ignoresSafeArea())
+        .focusedSceneValue(\.appSectionSelection, $selection)
         .onAppear {
             configureDownloadPersistence()
         }
@@ -79,25 +112,11 @@ struct RootContentView: View {
 
     private var tabLayout: some View {
         TabView(selection: $selection) {
-            sectionContent(.generate)
-                .tabItem { Label(AppSection.generate.title, systemImage: AppSection.generate.systemImage) }
-                .tag(AppSection.generate)
-
-            sectionContent(.models)
-                .tabItem { Label(AppSection.models.title, systemImage: AppSection.models.systemImage) }
-                .tag(AppSection.models)
-
-            sectionContent(.gallery)
-                .tabItem { Label(AppSection.gallery.title, systemImage: AppSection.gallery.systemImage) }
-                .tag(AppSection.gallery)
-
-            sectionContent(.prompts)
-                .tabItem { Label(AppSection.prompts.title, systemImage: AppSection.prompts.systemImage) }
-                .tag(AppSection.prompts)
-
-            sectionContent(.plan)
-                .tabItem { Label(AppSection.plan.title, systemImage: AppSection.plan.systemImage) }
-                .tag(AppSection.plan)
+            ForEach(AppSection.allCases) { section in
+                sectionContent(section)
+                    .tabItem { Label(section.title, systemImage: section.systemImage) }
+                    .tag(section)
+            }
         }
         .toolbarBackground(SciFiTheme.backgroundTop, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
@@ -106,7 +125,7 @@ struct RootContentView: View {
 
     private var sidebarLayout: some View {
         NavigationSplitView {
-            List(sections, id: \.self, selection: sidebarSelectionBinding) { section in
+            List(AppSection.allCases, selection: sidebarSelectionBinding) { section in
                 SidebarSectionRow(section: section, isSelected: selection == section)
                     .tag(section)
                     .sciFiListRow()

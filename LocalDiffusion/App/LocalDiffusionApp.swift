@@ -28,6 +28,9 @@ struct LocalDiffusionApp: App {
                 StartupFailureView(message: startupErrorMessage ?? "SwiftData storage could not be opened.")
             }
         }
+        .commands {
+            AppSectionCommands()
+        }
     }
 
     private static func makeModelContainer() -> (container: ModelContainer?, errorMessage: String?) {
