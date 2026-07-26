@@ -237,14 +237,14 @@ private struct PlanCapabilityItem: Identifiable {
 }
 
 private enum PlanEntitlementRuleStatus {
-    case protected
+    case alwaysAvailable
     case candidate
     case requiresConfiguration
     case notImplemented
 
     var title: String {
         switch self {
-        case .protected: "Protected"
+        case .alwaysAvailable: "Always available"
         case .candidate: "Planning only"
         case .requiresConfiguration: "Requires configuration"
         case .notImplemented: "Not implemented"
@@ -253,7 +253,7 @@ private enum PlanEntitlementRuleStatus {
 
     var systemImage: String {
         switch self {
-        case .protected: "lock.open"
+        case .alwaysAvailable: "checkmark.circle"
         case .candidate: "sparkles"
         case .requiresConfiguration: "wrench.and.screwdriver"
         case .notImplemented: "xmark.circle"
@@ -262,7 +262,7 @@ private enum PlanEntitlementRuleStatus {
 
     var color: Color {
         switch self {
-        case .protected: SciFiTheme.mint
+        case .alwaysAvailable: SciFiTheme.mint
         case .candidate: SciFiTheme.cyan
         case .requiresConfiguration: SciFiTheme.amber
         case .notImplemented: SciFiTheme.magenta
@@ -400,10 +400,10 @@ private struct PlanView: View {
     private let entitlementRuleItems = [
         PlanEntitlementRuleItem(
             title: "Core local tools",
-            detail: "Generate, Models, Gallery, and Prompts stay available in the current Local plan.",
-            status: .protected,
+            detail: "Generate, Models, Gallery, and Prompts are always available and are not gated by purchases in this build.",
+            status: .alwaysAvailable,
             systemImage: "lock.open",
-            accessibilityHint: "Confirms core local tools stay available in the current Local plan."
+            accessibilityHint: "Confirms Generate, Models, Gallery, and Prompts are always available and are not gated by purchases in this build."
         ),
         PlanEntitlementRuleItem(
             title: "Paid candidates",

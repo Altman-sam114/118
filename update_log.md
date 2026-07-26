@@ -22,6 +22,23 @@
 
 ## 历史记录
 
+### v1.151 / Plan 核心工具始终可用语义
+
+- 日期：2026-07-26
+- 核心变更：
+  - Core local tools 权益状态使用 `.alwaysAvailable`，显示 `Always available`、`checkmark.circle` 和既有 mint 色。
+  - Core local tools 明确 Generate、Models、Gallery 和 Prompts 始终可用，且在本 build 中不受购买 gate 控制。
+  - 保留 Core local tools 行自身的 `lock.open` icon、row order、其他 Plan rows、布局和全部业务行为不变。
+- 关键文件：
+  - `LocalDiffusion/Views/RootContentView.swift`
+  - `README.md`
+  - `md/flow/flow.md`
+  - `md/flow/flowchart.md`
+  - `md/prompt/v1（体验优化）/v1.151（Plan核心工具始终可用语义）.md`
+  - `update_log.md`
+- 验证结果：本地 `git diff --check`、`plutil`、workflow YAML 解析、普通 Swift parse、native bridge Swift parse 均以退出码 0 通过；完整 iPhoneOS build 与 native preflight 交给 GitHub Actions，结果包待 Agent C 下载核对。
+- 遗留事项：本轮不做 Simulator、VoiceOver、iPad Split View、Mac window 或实机截图目检；不修改 StoreKit、购买/恢复/receipt/subscription、entitlement persistence、paid gate、Mac Catalyst、native backend、SwiftData、Xcode project、workflow 或业务逻辑。
+
 ### v1.150 / SciFiStatusPill 窄宽度回退
 
 - 日期：2026-07-26
