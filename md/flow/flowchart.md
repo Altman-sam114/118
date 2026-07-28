@@ -18,7 +18,7 @@ flowchart TD
   COMMANDS --> FOCUSED["FocusedBinding：Root scene selection"]
   FOCUSED --> NAV
   FOCUSED -. "StartupFailureView 无 binding：五项 disabled" .-> STARTUP["Storage Offline"]
-  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail 窄宽度可回退顶部 shelf 和 pointer hover / folder actions 和 delete confirmation 语义 / New/Rename 共用名称校验 / 空状态和 Sort 语义 / 图块与详情窄宽度回退 / Folder 与 Tags 保存失败局部恢复 / 图片删除使用父级单 request + 同卷隐藏 staging token + 独立 UUID ModelContext / metadata 失败 restore / cleanup pending 只 Retry Cleanup / 完整 success 才清导航和 dismiss"]
+  NAV --> GALUI["Gallery：compact 内部筛选 split / iPad filter rail 窄宽度可回退顶部 shelf 和 pointer hover / folder actions 和 delete confirmation 语义 / New/Rename 共用名称校验 / 空状态和 Sort 语义 / 图块与详情窄宽度回退 / Folder 与 Tags 保存失败局部恢复 / 图片删除使用父级单 request + opaque 同卷隐藏 staging token + symlink/解析路径/volume fail closed + move 四态 / restorePending 精确 reconciliation guard / 独立 UUID ModelContext / metadata 失败 restore / cleanup pending 只 Retry Cleanup / 完整 success 才清导航和 dismiss"]
   NAV --> PLANUI["Plan：compact Form / compact footer note context 含 Availability / iPad 双栏 / neutral planning overview icon with narrow-width icon/copy fallback / overview purchase boundary 语义 / summary row hints 和普通字号横排/窄宽度纵排回退 / shared status row 标题状态横排与 detail 换行回退 / note rows 无障碍字号 icon/text 纵向回退 / Current Build paid candidates planning-only purchase note / Platform Status Mac support planned note with no separate Mac binary/Mac signing profile/sandbox entitlement/notarization pipeline / panel heading 和 note 语义 / 可访问状态徽章和 note rows / 能力矩阵 Paid candidates Planning only、StoreKit purchases not enabled 和 row hints / entitlement rule hints 含 Generate、Models、Gallery、Prompts always available 且在本 build 中 not purchase-gated、paid candidates 无 trial/preview entitlement、feature flag 或 unlock gate、StoreKit no App Store product request 且无 restore button/receipt validation path/entitlement mapping resolution、entitlement persistence 无 local cache/cross-launch restoration/server-side source/receipt-backed state / availability hints 含 Paid candidates Planning only、Purchase UI hidden 且无 purchase sheet/buy/unlock/restore/subscription management/product loading state、Mac app iPhone/iPad available but Mac/Catalyst not enabled and no separate Mac binary/Catalyst entitlement set/desktop distribution channel / Mac readiness footer iPhone/iPad available and Mac/Catalyst not enabled / Apple platform support iPhone/iPad target detail / native inference Mac/Catalyst slice detail / release signing decision detail with no Mac signing profile/sandbox entitlement/notarization pipeline / Needs QA / iPad layout pointer affordance 不替代 Mac/Catalyst QA validation blocker hints"]
   NAV --> VM["状态层：GenerationViewModel / HuggingFaceDownloadManager"]
   GENUI --> VM
@@ -76,11 +76,17 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["确认 Delete：父级建立唯一 UUID request"] --> B["AppFileStore 校验 filename/path 并 stage move"]
-  B --> C{"stage 结果"}
-  C -- "失败且无 staged payload" --> SF["metadata 不动；详情保留；可重新 Delete"]
-  C -- "staged 位置需恢复" --> RP["Restore Pending：保留 token；只 Retry Restore"]
+  A["确认 Delete：父级建立唯一 UUID request"] --> B["AppFileStore 签发 opaque token；拒绝 staging symlink/解析逃逸/卷 identity 缺失或不同"]
+  B --> M["同卷 stage move"]
+  M --> C{"stage 结果 / move error 四态"}
+  C -- "original true / staged false" --> SF["普通失败；metadata 不动；可重新 Delete"]
+  C -- "original false / staged true" --> RP["Restore Pending：保留原 token；只 Retry Restore"]
+  C -- "original true / staged true" --> BC["冲突：保留两边；metadata 不动"]
+  C -- "original false / staged false" --> RP
   C -- "staged 或 sourceMissing token" --> D["短生命周期 ModelContext 按 UUID fetch"]
+  AP["Gallery onAppear / Refresh reconciliation"] --> G{"UUID + filename + request id 匹配 active restorePending？"}
+  G -- "是" --> KP["保留 metadata；filename 仍计入 referenced set"]
+  G -- "否" --> NR["其他图片照常 reconcile"]
   D --> E{"metadata delete/save"}
   E -- "失败 + staged payload" --> R["restore 同一 token"]
   R -- "成功" --> RF["metadata 保留；PNG 已恢复；可重新 Delete"]

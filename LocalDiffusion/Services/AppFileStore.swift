@@ -1,5 +1,35 @@
 import Foundation
 
+struct ImageDeletionToken: Sendable {
+    fileprivate enum Payload: Sendable, Equatable {
+        case staged
+        case sourceMissing
+    }
+
+    let id: UUID
+    let hasStagedPayload: Bool
+    let sourceWasMissing: Bool
+
+    fileprivate let issuerID: UUID
+    fileprivate let originalURL: URL
+    fileprivate let stagedURL: URL
+
+    fileprivate init(
+        id: UUID,
+        issuerID: UUID,
+        originalURL: URL,
+        stagedURL: URL,
+        payload: Payload
+    ) {
+        self.id = id
+        self.issuerID = issuerID
+        self.originalURL = originalURL
+        self.stagedURL = stagedURL
+        hasStagedPayload = payload == .staged
+        sourceWasMissing = payload == .sourceMissing
+    }
+}
+
 enum AppFileStoreError: LocalizedError {
     case unsupportedModelFile
     case emptyModelFile
@@ -8,8 +38,13 @@ enum AppFileStoreError: LocalizedError {
     case deletionDestinationExists
     case deletionRestoreConflict
     case deletionPayloadMissing
+    case unsafeDeletionStaging(String)
+    case deletionVolumeIdentityUnavailable
+    case deletionVolumeMismatch
     case deletionFileOperation(operation: String, underlying: Error)
     case deletionStageLocationUncertain(token: ImageDeletionToken, underlying: Error)
+    case deletionStagePayloadLocationUnknown(token: ImageDeletionToken, underlying: Error)
+    case deletionStageConflict(token: ImageDeletionToken, underlying: Error)
 
     var errorDescription: String? {
         switch self {
@@ -27,24 +62,22 @@ enum AppFileStoreError: LocalizedError {
             "The original and staged image paths conflict. No file was overwritten or removed."
         case .deletionPayloadMissing:
             "The staged image payload and original image file are both missing."
+        case .unsafeDeletionStaging(let reason):
+            "The image deletion staging boundary is unsafe: \(reason)"
+        case .deletionVolumeIdentityUnavailable:
+            "The image and deletion staging volume identities could not be verified."
+        case .deletionVolumeMismatch:
+            "The image and deletion staging directory are not on the same volume."
         case .deletionFileOperation(let operation, let underlying):
             "The image deletion \(operation) operation failed: \(underlying.localizedDescription)"
         case .deletionStageLocationUncertain(_, let underlying):
-            "Staging reported an error after the image moved. Restore the staged image before retrying: \(underlying.localizedDescription)"
+            "Staging reported an error after the original image disappeared. Recovery is required before retrying: \(underlying.localizedDescription)"
+        case .deletionStagePayloadLocationUnknown(_, let underlying):
+            "Staging failed and the image is visible at neither the original nor staged location. Recovery is required; do not start another deletion: \(underlying.localizedDescription)"
+        case .deletionStageConflict(_, let underlying):
+            "Staging failed with files at both the original and staged locations. Neither file was removed: \(underlying.localizedDescription)"
         }
     }
-}
-
-struct ImageDeletionToken: Sendable {
-    enum Payload: Sendable, Equatable {
-        case staged
-        case sourceMissing
-    }
-
-    let id: UUID
-    let originalURL: URL
-    let stagedURL: URL
-    let payload: Payload
 }
 
 enum ImageDeletionRestoreResult {
@@ -62,6 +95,7 @@ enum ImageDeletionFinalizeResult {
 struct ImageDeletionFileOperations {
     var moveItem: (URL, URL) throws -> Void
     var removeItem: (URL) throws -> Void
+    var volumeIdentifier: (URL) throws -> NSObject?
 
     static func live(fileManager: FileManager) -> Self {
         Self(
@@ -70,6 +104,9 @@ struct ImageDeletionFileOperations {
             },
             removeItem: { url in
                 try fileManager.removeItem(at: url)
+            },
+            volumeIdentifier: { url in
+                try url.resourceValues(forKeys: [.volumeIdentifierKey]).volumeIdentifier as? NSObject
             }
         )
     }
@@ -85,6 +122,7 @@ final class AppFileStore: @unchecked Sendable {
 
     private let fileManager: FileManager
     private let imageDeletionFileOperations: ImageDeletionFileOperations
+    private let imageDeletionIssuerID = UUID()
     private var imageDeletionStagingURL: URL {
         imagesURL.appendingPathComponent(".DeletionStaging", isDirectory: true)
     }
@@ -206,18 +244,21 @@ final class AppFileStore: @unchecked Sendable {
 
     func stageImageDeletion(named filename: String) throws -> ImageDeletionToken {
         let originalURL = try validatedImageURL(for: filename)
-        try prepareDirectory(imageDeletionStagingURL)
+        let stagingURL = try validatedImageDeletionStagingURL()
 
         let tokenID = UUID()
-        let stagedURL = imageDeletionStagingURL
+        let stagedURL = stagingURL
             .appendingPathComponent("\(tokenID.uuidString).png", isDirectory: false)
+        try validateResolvedDeletionPaths(originalURL: originalURL, stagedURL: stagedURL, stagingURL: stagingURL)
         guard !fileManager.fileExists(atPath: stagedURL.path) else {
             throw AppFileStoreError.deletionDestinationExists
         }
+        try validateSameVolume(imagesURL, stagingURL)
 
         guard fileManager.fileExists(atPath: originalURL.path) else {
             return ImageDeletionToken(
                 id: tokenID,
+                issuerID: imageDeletionIssuerID,
                 originalURL: originalURL,
                 stagedURL: stagedURL,
                 payload: .sourceMissing
@@ -226,6 +267,7 @@ final class AppFileStore: @unchecked Sendable {
 
         let token = ImageDeletionToken(
             id: tokenID,
+            issuerID: imageDeletionIssuerID,
             originalURL: originalURL,
             stagedURL: stagedURL,
             payload: .staged
@@ -233,11 +275,18 @@ final class AppFileStore: @unchecked Sendable {
         do {
             try imageDeletionFileOperations.moveItem(originalURL, stagedURL)
         } catch {
+            let originalExists = fileManager.fileExists(atPath: originalURL.path)
             let stagedExists = fileManager.fileExists(atPath: stagedURL.path)
-            if stagedExists {
+            switch (originalExists, stagedExists) {
+            case (true, false):
+                throw AppFileStoreError.deletionFileOperation(operation: "stage", underlying: error)
+            case (false, true):
                 throw AppFileStoreError.deletionStageLocationUncertain(token: token, underlying: error)
+            case (false, false):
+                throw AppFileStoreError.deletionStagePayloadLocationUnknown(token: token, underlying: error)
+            case (true, true):
+                throw AppFileStoreError.deletionStageConflict(token: token, underlying: error)
             }
-            throw AppFileStoreError.deletionFileOperation(operation: "stage", underlying: error)
         }
 
         guard !fileManager.fileExists(atPath: originalURL.path),
@@ -252,7 +301,7 @@ final class AppFileStore: @unchecked Sendable {
 
     func restoreImageDeletion(_ token: ImageDeletionToken) throws -> ImageDeletionRestoreResult {
         try validateImageDeletionToken(token)
-        guard token.payload == .staged else { return .noPayload }
+        guard token.hasStagedPayload else { return .noPayload }
 
         let originalExists = fileManager.fileExists(atPath: token.originalURL.path)
         let stagedExists = fileManager.fileExists(atPath: token.stagedURL.path)
@@ -282,7 +331,7 @@ final class AppFileStore: @unchecked Sendable {
 
     func finalizeImageDeletion(_ token: ImageDeletionToken) throws -> ImageDeletionFinalizeResult {
         try validateImageDeletionToken(token)
-        guard token.payload == .staged else { return .noPayload }
+        guard token.hasStagedPayload else { return .noPayload }
 
         let originalExists = fileManager.fileExists(atPath: token.originalURL.path)
         let stagedExists = fileManager.fileExists(atPath: token.stagedURL.path)
@@ -389,14 +438,103 @@ final class AppFileStore: @unchecked Sendable {
     private func validateImageDeletionToken(_ token: ImageDeletionToken) throws {
         let originalURL = token.originalURL
         let stagedURL = token.stagedURL
-        let expectedStagedURL = imageDeletionStagingURL
-            .appendingPathComponent("\(token.id.uuidString).png", isDirectory: false)
-        guard originalURL.deletingLastPathComponent().path == imagesURL.path,
-              originalURL.pathExtension.lowercased() == "png",
-              stagedURL.path == expectedStagedURL.path,
-              stagedURL.deletingLastPathComponent().path == imageDeletionStagingURL.path else {
+        guard token.issuerID == imageDeletionIssuerID else {
             throw AppFileStoreError.invalidImageDeletionToken
         }
+
+        let stagingURL = try validatedImageDeletionStagingURL()
+        let expectedStagedURL = stagingURL
+            .appendingPathComponent("\(token.id.uuidString).png", isDirectory: false)
+        guard originalURL.deletingLastPathComponent().path == imagesURL.path,
+              originalURL.pathExtension.lowercased() == "png" else {
+            throw AppFileStoreError.invalidImageDeletionToken
+        }
+        guard stagedURL.path == expectedStagedURL.path else {
+            throw AppFileStoreError.unsafeDeletionStaging("the token staged destination does not match its identity")
+        }
+        guard stagedURL.deletingLastPathComponent().path == stagingURL.path else {
+            throw AppFileStoreError.unsafeDeletionStaging("the token staged destination is outside the staging directory")
+        }
+        try validateResolvedDeletionPaths(originalURL: originalURL, stagedURL: stagedURL, stagingURL: stagingURL)
+        try validateSameVolume(imagesURL, stagingURL)
+    }
+
+    private func validatedImageDeletionStagingURL() throws -> URL {
+        let stagingURL = imageDeletionStagingURL.standardizedFileURL
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: stagingURL.path, isDirectory: &isDirectory) {
+            let values = try stagingURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard values.isSymbolicLink != true else {
+                throw AppFileStoreError.unsafeDeletionStaging("the staging directory is a symbolic link")
+            }
+            guard isDirectory.boolValue, values.isDirectory == true else {
+                throw AppFileStoreError.unsafeDeletionStaging("the staging path is not a directory")
+            }
+        } else {
+            try fileManager.createDirectory(at: stagingURL, withIntermediateDirectories: false)
+            try excludeFromBackup(stagingURL)
+        }
+
+        let values = try stagingURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+        guard values.isDirectory == true, values.isSymbolicLink != true else {
+            throw AppFileStoreError.unsafeDeletionStaging("the staging path did not resolve to a real directory")
+        }
+
+        let resolvedImagesURL = imagesURL.standardizedFileURL.resolvingSymlinksInPath()
+        let resolvedStagingURL = stagingURL.resolvingSymlinksInPath()
+        guard isStrictDescendant(resolvedStagingURL, of: resolvedImagesURL),
+              resolvedStagingURL.deletingLastPathComponent().path == resolvedImagesURL.path else {
+            throw AppFileStoreError.unsafeDeletionStaging("the resolved staging directory is outside the generated-images root")
+        }
+        return resolvedStagingURL
+    }
+
+    private func validateResolvedDeletionPaths(
+        originalURL: URL,
+        stagedURL: URL,
+        stagingURL: URL
+    ) throws {
+        let resolvedImagesURL = imagesURL.standardizedFileURL.resolvingSymlinksInPath()
+        let resolvedStagingURL = stagingURL.standardizedFileURL.resolvingSymlinksInPath()
+        let resolvedOriginalURL = resolvedURLPreservingMissingLeaf(originalURL)
+        let resolvedStagedURL = resolvedURLPreservingMissingLeaf(stagedURL)
+        guard resolvedOriginalURL.deletingLastPathComponent().path == resolvedImagesURL.path else {
+            throw AppFileStoreError.unsafeDeletionStaging("the resolved original image is outside the generated-images root")
+        }
+        guard resolvedStagedURL.deletingLastPathComponent().path == resolvedStagingURL.path else {
+            throw AppFileStoreError.unsafeDeletionStaging("the resolved staged destination is outside the staging directory")
+        }
+        guard isStrictDescendant(resolvedStagedURL, of: resolvedImagesURL) else {
+            throw AppFileStoreError.unsafeDeletionStaging("the resolved staged destination is outside the generated-images root")
+        }
+    }
+
+    private func validateSameVolume(_ firstURL: URL, _ secondURL: URL) throws {
+        let firstIdentifier = try imageDeletionFileOperations.volumeIdentifier(firstURL)
+        let secondIdentifier = try imageDeletionFileOperations.volumeIdentifier(secondURL)
+        guard let firstIdentifier, let secondIdentifier else {
+            throw AppFileStoreError.deletionVolumeIdentityUnavailable
+        }
+        guard firstIdentifier.isEqual(secondIdentifier) else {
+            throw AppFileStoreError.deletionVolumeMismatch
+        }
+    }
+
+    private func isStrictDescendant(_ candidate: URL, of directory: URL) -> Bool {
+        let directoryComponents = directory.standardizedFileURL.pathComponents
+        let candidateComponents = candidate.standardizedFileURL.pathComponents
+        guard candidateComponents.count > directoryComponents.count else { return false }
+        return candidateComponents.prefix(directoryComponents.count).elementsEqual(directoryComponents)
+    }
+
+    private func resolvedURLPreservingMissingLeaf(_ url: URL) -> URL {
+        let standardizedURL = url.standardizedFileURL
+        if fileManager.fileExists(atPath: standardizedURL.path) {
+            return standardizedURL.resolvingSymlinksInPath()
+        }
+        return standardizedURL.deletingLastPathComponent()
+            .resolvingSymlinksInPath()
+            .appendingPathComponent(standardizedURL.lastPathComponent, isDirectory: false)
     }
 
     private func availableModelFilename(for filename: String) -> String {

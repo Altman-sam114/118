@@ -610,6 +610,17 @@ struct GalleryView: View {
                 recovery: .retryRestore
             )
             return false
+        } catch AppFileStoreError.deletionStagePayloadLocationUnknown(let uncertainToken, let underlying) {
+            guard isCurrentDeletion(request) else { return false }
+            deletionToken = uncertainToken
+            deletionPhase = .restorePending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Location Unknown",
+                message: "\(request.imageContext) Staging failed and the PNG is visible at neither the original nor staged location. Gallery metadata was not changed. Do not start another deletion; Retry Restore with this request only.\n\n\(underlying.localizedDescription)",
+                recovery: .retryRestore
+            )
+            return false
         } catch {
             guard isCurrentDeletion(request) else { return false }
             deletionPhase = .failed(request.id)
@@ -639,7 +650,7 @@ struct GalleryView: View {
             metadataDisposition = try deleteImageMetadata(withID: request.imageID)
         } catch {
             guard isCurrentDeletion(request, token: token) else { return false }
-            if token.payload == .sourceMissing {
+            if token.sourceWasMissing {
                 deletionPhase = .metadataFailedSourceMissing(request.id)
                 deletionError = GalleryDeletionError(
                     requestID: request.id,
@@ -742,7 +753,7 @@ struct GalleryView: View {
               let token = deletionToken,
               case .metadataFailedSourceMissing(let requestID) = deletionPhase,
               requestID == request.id,
-              token.payload == .sourceMissing else {
+              token.sourceWasMissing else {
             return
         }
         deletionError = nil
@@ -754,7 +765,7 @@ struct GalleryView: View {
               let token = deletionToken,
               case .restorePending(let requestID) = deletionPhase,
               requestID == request.id,
-              token.payload == .staged else {
+              token.hasStagedPayload else {
             return
         }
 
@@ -865,6 +876,10 @@ struct GalleryView: View {
             let fileExists = fileStore.fileExists(at: imageURL)
             referencedFilenames.insert(image.imageFilename)
 
+            if protectsRestorePendingMetadata(image) {
+                continue
+            }
+
             guard fileExists, fileStore.fileSize(at: imageURL) > 0 else {
                 if fileExists {
                     try? fileStore.removeImageFile(named: image.imageFilename)
@@ -884,6 +899,16 @@ struct GalleryView: View {
         if changed {
             try? modelContext.save()
         }
+    }
+
+    private func protectsRestorePendingMetadata(_ image: GeneratedImage) -> Bool {
+        guard let request = activeDeletionRequest,
+              request.imageID == image.id,
+              request.imageFilename == image.imageFilename,
+              case .restorePending(let requestID) = deletionPhase else {
+            return false
+        }
+        return requestID == request.id
     }
 
     private var folderDeleteBinding: Binding<Bool> {
@@ -1372,6 +1397,7 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityValue(Text(imageActionAccessibilityValue))
                 .accessibilityHint("Retries only the saved Gallery metadata deletion because no PNG payload exists.")
             }
             .listRowBackground(SciFiTheme.panel)
@@ -1385,6 +1411,7 @@ private struct ImageDetailView: View {
                 }
                 .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.amber))
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityValue(Text(imageActionAccessibilityValue))
                 .accessibilityHint("Retries only restoring the staged PNG. It does not delete metadata or clean up the staged file.")
             }
             .listRowBackground(SciFiTheme.panel)
