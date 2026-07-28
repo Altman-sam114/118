@@ -28,10 +28,11 @@
 - 基线：`v1.159`，commit `5ba98516b7d479287c24fa835ec130ff63138393`；对应 run `30197799891`、attempt `1`、artifact `localdiffusion-ci-v1.159-main-5ba9851-run30197799891-attempt1` 已通过，但后续专项审查发现恢复期 reconciliation、staging 路径/卷边界、move 四态、token 构造和重试辅助功能缺陷。
 - 核心变更：
   - `AppFileStore` 的 deletion token 隐藏 URL/payload 与构造器，并绑定 store issuer；stage/restore/finalize 每次重验 staging 非 symlink、解析后严格位于 images root、volume identity 可读且一致。
+  - Agent C 退回目录级 volume 校验后，stage/restore/finalize 改为按文件存在四态优先校验 actual original/staged payload identity；双方存在时还直接比较两个 actual 文件，只有缺失端才使用安全目录 fallback，sourceMissing 不读取不存在文件。
   - production move catch 读取 original/staged 四态：仅 original 保留为普通失败，仅 staged 与两处均缺失都保留原 staged token 并要求恢复；两处都有时保留两边和原 token、进入阻塞的 `restorePending`，Retry Restore 在冲突仍在时不覆盖，外部状态收敛为 original-only 或 staged-only 后再安全完成。move 前 source missing 仍是独立 no-payload disposition。
   - Gallery reconciliation 只保护 UUID、filename、request id 均匹配的 active `restorePending` metadata，onAppear 与 Refresh 共用该 guard，其他缺失/孤儿文件照常处理；Retry Delete Metadata 与 Retry Restore 补齐当前图片 VoiceOver value。
 - 关键文件：`LocalDiffusion/Services/AppFileStore.swift`、`LocalDiffusion/Views/Gallery/GalleryView.swift`、`README.md`、`md/flow/flow.md`、`md/flow/flowchart.md`、`md/prompt/v1（体验优化）/v1.160（Gallery删除恢复边界加固）.md`、`update_log.md`。
-- 验证结果：生产 `AppFileStore` `/private/tmp` 真实文件 probe 已通过 bytes、正常 lifecycle/幂等、sourceMissing、staging 内外 symlink、真实同卷 identity、注入 identity 缺失/跨卷和 move error 四态；固定 `git diff --check`、plist、workflow YAML、普通/native 12 文件 Swift parse、额外 12 文件 iOS typecheck，以及追加 conflict catch 位于 generic catch 前且保留 token/阻塞 phase 的 source-contract 检查均退出 0。完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，artifact 待 Agent C 下载核对。
+- 验证结果：生产 `AppFileStore` `/private/tmp` 真实文件 probe 已通过 bytes、正常 lifecycle/幂等、sourceMissing、staging 内外 symlink、真实同卷 identity、注入目录 identity 缺失/跨卷、move error 四态，以及 stage/restore/finalize 的 actual original/staged payload identity mismatch 和 sourceMissing 安全目录 fallback；固定 `git diff --check`、plist、workflow YAML、普通/native 12 文件 Swift parse、额外 12 文件 iOS typecheck，以及追加 conflict catch 位于 generic catch 前且保留 token/阻塞 phase 的 source-contract 检查均退出 0。完整 iPhoneOS build 与 native preflight 交给 push 后 GitHub Actions，artifact 待 Agent C 下载核对。
 - 遗留事项：未执行 simulator、人工 iPhone/iPad Refresh、真实 VoiceOver、SwiftData save-failure UI、快速交互、进程中断或物理第二卷验证；跨卷拒绝使用 production 比较逻辑的 identity 注入验证。token 仍只在当前会话持有，跨启动 staged payload 恢复不在本轮范围。
 
 ### v1.159 / Gallery 删除可恢复一致性

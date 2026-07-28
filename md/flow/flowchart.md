@@ -76,7 +76,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["确认 Delete：父级建立唯一 UUID request"] --> B["AppFileStore 签发 opaque token；拒绝 staging symlink/解析逃逸/卷 identity 缺失或不同"]
+  A["确认 Delete：父级建立唯一 UUID request"] --> B["AppFileStore 签发 opaque token；拒绝 staging symlink/解析逃逸；存在端校验 actual payload volume，缺失端回退安全目录"]
   B --> M["同卷 stage move"]
   M --> C{"stage 结果 / move error 四态"}
   C -- "original true / staged false" --> SF["普通失败；metadata 不动；可重新 Delete"]

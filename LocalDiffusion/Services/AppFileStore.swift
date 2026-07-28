@@ -264,6 +264,13 @@ final class AppFileStore: @unchecked Sendable {
                 payload: .sourceMissing
             )
         }
+        try validateDeletionPayloadVolumes(
+            originalURL: originalURL,
+            stagedURL: stagedURL,
+            stagingURL: stagingURL,
+            originalExists: true,
+            stagedExists: false
+        )
 
         let token = ImageDeletionToken(
             id: tokenID,
@@ -296,6 +303,17 @@ final class AppFileStore: @unchecked Sendable {
                 underlying: CocoaError(.fileWriteUnknown)
             )
         }
+        do {
+            try validateDeletionPayloadVolumes(
+                originalURL: originalURL,
+                stagedURL: stagedURL,
+                stagingURL: stagingURL,
+                originalExists: false,
+                stagedExists: true
+            )
+        } catch {
+            throw AppFileStoreError.deletionStageLocationUncertain(token: token, underlying: error)
+        }
         return token
     }
 
@@ -305,6 +323,13 @@ final class AppFileStore: @unchecked Sendable {
 
         let originalExists = fileManager.fileExists(atPath: token.originalURL.path)
         let stagedExists = fileManager.fileExists(atPath: token.stagedURL.path)
+        try validateDeletionPayloadVolumes(
+            originalURL: token.originalURL,
+            stagedURL: token.stagedURL,
+            stagingURL: token.stagedURL.deletingLastPathComponent(),
+            originalExists: originalExists,
+            stagedExists: stagedExists
+        )
         switch (originalExists, stagedExists) {
         case (true, false):
             return .alreadyRestored
@@ -335,6 +360,13 @@ final class AppFileStore: @unchecked Sendable {
 
         let originalExists = fileManager.fileExists(atPath: token.originalURL.path)
         let stagedExists = fileManager.fileExists(atPath: token.stagedURL.path)
+        try validateDeletionPayloadVolumes(
+            originalURL: token.originalURL,
+            stagedURL: token.stagedURL,
+            stagingURL: token.stagedURL.deletingLastPathComponent(),
+            originalExists: originalExists,
+            stagedExists: stagedExists
+        )
         guard !originalExists else {
             throw AppFileStoreError.deletionRestoreConflict
         }
@@ -517,6 +549,29 @@ final class AppFileStore: @unchecked Sendable {
         }
         guard firstIdentifier.isEqual(secondIdentifier) else {
             throw AppFileStoreError.deletionVolumeMismatch
+        }
+    }
+
+    private func validateDeletionPayloadVolumes(
+        originalURL: URL,
+        stagedURL: URL,
+        stagingURL: URL,
+        originalExists: Bool,
+        stagedExists: Bool
+    ) throws {
+        switch (originalExists, stagedExists) {
+        case (true, true):
+            try validateSameVolume(originalURL, imagesURL)
+            try validateSameVolume(stagedURL, stagingURL)
+            try validateSameVolume(originalURL, stagedURL)
+        case (true, false):
+            try validateSameVolume(originalURL, imagesURL)
+            try validateSameVolume(originalURL, stagingURL)
+        case (false, true):
+            try validateSameVolume(stagedURL, stagingURL)
+            try validateSameVolume(stagedURL, imagesURL)
+        case (false, false):
+            try validateSameVolume(imagesURL, stagingURL)
         }
     }
 
