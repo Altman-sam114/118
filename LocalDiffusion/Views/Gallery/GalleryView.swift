@@ -621,6 +621,17 @@ struct GalleryView: View {
                 recovery: .retryRestore
             )
             return false
+        } catch AppFileStoreError.deletionStageConflict(let uncertainToken, let underlying) {
+            guard isCurrentDeletion(request) else { return false }
+            deletionToken = uncertainToken
+            deletionPhase = .restorePending(request.id)
+            deletionError = GalleryDeletionError(
+                requestID: request.id,
+                title: "Image Staging Conflict",
+                message: "\(request.imageContext) Staging failed with PNG files at both the original and staged locations. Gallery metadata was not changed, neither file was overwritten, and another Delete is blocked. Retry Restore only checks the same token conservatively: it stays blocked while both files exist, completes if only the original remains, or restores if only the staged PNG remains.\n\n\(underlying.localizedDescription)",
+                recovery: .retryRestore
+            )
+            return false
         } catch {
             guard isCurrentDeletion(request) else { return false }
             deletionPhase = .failed(request.id)

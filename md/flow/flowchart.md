@@ -81,7 +81,7 @@ flowchart TD
   M --> C{"stage 结果 / move error 四态"}
   C -- "original true / staged false" --> SF["普通失败；metadata 不动；可重新 Delete"]
   C -- "original false / staged true" --> RP["Restore Pending：保留原 token；只 Retry Restore"]
-  C -- "original true / staged true" --> BC["冲突：保留两边；metadata 不动"]
+  C -- "original true / staged true" --> RP["冲突：保留两边和原 token；阻塞新 Delete；Retry Restore 不覆盖"]
   C -- "original false / staged false" --> RP
   C -- "staged 或 sourceMissing token" --> D["短生命周期 ModelContext 按 UUID fetch"]
   AP["Gallery onAppear / Refresh reconciliation"] --> G{"UUID + filename + request id 匹配 active restorePending？"}
