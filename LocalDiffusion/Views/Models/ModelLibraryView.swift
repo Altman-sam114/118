@@ -52,10 +52,20 @@ struct ModelLibraryView: View {
     private var videoImportAccessibilityValue: String {
         if isImportingVideoPackage {
             "Importing"
-        } else if isImportingModelFile {
-            "Unavailable while GGUF import is in progress"
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress"
         } else {
             "Ready"
+        }
+    }
+
+    private var videoImportAccessibilityHint: String {
+        if isImportingVideoPackage {
+            "Copies and validates an explicit .ldvideo package. Video inference remains unavailable."
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress. Finish that import before importing a video package."
+        } else {
+            "Opens a file picker for a local .ldvideo package. This deploys a model package only; video inference is unavailable."
         }
     }
 
@@ -100,7 +110,7 @@ struct ModelLibraryView: View {
                         .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
                         .frame(minHeight: 44)
                         .accessibilityValue(videoImportAccessibilityValue)
-                        .accessibilityHint("Opens a file picker for a local .ldvideo package. This deploys a model package only; video inference is unavailable.")
+                        .accessibilityHint(videoImportAccessibilityHint)
                         .disabled(isImportingAnyModel)
                     }
                     .listRowBackground(Color.clear)
@@ -146,7 +156,7 @@ struct ModelLibraryView: View {
                             Label("Import Video Package", systemImage: "film.stack")
                         }
                         .accessibilityValue(videoImportAccessibilityValue)
-                        .accessibilityHint("Imports and checks an explicit .ldvideo package into the separate video-model directory. It does not enable video generation.")
+                        .accessibilityHint(videoImportAccessibilityHint)
                         .disabled(isImportingAnyModel)
                     } label: {
                         Label("Add", systemImage: "plus")
