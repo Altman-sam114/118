@@ -354,6 +354,7 @@ jobs:
 
           smoke_detail = "; ".join([
               f"device={smoke_summary['deviceName']} ({smoke_summary['deviceId']})",
+              f"selection={smoke_summary['deviceSelection']}",
               f"bundle={smoke_summary['bundleId']}",
               f"build={smoke_summary['build']}",
               f"install={smoke_summary['install']}",
@@ -460,7 +461,7 @@ jobs:
               "## iPad Simulator Smoke",
               "",
               f"- Result: `{html.escape(smoke_summary['result'])}`; failure stage `{html.escape(smoke_summary['failureStage'])}`; exit `{smoke_summary['exitCode']}`",
-              f"- Device: `{html.escape(smoke_summary['deviceName'])}` (`{html.escape(smoke_summary['deviceId'])}`); selection `{html.escape(smoke_summary['deviceSelection'])}`",
+              f"- Device: `{html.escape(smoke_summary['deviceName'])}` (`{html.escape(smoke_summary['deviceId'])}`); selection={html.escape(smoke_summary['deviceSelection'])}",
               f"- Bundle/app: `{html.escape(smoke_summary['bundleId'])}`; app path `{html.escape(smoke_summary['appPath'])}`",
               f"- Stages: build `{html.escape(smoke_summary['build'])}`, install `{html.escape(smoke_summary['install'])}`, boot `{html.escape(smoke_summary['boot'])}`, launch `{html.escape(smoke_summary['launch'])}`, screenshot `{html.escape(smoke_summary['screenshot'])}`",
               f"- PNG summary: file `{html.escape(smoke_summary['screenshotFile'])}`, readable `{html.escape(smoke_summary['pngReadable'])}`, format `{html.escape(smoke_summary['screenshotFormat'])}`, size `{smoke_summary['screenshotWidth']}x{smoke_summary['screenshotHeight']}`, bytes `{smoke_summary['screenshotBytes']}`",
