@@ -31,8 +31,8 @@ flowchart TD
   MODELUI --> VM
   PROMPTUI --> VM
   GALUI --> VM
-  VM --> SD["SwiftData 元数据：LocalModel / GeneratedImage / GalleryFolder / PromptTemplate"]
-  VM --> FS["Application Support 文件：GGUF 模型 / PNG 图片"]
+  VM --> SD["SwiftData 元数据：LocalModel / VideoModel / GeneratedImage / GalleryFolder / PromptTemplate"]
+  VM --> FS["Application Support 文件：Models GGUF / VideoModels .ldvideo / PNG 图片"]
   VM --> REQ["ImageGenerationRequest：参数、模型路径、辅助模型路径"]
   REQ --> IFACE["ImageGenerationBackend 协议：统一推理边界"]
   IFACE --> NATIVE["StableDiffusionCPPInferenceBackend：真实 native 推理"]
@@ -118,7 +118,28 @@ flowchart TD
   K --> L["ready 模型出现在 Generate Picker"]
 ```
 
-## 5. Agent 云端迭代流程图
+## 5. 视频模型部署流程图
+
+读图说明：视频模型只从显式 `.ldvideo` 目录包进入独立 `VideoModels` 目录。manifest、声明文件、路径边界和 SHA-256 全部通过后才写入 `VideoModel` 的 Deployed 状态；当前没有视频 backend，所以能力仍是 Inference unavailable，并且流程不会连接图片生成链路。
+
+```mermaid
+flowchart TD
+  A["Models：Import Video Package"] --> B["选择 .ldvideo 目录包"]
+  B --> C["读取 manifest.json"]
+  C --> D{"格式 / schema / video-diffusion / 能力声明正确？"}
+  D -- "否" --> U["Unsupported；不部署"]
+  D -- "是" --> E["检查相对路径、regular 文件、非空、声明 size 和 SHA-256"]
+  E --> F{"所有必需文件完整且完整性通过？"}
+  F -- "否" --> X["Deployment failed；不进入 ready"]
+  F -- "是" --> G["复制到 VideoModels 临时目录并再次检查"]
+  G --> H["移动到唯一 .ldvideo 目录"]
+  H --> I["插入独立 VideoModel：Deployed"]
+  I --> J["能力：Inference unavailable"]
+  J -. "不进入 Generate / GenerationViewModel / ImageGenerationBackend" .-> Z["图片链路保持 LocalModel + PNG backend"]
+  R["Refresh / 重新打开"] --> C
+```
+
+## 6. Agent 云端迭代流程图
 
 读图说明：人工先提出目标，Agent A 只负责分析和写实现提示词；Agent B 在 `main` 上实现、轻量检查、提交并 push；GitHub Actions 生成未加密结果包；Agent C 下载结果包并核对最新 `origin/main` 的 commit、run 和日志。不通过就退回 Agent B 在 `main` 上追加修复 commit；通过才交给人工复核。
 
@@ -143,7 +164,7 @@ flowchart TD
   H2 --> H
 ```
 
-## 6. Agent X 主控循环流程图
+## 7. Agent X 主控循环流程图
 
 读图说明：人工用 `agentx:` 给出总目标后，Agent X 只负责拆分轮次和判断下一步。每一轮仍必须经过 Agent A 提示词、Agent B 实现并 push、GitHub Actions artifact、Agent C 下载复判。Agent X 只能基于 Agent C 的最新结果决定继续、退回、暂停或完成。
 
@@ -170,7 +191,7 @@ flowchart TD
   D -- "通过且总目标完成" --> DONE["完成：输出总目标完成结论"]
 ```
 
-## 7. CI 结果包数据流
+## 8. CI 结果包数据流
 
 读图说明：这张图只看 `main` push 后云端产物如何形成。Agent C 后续只核对此结果包，不把旧 artifact、旧输出或 Agent B 文字汇报当作验收依据。
 
@@ -199,7 +220,7 @@ flowchart TD
   I --> J["Agent C 下载并核对 branch / commitSha / runId / runAttempt"]
 ```
 
-## 8. 测试分层选择图
+## 9. 测试分层选择图
 
 读图说明：默认本地只做轻量检查，完整构建和可追溯结果包交给 GitHub Actions。只有人工明确要求本机 build、simulator 或 native 重验证时，才把这些作为本机默认路径。
 

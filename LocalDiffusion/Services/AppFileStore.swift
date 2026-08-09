@@ -33,6 +33,8 @@ struct ImageDeletionToken: Sendable {
 enum AppFileStoreError: LocalizedError {
     case unsupportedModelFile
     case emptyModelFile
+    case invalidVideoModelPackageDirectoryName(String)
+    case videoModelPackageDestinationExists
     case invalidImageFilename(String)
     case invalidImageDeletionToken
     case deletionDestinationExists
@@ -52,6 +54,10 @@ enum AppFileStoreError: LocalizedError {
             "Model imports must be .gguf files."
         case .emptyModelFile:
             "The selected model file is empty."
+        case .invalidVideoModelPackageDirectoryName(let name):
+            "The video model package directory is outside the dedicated video-model boundary: \(name)"
+        case .videoModelPackageDestinationExists:
+            "A video model package with this destination already exists."
         case .invalidImageFilename(let filename):
             "The image filename is outside the generated-images boundary: \(filename)"
         case .invalidImageDeletionToken:
@@ -117,6 +123,7 @@ final class AppFileStore: @unchecked Sendable {
 
     let rootURL: URL
     let modelsURL: URL
+    let videoModelsURL: URL
     let imagesURL: URL
     let temporaryDownloadsURL: URL
 
@@ -138,12 +145,14 @@ final class AppFileStore: @unchecked Sendable {
         let applicationSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         rootURL = injectedRootURL ?? applicationSupport.appendingPathComponent("LocalDiffusion", isDirectory: true)
         modelsURL = rootURL.appendingPathComponent("Models", isDirectory: true)
+        videoModelsURL = rootURL.appendingPathComponent("VideoModels", isDirectory: true)
         imagesURL = rootURL.appendingPathComponent("GeneratedImages", isDirectory: true)
         temporaryDownloadsURL = rootURL.appendingPathComponent("Downloads", isDirectory: true)
 
         do {
             try prepareDirectory(rootURL)
             try prepareDirectory(modelsURL)
+            try prepareDirectory(videoModelsURL)
             try prepareDirectory(imagesURL)
             try prepareDirectory(temporaryDownloadsURL)
         } catch {
@@ -153,6 +162,65 @@ final class AppFileStore: @unchecked Sendable {
 
     func modelURL(for filename: String) -> URL {
         modelsURL.appendingPathComponent(filename, isDirectory: false)
+    }
+
+    func videoModelPackageURL(for directoryName: String) throws -> URL {
+        try validatedVideoModelPackageURL(for: directoryName)
+    }
+
+    func importVideoModelPackage(from sourceURL: URL) throws -> VideoModelPackageImport {
+        let hasSecurityScope = sourceURL.startAccessingSecurityScopedResource()
+        defer {
+            if hasSecurityScope {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        _ = try VideoModelPackageInspector.inspect(at: sourceURL)
+        let directoryName = availableVideoModelPackageDirectoryName(for: sourceURL.lastPathComponent)
+        let destinationURL = try validatedVideoModelPackageURL(for: directoryName)
+        let stagingURL = videoModelsURL.appendingPathComponent(".importing-\(UUID().uuidString).ldvideo", isDirectory: true)
+
+        do {
+            try fileManager.copyItem(at: sourceURL, to: stagingURL)
+            let copiedInspection = try VideoModelPackageInspector.inspect(at: stagingURL)
+            guard !fileManager.fileExists(atPath: destinationURL.path) else {
+                throw AppFileStoreError.videoModelPackageDestinationExists
+            }
+            try fileManager.moveItem(at: stagingURL, to: destinationURL)
+            try excludeFromBackup(destinationURL)
+            return VideoModelPackageImport(directoryName: directoryName, inspection: copiedInspection)
+        } catch {
+            try? removeFileIfPresent(at: stagingURL)
+            throw error
+        }
+    }
+
+    func inspectVideoModelPackage(named directoryName: String) throws -> VideoModelPackageInspection {
+        try VideoModelPackageInspector.inspect(at: try validatedVideoModelPackageURL(for: directoryName))
+    }
+
+    func removeVideoModelPackage(named directoryName: String) throws {
+        try removeFileIfPresent(at: try validatedVideoModelPackageURL(for: directoryName))
+    }
+
+    func videoModelPackageDirectoryNames() throws -> Set<String> {
+        let urls = try fileManager.contentsOfDirectory(
+            at: videoModelsURL,
+            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
+            options: [.skipsHiddenFiles]
+        )
+
+        return Set(urls.compactMap { url in
+            guard url.pathExtension.lowercased() == "ldvideo" else { return nil }
+            let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard values?.isDirectory == true, values?.isSymbolicLink != true else { return nil }
+            return url.lastPathComponent
+        })
+    }
+
+    func videoModelDirectorySize() -> Int64 {
+        directorySize(at: videoModelsURL)
     }
 
     func imageURL(for filename: String) -> URL {
@@ -613,6 +681,50 @@ final class AppFileStore: @unchecked Sendable {
         while true {
             let candidate = "\(normalizedStem)-\(index).gguf"
             if !fileManager.fileExists(atPath: modelURL(for: candidate).path) {
+                return candidate
+            }
+            index += 1
+        }
+    }
+
+    private func validatedVideoModelPackageURL(for directoryName: String) throws -> URL {
+        let trimmedName = directoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty,
+              trimmedName == directoryName,
+              directoryName != ".",
+              directoryName != "..",
+              !directoryName.hasPrefix("/"),
+              !directoryName.contains("/"),
+              !directoryName.contains("\\"),
+              (directoryName as NSString).pathExtension.lowercased() == "ldvideo" else {
+            throw AppFileStoreError.invalidVideoModelPackageDirectoryName(directoryName)
+        }
+
+        let url = videoModelsURL.appendingPathComponent(directoryName, isDirectory: true)
+        guard url.deletingLastPathComponent().path == videoModelsURL.path else {
+            throw AppFileStoreError.invalidVideoModelPackageDirectoryName(directoryName)
+        }
+        return url
+    }
+
+    private func availableVideoModelPackageDirectoryName(for sourceName: String) -> String {
+        let sanitized = sourceName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: ":", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        let baseName = sanitized.hasSuffix(".ldvideo") ? sanitized : "Imported-\(UUID().uuidString).ldvideo"
+        let stem = (baseName as NSString).deletingPathExtension
+        let initialName = "\(stem).ldvideo"
+
+        if !fileManager.fileExists(atPath: videoModelsURL.appendingPathComponent(initialName).path) {
+            return initialName
+        }
+
+        var index = 2
+        while true {
+            let candidate = "\(stem)-\(index).ldvideo"
+            if !fileManager.fileExists(atPath: videoModelsURL.appendingPathComponent(candidate).path) {
                 return candidate
             }
             index += 1

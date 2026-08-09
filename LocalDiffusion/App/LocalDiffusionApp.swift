@@ -36,6 +36,7 @@ struct LocalDiffusionApp: App {
     private static func makeModelContainer() -> (container: ModelContainer?, errorMessage: String?) {
         let schema = Schema([
             LocalModel.self,
+            VideoModel.self,
             GeneratedImage.self,
             GalleryFolder.self,
             PromptTemplate.self

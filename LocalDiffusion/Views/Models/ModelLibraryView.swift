@@ -8,15 +8,19 @@ struct ModelLibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var downloads: HuggingFaceDownloadManager
     @Query(sort: \LocalModel.updatedAt, order: .reverse) private var models: [LocalModel]
+    @Query(sort: \VideoModel.updatedAt, order: .reverse) private var videoModels: [VideoModel]
     @State private var showingAddModel = false
     @State private var modelDirectoryBytes: Int64 = 0
     @State private var showingModelFileImporter = false
+    @State private var showingVideoPackageImporter = false
     @State private var isImportingModelFile = false
+    @State private var isImportingVideoPackage = false
     @State private var pendingModelDeletion: ModelDeletionState?
     @State private var pendingUntrackedModelDeletion: UntrackedModelFile?
     @State private var importingUntrackedModel: UntrackedModelFile?
     @State private var inspectedModel: LocalModel?
     @State private var deleteErrorMessage: String?
+    @State private var videoErrorMessage: String?
     @State private var untrackedModelFiles: [UntrackedModelFile] = []
 
     private var readyModels: [LocalModel] {
@@ -34,7 +38,7 @@ struct ModelLibraryView: View {
     var body: some View {
         NavigationStack {
             List {
-                if models.isEmpty, untrackedModelFiles.isEmpty {
+                if models.isEmpty, untrackedModelFiles.isEmpty, videoModels.isEmpty {
                     VStack(spacing: 12) {
                         EmptyStateView(
                             systemImage: "shippingbox",
@@ -63,6 +67,16 @@ struct ModelLibraryView: View {
                         .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
                         .accessibilityHint("Opens a file picker for a local GGUF model file.")
                         .disabled(isImportingModelFile)
+
+                        Button {
+                            showingVideoPackageImporter = true
+                        } label: {
+                            Label("Import Video Package", systemImage: "film.stack")
+                        }
+                        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
+                        .accessibilityValue(isImportingVideoPackage ? "Importing" : "Ready")
+                        .accessibilityHint("Opens a file picker for a local .ldvideo package. This deploys a model package only; video inference is unavailable.")
+                        .disabled(isImportingVideoPackage)
                     }
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
@@ -100,6 +114,15 @@ struct ModelLibraryView: View {
                         .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
                         .accessibilityHint("Opens a file picker for a local GGUF model file.")
                         .disabled(isImportingModelFile)
+
+                        Button {
+                            showingVideoPackageImporter = true
+                        } label: {
+                            Label("Import Video Package", systemImage: "film.stack")
+                        }
+                        .accessibilityValue(isImportingVideoPackage ? "Importing" : "Ready")
+                        .accessibilityHint("Imports and checks an explicit .ldvideo package into the separate video-model directory. It does not enable video generation.")
+                        .disabled(isImportingVideoPackage)
                     } label: {
                         Label("Add", systemImage: "plus")
                     }
@@ -121,6 +144,13 @@ struct ModelLibraryView: View {
                 allowsMultipleSelection: false
             ) { result in
                 handleModelFileImport(result)
+            }
+            .fileImporter(
+                isPresented: $showingVideoPackageImporter,
+                allowedContentTypes: [.folder, .package],
+                allowsMultipleSelection: false
+            ) { result in
+                handleVideoModelPackageImport(result)
             }
             .sheet(item: $importingUntrackedModel) { file in
                 UntrackedModelImportEditor(file: file) { name, family in
@@ -150,6 +180,7 @@ struct ModelLibraryView: View {
             }
             .onAppear {
                 reconcileModelFiles()
+                reconcileVideoModels()
             }
             .confirmationDialog("Delete model?", isPresented: modelDeleteBinding, titleVisibility: .visible) {
                 Button(modelDeleteButtonTitle, role: .destructive) {
@@ -191,6 +222,13 @@ struct ModelLibraryView: View {
                 }
             } message: {
                 Text(deleteErrorMessage ?? "")
+            }
+            .alert("Video Model Deployment", isPresented: videoErrorBinding) {
+                Button("OK", role: .cancel) {
+                    videoErrorMessage = nil
+                }
+            } message: {
+                Text(videoErrorMessage ?? "")
             }
             .overlay {
                 if isImportingModelFile {
@@ -261,6 +299,14 @@ struct ModelLibraryView: View {
                 }
             }
         }
+
+        VideoModelsSection(
+            models: videoModels,
+            isImporting: isImportingVideoPackage,
+            onImport: { showingVideoPackageImporter = true },
+            onCheck: { model in reconcileVideoModel(model) },
+            onDelete: { model in deleteVideoModel(model) }
+        )
     }
 
     private func startOrResume(_ model: LocalModel) {
@@ -366,6 +412,100 @@ struct ModelLibraryView: View {
 
         if changed {
             try? modelContext.save()
+        }
+    }
+
+    private func handleVideoModelPackageImport(_ result: Result<[URL], Error>) {
+        do {
+            guard let sourceURL = try result.get().first else { return }
+            isImportingVideoPackage = true
+            let fileStore = fileStore
+
+            Task {
+                do {
+                    let imported = try await Task.detached(priority: .utility) {
+                        try fileStore.importVideoModelPackage(from: sourceURL)
+                    }.value
+
+                    let manifest = imported.inspection.manifest
+                    let model = VideoModel(
+                        name: manifest.displayName,
+                        sourceLabel: "Local Import",
+                        sourceVersion: manifest.version,
+                        packageType: imported.inspection.packageType,
+                        declaredModelType: manifest.modelType,
+                        capabilities: manifest.capabilities,
+                        packageDirectoryName: imported.directoryName,
+                        downloadedBytes: imported.inspection.totalBytes,
+                        totalBytes: imported.inspection.totalBytes,
+                        deploymentStatus: .ready,
+                        inferenceAvailability: .unavailable
+                    )
+                    modelContext.insert(model)
+
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        modelContext.delete(model)
+                        try? modelContext.save()
+                        try? fileStore.removeVideoModelPackage(named: imported.directoryName)
+                        throw error
+                    }
+                } catch {
+                    videoErrorMessage = "Could not import video model package: \(error.localizedDescription)"
+                }
+                isImportingVideoPackage = false
+            }
+        } catch {
+            videoErrorMessage = "Could not import video model package: \(error.localizedDescription)"
+        }
+    }
+
+    private func reconcileVideoModels() {
+        for model in videoModels {
+            reconcileVideoModel(model, save: false)
+        }
+        try? modelContext.save()
+    }
+
+    private func reconcileVideoModel(_ model: VideoModel, save: Bool = true) {
+        do {
+            let inspection = try fileStore.inspectVideoModelPackage(named: model.packageDirectoryName)
+            let manifest = inspection.manifest
+            model.name = manifest.displayName
+            model.sourceVersion = manifest.version
+            model.packageType = inspection.packageType
+            model.declaredModelType = manifest.modelType
+            model.capabilities = manifest.capabilities
+            model.downloadedBytes = inspection.totalBytes
+            model.totalBytes = inspection.totalBytes
+            model.deploymentStatus = .ready
+            model.inferenceAvailability = .unavailable
+            model.lastError = nil
+        } catch let error as VideoModelPackageError {
+            model.downloadedBytes = 0
+            model.deploymentStatus = error.isUnsupported ? .unsupported : .failed
+            model.inferenceAvailability = .unavailable
+            model.lastError = error.localizedDescription
+        } catch {
+            model.downloadedBytes = 0
+            model.deploymentStatus = .failed
+            model.inferenceAvailability = .unavailable
+            model.lastError = error.localizedDescription
+        }
+
+        if save {
+            try? modelContext.save()
+        }
+    }
+
+    private func deleteVideoModel(_ model: VideoModel) {
+        do {
+            try fileStore.removeVideoModelPackage(named: model.packageDirectoryName)
+            modelContext.delete(model)
+            try modelContext.save()
+        } catch {
+            videoErrorMessage = "Could not remove \(model.name): \(error.localizedDescription)"
         }
     }
 
@@ -559,6 +699,17 @@ struct ModelLibraryView: View {
             set: { isPresented in
                 if !isPresented {
                     deleteErrorMessage = nil
+                }
+            }
+        )
+    }
+
+    private var videoErrorBinding: Binding<Bool> {
+        Binding(
+            get: { videoErrorMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    videoErrorMessage = nil
                 }
             }
         )

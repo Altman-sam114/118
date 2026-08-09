@@ -22,6 +22,18 @@
 
 ## 历史记录
 
+### v1.161 / 本地视频模型部署基础
+
+- 日期：2026-08-09
+- 基线：`v1.160`，Agent A 提示词记录的基线为 `43de193`。
+- 核心变更：
+  - 新增独立 `VideoModel` SwiftData 实体、部署状态和推理不可用状态；图片 `LocalModel`、`GenerationViewModel`、`GenerationView` 和 `ImageGenerationBackend` 保持隔离。
+  - 支持显式 `.ldvideo` 目录包的本地导入。`manifest.json` 必须声明受支持格式、schema、`video-diffusion` 类型、`video-generation` 能力和带大小/SHA-256 的非空权重文件；包复制到独立 `VideoModels` 目录并在最终落盘前再次校验，重复目录名自动处理。
+  - Models 增加独立 Video Models 分区，提供 Import Video Package、Check Deployment 和确认移除操作；缺失、空、路径不安全、类型未知或完整性失败不会显示为 Deployed。
+- 关键文件：`LocalDiffusion/Models/AppModels.swift`、`LocalDiffusion/Services/AppFileStore.swift`、`LocalDiffusion/Services/VideoModelPackageService.swift`、`LocalDiffusion/Views/Models/ModelLibraryView.swift`、`LocalDiffusion/Views/Models/VideoModelsSection.swift`、`LocalDiffusion/App/LocalDiffusionApp.swift`、`LocalDiffusion.xcodeproj/project.pbxproj`、`README.md`、`md/flow/flow.md`、`md/flow/flowchart.md`、`md/test/test.md`。
+- 验证结果：本地 `git diff --check`、project plist lint、workflow YAML 解析、普通 iOS Swift parse、`USE_STABLE_DIFFUSION_CPP` Swift parse 和小型 `.ldvideo` fixture probe 均退出 0；完整 iPhoneOS build、CI workflow 和 native preflight 交给 push 后 GitHub Actions。
+- 遗留事项：本轮只实现安全的本地导入闭环，不实现视频下载、视频 native backend、视频生成、帧/编码/播放器、Gallery 视频实体、StoreKit 或 Mac Catalyst；即使包 Deployed，当前能力仍为 `Inference unavailable`。
+
 ### v1.160 / Gallery 删除恢复边界加固
 
 - 日期：2026-07-28

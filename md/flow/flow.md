@@ -4,7 +4,7 @@
 
 ## 0. 一句话总览
 
-当前项目主链路是：
+当前项目主链路是（视频模型管理在模型准备层独立分叉）：
 
 ```text
 用户输入 / 模型文件
@@ -15,6 +15,17 @@
   -> stable-diffusion.cpp bridge 生成 PNG
   -> 保存图片文件与 SwiftData 记录
   -> Gallery / Prompt Library / Generate 页面复用结果
+```
+
+视频模型管理链路不会进入图片生成链路：
+
+```text
+显式 .ldvideo 目录包
+  -> VideoModelPackageInspector 校验 manifest、声明类型、能力、非空文件、大小和 SHA-256
+  -> AppFileStore/VideoModels 独立落盘
+  -> VideoModel SwiftData 元数据
+  -> 刷新时重新校验并推导 Deployed / Unsupported / Deployment failed
+  -> 当前推理能力明确为 Inference unavailable
 ```
 
 ## 1. 核心模块
@@ -75,9 +86,10 @@
 
 职责：
 
-- `AppFileStore` 管理 GGUF 模型文件和生成图片文件。
+- `AppFileStore` 管理 GGUF 模型文件、独立 `.ldvideo` 视频模型包和生成图片文件。
 - `HuggingFaceDownloadManager` 管理 Hugging Face 下载、暂停、恢复、取消、恢复未完成下载。
 - `LocalModel` 保存模型元数据、下载状态、native load mode 和辅助模型文件名。
+- `VideoModel` 保存视频包元数据、独立部署状态、声明能力、包目录名和当前推理不可用状态；视频包只能通过 `VideoModelPackageInspector` 的显式 manifest 契约进入 `VideoModels` 目录。
 
 输入：
 
@@ -95,6 +107,7 @@
 
 - 只更新 SwiftData 而不处理对应文件。
 - 删除文件不经确认或不处理元数据一致性。
+- 视频包不复用 `LocalModel`、图片 `ready` 语义或图片模型目录；完整包只能表达已部署，不表达视频推理可用。
 
 ### 1.4 生成状态层
 
@@ -132,6 +145,7 @@
 - `UnavailableInferenceBackend` 提供未链接 native backend 的明确错误。
 - `MockLocalInferenceBackend` 仅用于 UI 开发占位。
 - `StableDiffusionCPPInferenceBackend` 调用 C bridge。
+- 当前没有视频推理 backend 生产实现；视频模型的 capability 状态固定明确为 `Inference unavailable`，不调用图片 backend 或 C bridge。
 
 输入：
 
@@ -190,6 +204,8 @@
 - Plan：展示当前 Local plan、StoreKit 未配置状态、能力矩阵、entitlement rules、availability rows、平台状态和 Mac readiness checklist；概览使用中性 planning/checklist 装饰图标而不是 payment-coded 图标，并在普通 Dynamic Type 下优先横排 icon/copy、窄宽度回退纵向，避免暗示当前页面能购买或已启用 StoreKit，并在可见 note 与组合 VoiceOver value/hint 中汇总 Local plan、StoreKit 未配置、无 purchase state/entitlement/App Store product request，以及 paid candidates 不能在这里购买或解锁；compact 使用单列 Form，compact section footer note 带 section 上下文并包含 Availability 规划状态说明，iPad regular 使用双栏阅读布局，accessibility Dynamic Type 下回退单列，宽屏自定义 panel 标题提供 heading 语义且 footer note 带面板上下文；Current Build、Platform Status、Mac readiness、能力矩阵、权益规则和可用性说明使用文字、图标、颜色和描边共同表达的状态徽章，StoreKit 未启用和 Mac 支持前置条件说明使用可换行 note row，note rows 在普通 Dynamic Type 下保留横向 icon/text，在 accessibility Dynamic Type 下回退为纵向 icon + note text，并为 VoiceOver 提供明确 label/value/hint，避免只靠颜色或尾部压缩标签表达状态；Current Build 和 Platform Status summary rows 会提示 Local plan、StoreKit products 未配置、iPhone/iPad 当前可用、Mac Catalyst 未启用，并在普通 Dynamic Type 下优先横排显示标题和状态徽章，窄宽度或 accessibility Dynamic Type 下回退纵向；共享 Plan status rows 会在普通 Dynamic Type 下优先横排显示标题和状态徽章、detail 继续换行显示，窄宽度或 accessibility Dynamic Type 下回退既有纵向布局；Current Build purchase note 会提示 purchases、restore、receipts、subscriptions 和 entitlements 未启用，屏幕上的 paid candidates 只是 planning only，不能在这里购买或解锁；Platform Status Mac support note 会提示 Mac support 仍是 planned、当前 iPhone/iPad app 可用、Mac/Catalyst app 未启用，且当前没有 separate Mac binary、Mac signing profile、sandbox entitlement 或 notarization pipeline，并仍需要 platform support、native Mac/Catalyst slice、signing decisions 和 dedicated UI validation；Capability Matrix rows 会提示 Local plan 当前可用能力、planning-only paid candidates 当前未售卖/未解锁、StoreKit purchases 当前未启用且不会售卖、购买或解锁 paid candidates；Entitlement Rules rows 会提示 Generate、Models、Gallery 和 Prompts 始终可用且在本 build 中不受购买 gate 控制、paid candidates 仅规划且不授予 active/trial/preview entitlement、feature flag 或 unlock gate、StoreKit gate 在 StoreKit 前置条件配置前不会请求 App Store product、不会展示真实购买流，且当前没有 restore button、receipt validation path 或 entitlement mapping resolution、当前没有 entitlement persistence、local entitlement cache、cross-launch restoration、server-side entitlement source 或 receipt-backed state；Availability rows 和 footer 会提示 Local tools 当前可用、paid candidates 仍是 Planning only 且未售卖/未解锁、Purchase UI 保持隐藏且当前没有 purchase sheet、buy button、unlock entry point、restore entry point、manage subscription entry point 或 product loading state，直到 StoreKit products、entitlement mapping、restore/receipt decisions 存在，Mac app 会提示当前 iPhone/iPad app 可用但 Mac/Catalyst app 未启用，且没有 separate Mac binary、Catalyst entitlement set 或 desktop distribution channel；Mac readiness footer 会提示这些是 future Mac build blockers，同时区分当前 iPhone/iPad app 可用和 Mac/Catalyst app 未启用；Mac readiness rows 会提示 Apple platform support 当前仍只配置 iPhone/iPad app target、native inference framework 仍需要 Mac 或 Catalyst slice、window/sidebar/keyboard/pointer QA validation 需要 dedicated Mac/Catalyst validation 且当前 iPad layout/pointer affordance 不能替代、Mac release channel/signing/sandboxing/notarization 仍需产品决策且当前没有 Mac signing profile、sandbox entitlement 或 notarization pipeline，window/sidebar QA 使用 Needs QA 状态；能力矩阵、权益规则和可用性说明一致明确当前本地工具保持可用，Batch queue、curated prompt packs、workflow export 这三项付费候选仍是 Planning only 且未售卖/未解锁，Purchase UI 仍需 StoreKit 与 entitlement mapping 且未持久化 entitlement，Mac app 当前 Not enabled，当前 iPhone/iPad 可用，Mac Catalyst 未启用且 Mac 前置条件仍未完成。
 - Shared：Sci-Fi theme、面板、按钮、空状态、底部留白、共享参数编辑器、状态 pill 和 metric 卡片；共享 Sci-Fi 主/次按钮提供系统 pointer hover affordance，共享参数/状态控件在 accessibility Dynamic Type 下避免单行压缩并提供明确辅助功能语义，`SciFiStatusPill` 在普通 Dynamic Type 下优先横排 icon/title、横向空间不足时回退纵向，并在 accessibility Dynamic Type 下直接使用可换行的纵向 icon/title，同时保留颜色、capsule 和组合辅助功能语义；Seed/Randomize Seed、Canvas Size preset、Steps/Width/Height Stepper label 和 CFG header 在普通 Dynamic Type 下优先横排且窄宽度回退纵向，Reset Defaults 会暴露重置范围和 prompt 保留语义，Seed 文本框会暴露编辑当前生成参数 seed value 的 hint，Randomize Seed 会暴露当前 seed 和生成新随机 seed 的 hint，Canvas Size preset 会暴露 preset 对 width/height 的成对更新范围和自定义尺寸仍可编辑的 hint，Width/Height stepper 会暴露调整当前生成参数画布像素尺寸的 hint，Sampler picker 会暴露选择当前生成参数采样算法的 hint，Steps stepper 会暴露调整当前生成参数去噪步数的 hint，CFG slider 会暴露调整当前生成参数 prompt guidance strength 的 hint。
 
+Models 的 Video Models 独立分区只导入显式 `.ldvideo` 目录包，检查部署完整性、包类型、文件大小和 SHA-256，并把 Deployed 与 Inference unavailable 分开显示；普通字号下状态行优先横排，窄 regular 宽度和大字号下回退纵向。视频包不进入图片模型列表、`GenerationView`、`GenerationViewModel` 或 `ImageGenerationBackend`。
+
 输入：
 
 - 用户触摸、文本输入、文件选择。
@@ -218,6 +234,18 @@
   -> 更新 downloadedBytes/status/lastError
   -> SwiftData 保存
   -> Generate 页可选择 ready 模型
+```
+
+视频模型准备流程独立于图片模型流程：
+
+```text
+用户在 Models 选择 Import Video Package
+  -> 选择显式 .ldvideo 目录
+  -> 校验 manifest.json 的格式、schema、video-diffusion 类型和 video-generation 声明
+  -> 校验每个声明文件的相对路径、regular/non-symlink、非空、大小和 SHA-256
+  -> 临时复制到独立 VideoModels 目录并再次校验，再移动到唯一最终目录
+  -> 插入 VideoModel，状态为 Deployed + Inference unavailable
+  -> Refresh/重新打开时从磁盘重新检查；缺失、空、路径不安全或完整性失败不会保留 Deployed
 ```
 
 ### 2.2 图片生成流程

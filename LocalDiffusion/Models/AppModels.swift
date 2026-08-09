@@ -17,6 +17,46 @@ enum ModelDownloadStatus: String, CaseIterable, Codable, Sendable {
     case failed
 }
 
+enum VideoModelPackageType: String, CaseIterable, Codable, Sendable {
+    case localDiffusionVideoV1 = "localdiffusion.video-model.v1"
+    case unknown = "unknown"
+
+    var title: String {
+        switch self {
+        case .localDiffusionVideoV1: "Local Diffusion Video Package v1"
+        case .unknown: "Unknown package"
+        }
+    }
+}
+
+enum VideoModelDeploymentStatus: String, CaseIterable, Codable, Sendable {
+    case unavailable
+    case queued
+    case downloading
+    case paused
+    case failed
+    case ready
+    case unsupported
+
+    var title: String {
+        switch self {
+        case .unavailable: "Unavailable"
+        case .queued: "Queued"
+        case .downloading: "Deploying"
+        case .paused: "Paused"
+        case .failed: "Deployment failed"
+        case .ready: "Deployed"
+        case .unsupported: "Unsupported"
+        }
+    }
+}
+
+enum VideoInferenceAvailability: String, CaseIterable, Codable, Sendable {
+    case unavailable
+
+    var title: String { "Inference unavailable" }
+}
+
 enum NativeModelLoadMode: String, CaseIterable, Identifiable, Codable, Sendable {
     case fullModel = "Full Model"
     case standaloneDiffusion = "Standalone Diffusion"
@@ -197,6 +237,99 @@ final class LocalModel {
 
     var isReady: Bool {
         status == .ready
+    }
+
+    var sizeDescription: String {
+        ByteCountFormatter.string(fromByteCount: downloadedBytes, countStyle: .file)
+    }
+}
+
+@Model
+final class VideoModel {
+    @Attribute(.unique) var id: UUID
+    var name: String
+    var sourceLabel: String
+    var sourceVersion: String
+    var packageTypeRawValue: String
+    var declaredModelType: String
+    var capabilitiesRawValue: String
+    var packageDirectoryName: String
+    var downloadedBytes: Int64
+    var totalBytes: Int64
+    var deploymentStatusRawValue: String
+    var inferenceAvailabilityRawValue: String
+    var lastError: String?
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        sourceLabel: String,
+        sourceVersion: String,
+        packageType: VideoModelPackageType,
+        declaredModelType: String,
+        capabilities: [String],
+        packageDirectoryName: String,
+        downloadedBytes: Int64,
+        totalBytes: Int64,
+        deploymentStatus: VideoModelDeploymentStatus = .queued,
+        inferenceAvailability: VideoInferenceAvailability = .unavailable,
+        lastError: String? = nil,
+        createdAt: Date = .now,
+        updatedAt: Date = .now
+    ) {
+        self.id = id
+        self.name = name
+        self.sourceLabel = sourceLabel
+        self.sourceVersion = sourceVersion
+        self.packageTypeRawValue = packageType.rawValue
+        self.declaredModelType = declaredModelType
+        self.capabilitiesRawValue = capabilities.normalizedTags().joined(separator: ",")
+        self.packageDirectoryName = packageDirectoryName
+        self.downloadedBytes = downloadedBytes
+        self.totalBytes = totalBytes
+        self.deploymentStatusRawValue = deploymentStatus.rawValue
+        self.inferenceAvailabilityRawValue = inferenceAvailability.rawValue
+        self.lastError = lastError
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    var packageType: VideoModelPackageType {
+        get { VideoModelPackageType(rawValue: packageTypeRawValue) ?? .unknown }
+        set {
+            packageTypeRawValue = newValue.rawValue
+            updatedAt = .now
+        }
+    }
+
+    var capabilities: [String] {
+        get { capabilitiesRawValue.tagsFromCSV() }
+        set {
+            capabilitiesRawValue = newValue.normalizedTags().joined(separator: ",")
+            updatedAt = .now
+        }
+    }
+
+    var deploymentStatus: VideoModelDeploymentStatus {
+        get { VideoModelDeploymentStatus(rawValue: deploymentStatusRawValue) ?? .unsupported }
+        set {
+            deploymentStatusRawValue = newValue.rawValue
+            updatedAt = .now
+        }
+    }
+
+    var inferenceAvailability: VideoInferenceAvailability {
+        get { VideoInferenceAvailability(rawValue: inferenceAvailabilityRawValue) ?? .unavailable }
+        set {
+            inferenceAvailabilityRawValue = newValue.rawValue
+            updatedAt = .now
+        }
+    }
+
+    var isDeployed: Bool {
+        deploymentStatus == .ready
     }
 
     var sizeDescription: String {
