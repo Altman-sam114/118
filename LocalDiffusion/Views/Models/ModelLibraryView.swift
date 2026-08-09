@@ -35,6 +35,30 @@ struct ModelLibraryView: View {
         untrackedModelFiles.reduce(0) { $0 + $1.bytes }
     }
 
+    private var isImportingAnyModel: Bool {
+        isImportingModelFile || isImportingVideoPackage
+    }
+
+    private var modelFileImportAccessibilityValue: String {
+        if isImportingModelFile {
+            "Importing"
+        } else if isImportingVideoPackage {
+            "Unavailable while video package import is in progress"
+        } else {
+            "Ready"
+        }
+    }
+
+    private var videoImportAccessibilityValue: String {
+        if isImportingVideoPackage {
+            "Importing"
+        } else if isImportingModelFile {
+            "Unavailable while GGUF import is in progress"
+        } else {
+            "Ready"
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -64,9 +88,9 @@ struct ModelLibraryView: View {
                             Label("Import GGUF File", systemImage: "square.and.arrow.down")
                         }
                         .buttonStyle(SciFiSecondaryButtonStyle())
-                        .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                        .accessibilityValue(modelFileImportAccessibilityValue)
                         .accessibilityHint("Opens a file picker for a local GGUF model file.")
-                        .disabled(isImportingModelFile)
+                        .disabled(isImportingAnyModel)
 
                         Button {
                             showingVideoPackageImporter = true
@@ -74,9 +98,10 @@ struct ModelLibraryView: View {
                             Label("Import Video Package", systemImage: "film.stack")
                         }
                         .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
-                        .accessibilityValue(isImportingVideoPackage ? "Importing" : "Ready")
+                        .frame(minHeight: 44)
+                        .accessibilityValue(videoImportAccessibilityValue)
                         .accessibilityHint("Opens a file picker for a local .ldvideo package. This deploys a model package only; video inference is unavailable.")
-                        .disabled(isImportingVideoPackage)
+                        .disabled(isImportingAnyModel)
                     }
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
@@ -111,24 +136,25 @@ struct ModelLibraryView: View {
                         } label: {
                             Label("Import GGUF File", systemImage: "square.and.arrow.down")
                         }
-                        .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                        .accessibilityValue(modelFileImportAccessibilityValue)
                         .accessibilityHint("Opens a file picker for a local GGUF model file.")
-                        .disabled(isImportingModelFile)
+                        .disabled(isImportingAnyModel)
 
                         Button {
                             showingVideoPackageImporter = true
                         } label: {
                             Label("Import Video Package", systemImage: "film.stack")
                         }
-                        .accessibilityValue(isImportingVideoPackage ? "Importing" : "Ready")
+                        .accessibilityValue(videoImportAccessibilityValue)
                         .accessibilityHint("Imports and checks an explicit .ldvideo package into the separate video-model directory. It does not enable video generation.")
-                        .disabled(isImportingVideoPackage)
+                        .disabled(isImportingAnyModel)
                     } label: {
                         Label("Add", systemImage: "plus")
                     }
                     .accessibilityLabel("Add model options")
-                    .accessibilityValue(isImportingModelFile ? "Importing" : "Ready")
+                    .accessibilityValue(isImportingAnyModel ? "Importing" : "Ready")
                     .accessibilityHint("Opens options to download a Hugging Face GGUF model or import a local GGUF file.")
+                    .disabled(isImportingAnyModel)
                 }
             }
             .sheet(isPresented: $showingAddModel) {
@@ -231,7 +257,20 @@ struct ModelLibraryView: View {
                 Text(videoErrorMessage ?? "")
             }
             .overlay {
-                if isImportingModelFile {
+                if isImportingVideoPackage {
+                    ProgressView("Importing video package")
+                        .padding()
+                        .foregroundStyle(SciFiTheme.primaryText)
+                        .background(SciFiTheme.panelStrong, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(SciFiTheme.cyan.opacity(0.35), lineWidth: 1)
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Importing video model package")
+                        .accessibilityValue("In progress")
+                        .accessibilityHint("Wait for package validation to finish.")
+                } else if isImportingModelFile {
                     ProgressView("Importing model file")
                         .padding()
                         .foregroundStyle(SciFiTheme.primaryText)

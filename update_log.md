@@ -22,6 +22,18 @@
 
 ## 历史记录
 
+### v1.162 / iPad 视频模型 UI 可用性
+
+- 日期：2026-08-09
+- 基线：`v1.161`，commit `739ff9b5ae4c36d594d80ae83e29ae53f70dba64`。
+- 核心变更：
+  - 视频模型行显示重检失败/不支持状态的真实 `lastError`，并将模型来源、package type、size、deployment status 和 inference availability 按明确字段语义提供给 VoiceOver；删除动作按是否已部署提供准确上下文。
+  - Video Models 的 Import/Check 操作补足至少 44pt 命中区；Models 导入状态互斥，视频包导入显示单一可访问的 loading feedback，Add 菜单和导入按钮的 disabled/value 与实际导入状态一致。
+  - 保持 `NavigationSplitView` regular detail、compact `TabView`、图片模型链路、视频部署/推理状态推导、SwiftData、文件存储和业务动作不变；未引入视频生成或本轮动画。
+- 关键文件：`LocalDiffusion/Views/Models/VideoModelsSection.swift`、`LocalDiffusion/Views/Models/ModelLibraryView.swift`、`README.md`、`md/flow/flow.md`、`md/prompt/v1（体验优化）/v1.162（iPad视频模型UI可用性）.md`。
+- 验证结果：本地 `git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、workflow YAML 解析和普通 iOS Swift parse 均退出 0；未默认执行完整 iPhoneOS build、simulator、真实 iPad、Dynamic Type、VoiceOver 或 Reduce Motion 设备验证，交由 push 后 GitHub Actions/人工设备验证。
+- 遗留事项：本轮静态审计不能替代 regular/compact 尺寸切换、长文本、多种 Dynamic Type、VoiceOver 朗读顺序和 Reduce Motion 的真实设备检查；视频模型仍仅部署与能力识别，`Inference unavailable`。
+
 ### v1.161 / 本地视频模型部署基础
 
 - 日期：2026-08-09

@@ -23,6 +23,7 @@ struct VideoModelsSection: View {
                         Label("Import Video Package", systemImage: "square.and.arrow.down")
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
+                    .frame(minHeight: 44)
                     .disabled(isImporting)
                     .accessibilityValue(isImporting ? "Importing" : "Ready")
                     .accessibilityHint("Copies and validates an explicit .ldvideo package. It does not generate video.")
@@ -61,6 +62,17 @@ private struct VideoModelRow: View {
                 statusRow(horizontal: false)
             }
 
+            if let lastError = model.lastError, !lastError.isEmpty {
+                Text("Error: \(lastError)")
+                    .font(.caption)
+                    .foregroundStyle(SciFiTheme.amber)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Deployment error")
+                    .accessibilityValue(lastError)
+                    .accessibilityHint("Check deployment to validate this package again.")
+            }
+
             if dynamicTypeSize.isAccessibilitySize {
                 actionButtons(vertical: true)
             } else {
@@ -75,7 +87,7 @@ private struct VideoModelRow: View {
         .accessibilityElement(children: .contain)
         .confirmationDialog("Remove video package?", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
             Button("Remove Package", role: .destructive, action: onDelete)
-                .accessibilityLabel("Remove deployed video package \(model.name)")
+                .accessibilityLabel(removeActionAccessibilityLabel)
                 .accessibilityValue(model.name)
                 .accessibilityHint("Removes the validated package from VideoModels. Image models are unchanged.")
             Button("Cancel", role: .cancel) { }
@@ -98,6 +110,7 @@ private struct VideoModelRow: View {
                 checkButton
                 deleteButton
             }
+            .fixedSize(horizontal: true, vertical: false)
         }
     }
 
@@ -106,6 +119,7 @@ private struct VideoModelRow: View {
             Label("Check Deployment", systemImage: "checkmark.shield")
         }
         .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
+        .frame(minHeight: 44)
         .accessibilityLabel("Check deployment for \(model.name)")
         .accessibilityHint("Rechecks the package manifest, required files, size, and integrity.")
     }
@@ -119,8 +133,16 @@ private struct VideoModelRow: View {
         }
         .buttonStyle(.borderless)
         .foregroundStyle(SciFiTheme.amber)
-        .accessibilityLabel("Remove deployed video package \(model.name)")
+        .accessibilityLabel(removeActionAccessibilityLabel)
         .accessibilityHint("Removes this video package and its deployment record. It does not affect image models.")
+    }
+
+    private var removeActionAccessibilityLabel: String {
+        if model.deploymentStatus == .ready {
+            "Remove deployed video package \(model.name)"
+        } else {
+            "Remove video package \(model.name)"
+        }
     }
 
     private func header(horizontal: Bool) -> some View {
@@ -144,21 +166,41 @@ private struct VideoModelRow: View {
         Group {
             if horizontal {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text(model.packageType.title)
-                    Text(model.sizeDescription)
-                    Text(model.inferenceAvailability.title)
+                    packageTypeStatus
+                    sizeStatus
+                    inferenceStatus
                 }
+                .fixedSize(horizontal: true, vertical: false)
             } else {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(model.packageType.title)
-                    Text(model.sizeDescription)
-                    Text(model.inferenceAvailability.title)
+                    packageTypeStatus
+                    sizeStatus
+                    inferenceStatus
                 }
             }
         }
         .font(.caption)
         .foregroundStyle(SciFiTheme.secondaryText)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var packageTypeStatus: some View {
+        Text(model.packageType.title)
+            .accessibilityLabel("Package type")
+            .accessibilityValue(model.packageType.title)
+    }
+
+    private var sizeStatus: some View {
+        Text(model.sizeDescription)
+            .accessibilityLabel("Package size")
+            .accessibilityValue(model.sizeDescription)
+    }
+
+    private var inferenceStatus: some View {
+        Label(model.inferenceAvailability.title, systemImage: "nosign")
+            .foregroundStyle(SciFiTheme.amber)
+            .accessibilityLabel("Video inference availability")
+            .accessibilityValue(model.inferenceAvailability.title)
     }
 
     private var identity: some View {
@@ -172,6 +214,9 @@ private struct VideoModelRow: View {
                 .foregroundStyle(SciFiTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Video model \(model.name)")
+        .accessibilityValue("\(model.sourceLabel), version \(model.sourceVersion)")
     }
 
     private var deploymentBadge: some View {
