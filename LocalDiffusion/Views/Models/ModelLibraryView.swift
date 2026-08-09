@@ -36,11 +36,11 @@ struct ModelLibraryView: View {
     }
 
     private var isImportingAnyModel: Bool {
-        isImportingModelFile || isImportingVideoPackage
+        isImportingModelFile || importingUntrackedModel != nil || isImportingVideoPackage
     }
 
     private var modelFileImportAccessibilityValue: String {
-        if isImportingModelFile {
+        if isImportingModelFile || importingUntrackedModel != nil {
             "Importing"
         } else if isImportingVideoPackage {
             "Unavailable while video package import is in progress"
@@ -341,7 +341,8 @@ struct ModelLibraryView: View {
 
         VideoModelsSection(
             models: videoModels,
-            isImporting: isImportingVideoPackage,
+            isImportingAnyModel: isImportingAnyModel,
+            isImportingVideoPackage: isImportingVideoPackage,
             onImport: { showingVideoPackageImporter = true },
             onCheck: { model in reconcileVideoModel(model) },
             onDelete: { model in deleteVideoModel(model) }

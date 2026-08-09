@@ -2,7 +2,8 @@ import SwiftUI
 
 struct VideoModelsSection: View {
     let models: [VideoModel]
-    let isImporting: Bool
+    let isImportingAnyModel: Bool
+    let isImportingVideoPackage: Bool
     let onImport: () -> Void
     let onCheck: (VideoModel) -> Void
     let onDelete: (VideoModel) -> Void
@@ -24,9 +25,9 @@ struct VideoModelsSection: View {
                     }
                     .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
                     .frame(minHeight: 44)
-                    .disabled(isImporting)
-                    .accessibilityValue(isImporting ? "Importing" : "Ready")
-                    .accessibilityHint("Copies and validates an explicit .ldvideo package. It does not generate video.")
+                    .disabled(isImportingAnyModel)
+                    .accessibilityValue(importAccessibilityValue)
+                    .accessibilityHint(importAccessibilityHint)
                 }
                 .padding(.vertical, 8)
             } else {
@@ -87,12 +88,13 @@ private struct VideoModelRow: View {
         .accessibilityElement(children: .contain)
         .confirmationDialog("Remove video package?", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
             Button("Remove Package", role: .destructive, action: onDelete)
-                .accessibilityLabel(removeActionAccessibilityLabel)
+                .accessibilityLabel("Remove video package")
                 .accessibilityValue(model.name)
-                .accessibilityHint("Removes the validated package from VideoModels. Image models are unchanged.")
+                .accessibilityHint(removeActionAccessibilityHint)
             Button("Cancel", role: .cancel) { }
-                .accessibilityLabel("Cancel removing video package \(model.name)")
+                .accessibilityLabel("Cancel removing video package")
                 .accessibilityValue(model.name)
+                .accessibilityHint("Keeps \(model.name) and closes the removal confirmation.")
         } message: {
             Text("This removes \(model.name) from the dedicated video-model directory.")
         }
@@ -133,15 +135,44 @@ private struct VideoModelRow: View {
         }
         .buttonStyle(.borderless)
         .foregroundStyle(SciFiTheme.amber)
-        .accessibilityLabel(removeActionAccessibilityLabel)
-        .accessibilityHint("Removes this video package and its deployment record. It does not affect image models.")
+        .accessibilityLabel("Remove video package")
+        .accessibilityValue(model.name)
+        .accessibilityHint(removeActionAccessibilityHint)
     }
 
-    private var removeActionAccessibilityLabel: String {
-        if model.deploymentStatus == .ready {
-            "Remove deployed video package \(model.name)"
+    private var importAccessibilityValue: String {
+        if isImportingVideoPackage {
+            "Importing"
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress"
         } else {
-            "Remove video package \(model.name)"
+            "Ready"
+        }
+    }
+
+    private var importAccessibilityHint: String {
+        if isImportingVideoPackage {
+            "Copies and validates an explicit .ldvideo package. Video inference remains unavailable."
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress. Finish that import before importing a video package."
+        } else {
+            "Copies and validates an explicit .ldvideo package. It does not generate video."
+        }
+    }
+
+    private var removeActionAccessibilityHint: String {
+        "Removes this \(deploymentDescription) video package and its deployment record. It does not affect image models."
+    }
+
+    private var deploymentDescription: String {
+        switch model.deploymentStatus {
+        case .ready: "deployed"
+        case .unsupported: "unsupported"
+        case .failed: "failed"
+        case .unavailable: "unavailable"
+        case .queued: "queued"
+        case .downloading: "currently deploying"
+        case .paused: "paused"
         }
     }
 
