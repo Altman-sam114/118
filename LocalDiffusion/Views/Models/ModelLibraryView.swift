@@ -99,6 +99,18 @@ struct ModelLibraryView: View {
         }
     }
 
+    private var modelLibraryEmptyStateMessage: String {
+        "No tracked GGUF models, untracked GGUF files, or deployed video packages. Download from Hugging Face or import a GGUF file, or import an .ldvideo package for separate deployment and checking. Video inference is unavailable in this build."
+    }
+
+    private var modelLibraryEmptyStateAccessibilityValue: String {
+        "Tracked GGUF models: none. Untracked GGUF files: none. Deployed video packages: none. Video inference: unavailable."
+    }
+
+    private var modelLibraryEmptyStateAccessibilityHint: String {
+        "Next steps: Download from Hugging Face, Import GGUF File, or Import Video Package. Import Video Package only deploys and checks an .ldvideo package; it does not generate video."
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -106,13 +118,13 @@ struct ModelLibraryView: View {
                     VStack(spacing: 12) {
                         EmptyStateView(
                             systemImage: "shippingbox",
-                            title: "No models",
-                            message: "Add a Hugging Face GGUF model to begin."
+                            title: "No models or video packages",
+                            message: modelLibraryEmptyStateMessage
                         )
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("Model Library empty state")
-                        .accessibilityValue("No tracked models or untracked GGUF files.")
-                        .accessibilityHint("Use Download from Hugging Face or Import GGUF File to add a local model.")
+                        .accessibilityLabel("Model Library empty: no tracked GGUF models, untracked GGUF files, or deployed video packages")
+                        .accessibilityValue(modelLibraryEmptyStateAccessibilityValue)
+                        .accessibilityHint(modelLibraryEmptyStateAccessibilityHint)
 
                         Button {
                             showingAddModel = true

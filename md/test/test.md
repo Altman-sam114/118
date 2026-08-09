@@ -155,17 +155,22 @@ du -sh /private/tmp/<project>-review-<run_id>/
 命令：
 
 ```bash
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse -target arm64-apple-ios17.0 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk LocalDiffusion/App/LocalDiffusionApp.swift LocalDiffusion/Inference/ImageGenerationBackend.swift LocalDiffusion/Models/AppModels.swift LocalDiffusion/Services/AppFileStore.swift LocalDiffusion/Services/HuggingFaceDownloadManager.swift LocalDiffusion/ViewModels/GenerationViewModel.swift LocalDiffusion/Views/Gallery/GalleryView.swift LocalDiffusion/Views/Generation/GenerationView.swift LocalDiffusion/Views/Models/ModelLibraryView.swift LocalDiffusion/Views/Prompts/PromptLibraryView.swift LocalDiffusion/Views/RootContentView.swift LocalDiffusion/Views/Shared/ParameterEditor.swift
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse -target arm64-apple-ios17.0 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk LocalDiffusion/App/LocalDiffusionApp.swift LocalDiffusion/Inference/ImageGenerationBackend.swift LocalDiffusion/Inference/VideoGenerationBackend.swift LocalDiffusion/Models/AppModels.swift LocalDiffusion/Services/AppFileStore.swift LocalDiffusion/Services/HuggingFaceDownloadManager.swift LocalDiffusion/ViewModels/GenerationViewModel.swift LocalDiffusion/Views/Gallery/GalleryView.swift LocalDiffusion/Views/Generation/GenerationView.swift LocalDiffusion/Views/Models/ModelLibraryView.swift LocalDiffusion/Views/Models/VideoModelsSection.swift LocalDiffusion/Views/Prompts/PromptLibraryView.swift LocalDiffusion/Views/RootContentView.swift LocalDiffusion/Views/Shared/ParameterEditor.swift
 ```
 
 ```bash
-CLANG_MODULE_CACHE_PATH=/private/tmp/localdiffusion-clang-cache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse -D USE_STABLE_DIFFUSION_CPP -import-objc-header LocalDiffusion/App/LocalDiffusion-Bridging-Header.h -target arm64-apple-ios17.0 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk LocalDiffusion/App/LocalDiffusionApp.swift LocalDiffusion/Inference/ImageGenerationBackend.swift LocalDiffusion/Models/AppModels.swift LocalDiffusion/Services/AppFileStore.swift LocalDiffusion/Services/HuggingFaceDownloadManager.swift LocalDiffusion/ViewModels/GenerationViewModel.swift LocalDiffusion/Views/Gallery/GalleryView.swift LocalDiffusion/Views/Generation/GenerationView.swift LocalDiffusion/Views/Models/ModelLibraryView.swift LocalDiffusion/Views/Prompts/PromptLibraryView.swift LocalDiffusion/Views/RootContentView.swift LocalDiffusion/Views/Shared/ParameterEditor.swift
+CLANG_MODULE_CACHE_PATH=/private/tmp/localdiffusion-clang-cache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse -D USE_STABLE_DIFFUSION_CPP -import-objc-header LocalDiffusion/App/LocalDiffusion-Bridging-Header.h -target arm64-apple-ios17.0 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk LocalDiffusion/App/LocalDiffusionApp.swift LocalDiffusion/Inference/ImageGenerationBackend.swift LocalDiffusion/Inference/VideoGenerationBackend.swift LocalDiffusion/Models/AppModels.swift LocalDiffusion/Services/AppFileStore.swift LocalDiffusion/Services/HuggingFaceDownloadManager.swift LocalDiffusion/ViewModels/GenerationViewModel.swift LocalDiffusion/Views/Gallery/GalleryView.swift LocalDiffusion/Views/Generation/GenerationView.swift LocalDiffusion/Views/Models/ModelLibraryView.swift LocalDiffusion/Views/Models/VideoModelsSection.swift LocalDiffusion/Views/Prompts/PromptLibraryView.swift LocalDiffusion/Views/RootContentView.swift LocalDiffusion/Views/Shared/ParameterEditor.swift
 ```
 
 当前基线：
 
 - 两条 Swift parse 命令应返回 0。
 - 本地只在 Swift 源码、bridge 相关文档规则或人工要求时运行；云端 workflow 每次 `main` push 默认运行。
+
+v1.165 固定源集与 source-contract：
+
+- 普通和 `USE_STABLE_DIFFUSION_CPP` native parse 都固定使用上面相同的 14 个 Swift 源文件；`.github/workflows/ci-results.yml` 的 `swift_sources` 必须保持同一顺序和内容。
+- source-contract 只检查静态事实：全空态同时检查 tracked/untracked/video 三类库存，visible/accessibility copy 包含三类为空、三个现有入口和 `Inference unavailable`，且未新增 video generate/frame/encoder/player 或图片 backend 调用。它不替代 VoiceOver、Dynamic Type、设备布局或真实视频推理验证。
 
 v1.161 视频模型部署基础的额外轻量检查：
 

@@ -160,6 +160,7 @@ jobs:
             LocalDiffusion/Views/Gallery/GalleryView.swift
             LocalDiffusion/Views/Generation/GenerationView.swift
             LocalDiffusion/Views/Models/ModelLibraryView.swift
+            LocalDiffusion/Views/Models/VideoModelsSection.swift
             LocalDiffusion/Views/Prompts/PromptLibraryView.swift
             LocalDiffusion/Views/RootContentView.swift
             LocalDiffusion/Views/Shared/ParameterEditor.swift

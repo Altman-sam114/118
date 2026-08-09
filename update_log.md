@@ -22,6 +22,16 @@
 
 ## 历史记录
 
+### v1.165 / 视频模型门禁空态可读性与解析覆盖
+
+- 日期：2026-08-09。
+- 基线：v1.164，`main/origin/main` 为 `672b6110cb1ad72d1933f8790c12148ca2446ff4`；工作树唯一既有未跟踪改动为本轮 Agent A 提示词。
+- 核心变更：Models 全空态同时说明没有 tracked GGUF、没有 untracked GGUF、没有 deployed video packages，保留 Download from Hugging Face、Import GGUF File、Import Video Package 三个现有入口，并明确当前 build 为 `Inference unavailable`；未读取 preflight/manifest，也未增加视频生成链路。
+- 测试契约：普通和 `USE_STABLE_DIFFUSION_CPP` native Swift parse 固定使用相同的 14 个源文件，新增 `VideoModelsSection.swift` 覆盖；CI workflow 使用同一源集。source-contract 仅核对上述静态文案、入口、空态条件和禁止新增的生成/图片 backend 调用。
+- 关键文件：`LocalDiffusion/Views/Models/ModelLibraryView.swift`、`.github/workflows/ci-results.yml`、`md/test/test.md`、`README.md`、`md/flow/flow.md`、`md/flow/flowchart.md`、本轮 v1.165 提示词。
+- 验证结果：`git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、Ruby workflow YAML parse、inline Ruby source-contract、普通 14 文件 iOS Swift parse、`USE_STABLE_DIFFUSION_CPP` native 14 文件 Swift parse 和 `./Scripts/check-video-model-package.sh` 均实际退出 0；source-contract 确认普通/native/workflow 的 14 文件源集一致。未执行完整 iPhoneOS build、simulator、VoiceOver、Dynamic Type、真实视频推理或模型/视频包下载。
+- 遗留事项：静态 parse 和 source-contract 不能证明 compact/regular 长文案布局、VoiceOver 顺序或真实设备可读性；视频仍只支持独立部署/检查，推理能力仍为 `Inference unavailable`，Agent C 需核对本轮最新未加密 CI artifact。
+
 ### v1.164 / 视频 native engine 依赖门禁与 contract
 
 - 日期：2026-08-09。
