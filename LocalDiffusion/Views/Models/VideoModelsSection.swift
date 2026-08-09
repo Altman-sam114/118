@@ -7,8 +7,6 @@ struct VideoModelsSection: View {
     let onCheck: (VideoModel) -> Void
     let onDelete: (VideoModel) -> Void
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     var body: some View {
         Section {
             if models.isEmpty {
@@ -48,6 +46,7 @@ private struct VideoModelRow: View {
     let model: VideoModel
     let onCheck: () -> Void
     let onDelete: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showingDeleteConfirmation = false
 
     var body: some View {
