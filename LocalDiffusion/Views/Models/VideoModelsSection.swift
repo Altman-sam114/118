@@ -7,6 +7,8 @@ struct VideoModelsSection: View {
     let onCheck: (VideoModel) -> Void
     let onDelete: (VideoModel) -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         Section {
             if models.isEmpty {
@@ -60,24 +62,13 @@ private struct VideoModelRow: View {
                 statusRow(horizontal: false)
             }
 
-            HStack(spacing: 10) {
-                Button(action: onCheck) {
-                    Label("Check Deployment", systemImage: "checkmark.shield")
+            if dynamicTypeSize.isAccessibilitySize {
+                actionButtons(vertical: true)
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    actionButtons(vertical: false)
+                    actionButtons(vertical: true)
                 }
-                .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
-                .accessibilityLabel("Check deployment for \(model.name)")
-                .accessibilityHint("Rechecks the package manifest, required files, size, and integrity.")
-
-                Button {
-                    showingDeleteConfirmation = true
-                } label: {
-                    Image(systemName: "trash")
-                        .frame(minWidth: 44, minHeight: 44)
-                }
-                .buttonStyle(.borderless)
-                .foregroundStyle(SciFiTheme.amber)
-                .accessibilityLabel("Remove deployed video package \(model.name)")
-                .accessibilityHint("Removes this video package and its deployment record. It does not affect image models.")
             }
         }
         .padding(.vertical, 8)
@@ -94,6 +85,43 @@ private struct VideoModelRow: View {
         } message: {
             Text("This removes \(model.name) from the dedicated video-model directory.")
         }
+    }
+
+    @ViewBuilder
+    private func actionButtons(vertical: Bool) -> some View {
+        if vertical {
+            VStack(alignment: .leading, spacing: 8) {
+                checkButton
+                deleteButton
+            }
+        } else {
+            HStack(spacing: 10) {
+                checkButton
+                deleteButton
+            }
+        }
+    }
+
+    private var checkButton: some View {
+        Button(action: onCheck) {
+            Label("Check Deployment", systemImage: "checkmark.shield")
+        }
+        .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.cyan))
+        .accessibilityLabel("Check deployment for \(model.name)")
+        .accessibilityHint("Rechecks the package manifest, required files, size, and integrity.")
+    }
+
+    private var deleteButton: some View {
+        Button {
+            showingDeleteConfirmation = true
+        } label: {
+            Image(systemName: "trash")
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.borderless)
+        .foregroundStyle(SciFiTheme.amber)
+        .accessibilityLabel("Remove deployed video package \(model.name)")
+        .accessibilityHint("Removes this video package and its deployment record. It does not affect image models.")
     }
 
     private func header(horizontal: Bool) -> some View {

@@ -128,7 +128,6 @@
 			isa = PBXGroup;
 			children = (
 				9B0000010000000000000002 /* AppModels.swift */,
-				9B000001000000000000001F /* VideoModelsSection.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -193,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				9B0000010000000000000010 /* ModelLibraryView.swift */,
+				9B000001000000000000001F /* VideoModelsSection.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";

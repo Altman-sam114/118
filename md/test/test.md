@@ -169,10 +169,9 @@ CLANG_MODULE_CACHE_PATH=/private/tmp/localdiffusion-clang-cache /Applications/Xc
 
 v1.161 视频模型部署基础的额外轻量检查：
 
-- 使用临时小型 `@main` Swift fixture probe（只写入 `/private/tmp`）编译 `VideoModelPackageService.swift` 与 `AppFileStore.swift`，调用真实 `VideoModelPackageInspector` 和 `AppFileStore`，覆盖有效 `.ldvideo` 导入、重复目录名、未知扩展名、空文件、缺文件和 `../` 路径边界；probe source 和二进制均在检查后移入临时目录回收区。
-- 本轮实际命令使用 `/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -target arm64-apple-macosx26.0 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk LocalDiffusion/Services/VideoModelPackageService.swift LocalDiffusion/Services/AppFileStore.swift <temporary-probe.swift> -o /private/tmp/localdiffusion-video-package-probe-bin`，随后运行该 probe；退出码必须为 0。
-- 本轮实际结果：该 fixture probe 编译并运行退出码 `0`；有效包导入、重复目录名、`../` 路径边界、未知扩展名、空文件和缺文件检查均通过。probe source、二进制和小型 fixture 未纳入仓库，未下载模型。
-- 该 probe 不下载模型，不创建 SwiftData 数据，不替代 iPhoneOS build；完整 build 交给 push 后 CI。
+- `Scripts/check-video-model-package.sh` 使用临时小型 `@main` Swift fixture probe（只写入 `/private/tmp`）编译 `VideoModelPackageService.swift` 与 `AppFileStore.swift`，调用真实 `VideoModelPackageInspector` 和 `AppFileStore`，覆盖有效 `.ldvideo` 导入、重复目录名、未知扩展名、空文件、缺文件和 `../` 路径边界；不下载模型、不创建 SwiftData 数据。
+- 本地实际命令：`./Scripts/check-video-model-package.sh`，本轮修复前后均需退出码 `0`。
+- `.github/workflows/ci-results.yml` 在 `Run validation commands` 中执行该脚本，把输出写入 `ci-results/video-model-package.log`，并将其作为静态检查纳入 manifest/JUnit/failure summary；脚本失败会使 workflow 失败。
 
 ### 2. Smoke
 

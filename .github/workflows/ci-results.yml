@@ -27,6 +27,7 @@ jobs:
       BUILD_LOG_PATH: ci-results/xcodebuild.log
       JUNIT_PATH: ci-results/junit.xml
       FAILURE_SUMMARY_PATH: ci-results/ci-failure-summary.md
+      VIDEO_PACKAGE_CHECK_LOG_PATH: ci-results/video-model-package.log
       MANIFEST_PATH: ci-results/ci-artifact-manifest.json
       NATIVE_BACKEND_ASSET_METADATA: NativeBackend/StableDiffusionCpp/native-backend-asset.json
       NATIVE_BACKEND_ASSET_LOG_PATH: ci-results/native-backend-asset.log
@@ -168,6 +169,9 @@ jobs:
           plutil -lint LocalDiffusion.xcodeproj/project.pbxproj > ci-results/plutil.log 2>&1
           status_plutil=$?
 
+          ./Scripts/check-video-model-package.sh > "${VIDEO_PACKAGE_CHECK_LOG_PATH}" 2>&1
+          status_video_package=$?
+
           status_native_backend_asset=1
           export NATIVE_BACKEND_ASSET_OUTCOME="missing-log"
           export NATIVE_BACKEND_ASSET_EXPECTED_SHA=""
@@ -223,6 +227,7 @@ jobs:
 
           export STATUS_GIT_DIFF="${status_git_diff}"
           export STATUS_PLUTIL="${status_plutil}"
+          export STATUS_VIDEO_PACKAGE="${status_video_package}"
           export STATUS_NATIVE_BACKEND_ASSET="${status_native_backend_asset}"
           export STATUS_SWIFT_PARSE="${status_swift_parse}"
           export STATUS_SWIFT_PARSE_NATIVE="${status_swift_parse_native}"
@@ -240,6 +245,7 @@ jobs:
           results = [
               ("git-diff-check", "ci-results/git-diff-check.log", int(os.environ["STATUS_GIT_DIFF"])),
               ("plutil", "ci-results/plutil.log", int(os.environ["STATUS_PLUTIL"])),
+              ("video-model-package", os.environ["VIDEO_PACKAGE_CHECK_LOG_PATH"], int(os.environ["STATUS_VIDEO_PACKAGE"])),
               ("native-backend-asset", os.environ["NATIVE_BACKEND_ASSET_LOG_PATH"], int(os.environ["STATUS_NATIVE_BACKEND_ASSET"])),
               ("swift-parse", "ci-results/swift-parse.log", int(os.environ["STATUS_SWIFT_PARSE"])),
               ("swift-parse-native", "ci-results/swift-parse-native.log", int(os.environ["STATUS_SWIFT_PARSE_NATIVE"])),
@@ -277,6 +283,7 @@ jobs:
               "projectSpecificReports": [
                   "ci-results/git-diff-check.log",
                   "ci-results/plutil.log",
+                  "ci-results/video-model-package.log",
                   "ci-results/native-backend-asset.log",
                   "ci-results/swift-parse.log",
                   "ci-results/swift-parse-native.log",
@@ -338,7 +345,7 @@ jobs:
           )
           PY
 
-          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
+          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_video_package}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
             exit 1
           fi
 
