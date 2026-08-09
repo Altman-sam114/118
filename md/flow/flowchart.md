@@ -153,7 +153,8 @@ flowchart TD
   T --> G1["创建版本 commit：vX.Y: 简要任务名"]
   G1 --> PUSH["git push origin main"]
   PUSH --> ACT["GitHub Actions：ci-results workflow"]
-  ACT --> PKG["上传未加密 CI 结果包：manifest / JUnit / log / failure summary"]
+  ACT --> SMOKE["iPad simulator smoke：build / install / boot / launch / screenshot / PNG 尺寸摘要"]
+  SMOKE --> PKG["上传未加密 CI 结果包：manifest / JUnit / smoke log / failure summary"]
   PKG --> C0["Agent C：gh auth login，下载 artifact 到 /private/tmp/localdiffusion-c-review-<run_id>/"]
   C0 --> C1["Agent C：核对 origin/main 最新 commit、run id、run attempt 和结果文件"]
   C1 --> D{"Agent C 云端验收是否通过？"}

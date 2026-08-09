@@ -367,10 +367,12 @@ git push origin main
   -> 从 GitHub Release native-backend-current 下载 LocalDiffusionNative.xcframework.zip
   -> 按 NativeBackend/StableDiffusionCpp/native-backend-asset.json 校验 SHA-256
   -> 校验通过后解压 LocalDiffusionNative.xcframework
-  -> git diff --check / plutil / Swift parse / native preflight / xcodebuild
+  -> git diff --check / plutil / Swift parse / native preflight / iPhoneOS xcodebuild
+  -> iPad simulator smoke：只选择 available iPad，执行 simulator build/install/boot/launch/screenshot 和 PNG 文件/尺寸摘要检查
   -> 写入 ci-artifact-manifest.json
   -> 写入 ci-failure-summary.md
-  -> 写入 junit.xml、native asset 校验日志和主构建日志
+  -> 写入 junit.xml、native asset 校验日志、主构建日志和 ipad-simulator-smoke.log
+  -> manifest/JUnit/failure summary 记录 smoke 设备、bundle、截图摘要和退出码
   -> upload-artifact 未加密结果包
   -> Agent C 下载并核对
 ```

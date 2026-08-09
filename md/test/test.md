@@ -193,8 +193,11 @@ v1.161 视频模型部署基础的额外轻量检查：
 - simulator build 成功。
 - app 安装成功。
 - `simctl launch` 返回进程号。
-- 生成截图，且首屏不是黑屏。
-- 迁移到云端验证后，Smoke 不再是默认本机步骤；人工明确要求本机 UI 验证或需要截图目检时再运行。
+- 默认选择一台 available iPad simulator；`DEVICE_ID` 优先，`DEVICE_NAME` 可选择具体 iPad，iPhone 设备不会被接受或静默替代。
+- 生成 PNG 后检查文件存在、文件大小非零、系统图像读取成功和正的 pixel width/height。尺寸/可读性不等于非黑屏或人工截图目检。
+- `simulator-build`、`app-artifact`、`install`、`boot`、`launch`、`screenshot`、`screenshot-file`、`screenshot-summary` 和环境/设备选择失败均有独立阶段文本与退出码。
+- 本地需要完整 Xcode、iOS Simulator runtime、`xcrun simctl` 和 CoreSimulatorService；迁移到云端验证后，Smoke 不再是默认本机步骤，人工明确要求本机 UI 验证时再运行。
+- `Local Diffusion CI Results` 在 `main` push 中运行一次 iPad smoke；native backend 资产不可用时写入 dependency-blocked 报告并以非零纳入 workflow 失败条件，不回退到 iPhone。
 
 ### 3. Stage Regression
 
@@ -270,6 +273,7 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `ci-results/swift-parse.log`
 - `ci-results/swift-parse-native.log`
 - `ci-results/native-backend-restore.log`
+- `ci-results/ipad-simulator-smoke.log`
 - `ci-results/native-backend.log`
 - `ci-results/xcode-version.txt`
 
@@ -297,6 +301,8 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `nativeBackendAssetOutcome`
 - `nativeBackendAssetExpectedSha256`
 - `nativeBackendAssetActualSha256`
+- `ipadSimulatorSmokeLogPath`
+- `ipadSimulatorSmoke`：设备名称/UUID、bundle/app 路径、build/install/boot/launch/screenshot 各阶段、PNG 可读性、format、bytes、width、height、failure stage 和 exit code。
 
 ## 静态检查
 

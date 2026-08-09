@@ -28,6 +28,7 @@ jobs:
       JUNIT_PATH: ci-results/junit.xml
       FAILURE_SUMMARY_PATH: ci-results/ci-failure-summary.md
       VIDEO_PACKAGE_CHECK_LOG_PATH: ci-results/video-model-package.log
+      IPAD_SIMULATOR_SMOKE_LOG_PATH: ci-results/ipad-simulator-smoke.log
       MANIFEST_PATH: ci-results/ci-artifact-manifest.json
       NATIVE_BACKEND_ASSET_METADATA: NativeBackend/StableDiffusionCpp/native-backend-asset.json
       NATIVE_BACKEND_ASSET_LOG_PATH: ci-results/native-backend-asset.log
@@ -225,6 +226,42 @@ jobs:
             status_build=1
           fi
 
+          if [[ "${status_native_backend_asset}" -eq 0 ]]; then
+            DERIVED_DATA="/tmp/localdiffusion-ipad-smoke-derived-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            SCREENSHOT_PATH="/tmp/localdiffusion-ipad-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.png" \
+            ./Scripts/smoke-test-simulator.sh > "${IPAD_SIMULATOR_SMOKE_LOG_PATH}" 2>&1
+            status_ipad_smoke=$?
+          else
+            status_ipad_smoke=1
+            {
+              echo "SMOKE_RESULT=BLOCKED"
+              echo "SMOKE_FAILURE_STAGE=dependency-native-backend-asset"
+              echo "SMOKE_EXIT_CODE=${status_ipad_smoke}"
+              echo "SMOKE_DEVICE_SELECTION=not-run"
+              echo "SMOKE_DEVICE_NAME=unknown"
+              echo "SMOKE_DEVICE_ID=unknown"
+              echo "SMOKE_BUNDLE_ID=${BUNDLE_ID:-com.example.LocalDiffusion}"
+              echo "SMOKE_APP_PATH=not-run"
+              echo "SMOKE_BUILD=BLOCKED"
+              echo "SMOKE_APP_PRESENT=BLOCKED"
+              echo "SMOKE_INSTALL=BLOCKED"
+              echo "SMOKE_BOOT=BLOCKED"
+              echo "SMOKE_LAUNCH=BLOCKED"
+              echo "SMOKE_SCREENSHOT=BLOCKED"
+              echo "SMOKE_SCREENSHOT_FILE=BLOCKED"
+              echo "SMOKE_PNG_READABLE=BLOCKED"
+              echo "SMOKE_SCREENSHOT_SUMMARY=BLOCKED"
+              echo "SMOKE_SCREENSHOT_PATH=not-run"
+              echo "SMOKE_SCREENSHOT_FORMAT=unknown"
+              echo "SMOKE_SCREENSHOT_BYTES=unknown"
+              echo "SMOKE_SCREENSHOT_WIDTH=unknown"
+              echo "SMOKE_SCREENSHOT_HEIGHT=unknown"
+              echo "SMOKE_EVIDENCE=not-run because native backend asset validation blocked simulator smoke"
+              echo "Native backend asset outcome: ${NATIVE_BACKEND_ASSET_OUTCOME}"
+              echo "iPad simulator smoke was not executed because its native backend build dependency was unavailable."
+            } > "${IPAD_SIMULATOR_SMOKE_LOG_PATH}"
+          fi
+
           export STATUS_GIT_DIFF="${status_git_diff}"
           export STATUS_PLUTIL="${status_plutil}"
           export STATUS_VIDEO_PACKAGE="${status_video_package}"
@@ -233,6 +270,7 @@ jobs:
           export STATUS_SWIFT_PARSE_NATIVE="${status_swift_parse_native}"
           export STATUS_NATIVE_BACKEND="${status_native_backend}"
           export STATUS_BUILD="${status_build}"
+          export STATUS_IPAD_SMOKE="${status_ipad_smoke}"
 
           python3 - <<'PY'
           import datetime
@@ -251,10 +289,84 @@ jobs:
               ("swift-parse-native", "ci-results/swift-parse-native.log", int(os.environ["STATUS_SWIFT_PARSE_NATIVE"])),
               ("native-backend", "ci-results/native-backend.log", int(os.environ["STATUS_NATIVE_BACKEND"])),
               ("xcodebuild", os.environ["BUILD_LOG_PATH"], int(os.environ["STATUS_BUILD"])),
+              ("ipad-simulator-smoke", os.environ["IPAD_SIMULATOR_SMOKE_LOG_PATH"], int(os.environ["STATUS_IPAD_SMOKE"])),
           ]
 
           static_failed = any(status != 0 for name, _, status in results if name != "xcodebuild")
           build_failed = int(os.environ["STATUS_BUILD"]) != 0
+
+          smoke_fields = {}
+          smoke_log_path = pathlib.Path(os.environ["IPAD_SIMULATOR_SMOKE_LOG_PATH"])
+          if smoke_log_path.is_file():
+              for line in smoke_log_path.read_text(encoding="utf-8", errors="replace").splitlines():
+                  if line.startswith("SMOKE_") and "=" in line:
+                      key, value = line.split("=", 1)
+                      smoke_fields[key] = value
+
+          def smoke_value(key, default="unknown"):
+              return smoke_fields.get(key, default)
+
+          def smoke_integer(key):
+              value = smoke_fields.get(key, "")
+              try:
+                  return int(value)
+              except ValueError:
+                  return None
+
+          smoke_summary = {
+              "result": smoke_value("SMOKE_RESULT", "NOT_RUN"),
+              "failureStage": smoke_value("SMOKE_FAILURE_STAGE", "unknown"),
+              "exitCode": int(os.environ["STATUS_IPAD_SMOKE"]),
+              "deviceSelection": smoke_value("SMOKE_DEVICE_SELECTION"),
+              "deviceName": smoke_value("SMOKE_DEVICE_NAME"),
+              "deviceId": smoke_value("SMOKE_DEVICE_ID"),
+              "bundleId": smoke_value("SMOKE_BUNDLE_ID"),
+              "appPath": smoke_value("SMOKE_APP_PATH"),
+              "build": smoke_value("SMOKE_BUILD"),
+              "appPresent": smoke_value("SMOKE_APP_PRESENT"),
+              "install": smoke_value("SMOKE_INSTALL"),
+              "boot": smoke_value("SMOKE_BOOT"),
+              "launch": smoke_value("SMOKE_LAUNCH"),
+              "screenshot": smoke_value("SMOKE_SCREENSHOT"),
+              "screenshotFile": smoke_value("SMOKE_SCREENSHOT_FILE"),
+              "pngReadable": smoke_value("SMOKE_PNG_READABLE"),
+              "screenshotSummary": smoke_value("SMOKE_SCREENSHOT_SUMMARY"),
+              "screenshotPath": smoke_value("SMOKE_SCREENSHOT_PATH"),
+              "screenshotFormat": smoke_value("SMOKE_SCREENSHOT_FORMAT"),
+              "screenshotBytes": smoke_integer("SMOKE_SCREENSHOT_BYTES"),
+              "screenshotWidth": smoke_integer("SMOKE_SCREENSHOT_WIDTH"),
+              "screenshotHeight": smoke_integer("SMOKE_SCREENSHOT_HEIGHT"),
+              "stageCommandExitCodes": {
+                  "build": smoke_integer("SMOKE_BUILD_COMMAND_EXIT"),
+                  "install": smoke_integer("SMOKE_INSTALL_COMMAND_EXIT"),
+                  "boot": smoke_integer("SMOKE_BOOT_COMMAND_EXIT"),
+                  "bootstatus": smoke_integer("SMOKE_BOOTSTATUS_COMMAND_EXIT"),
+                  "launch": smoke_integer("SMOKE_LAUNCH_COMMAND_EXIT"),
+                  "screenshot": smoke_integer("SMOKE_SCREENSHOT_COMMAND_EXIT"),
+              },
+              "evidence": smoke_value("SMOKE_EVIDENCE"),
+          }
+
+          stage_command_exit_text = ", ".join(
+              f"{name}={value}"
+              for name, value in smoke_summary["stageCommandExitCodes"].items()
+          )
+
+          smoke_detail = "; ".join([
+              f"device={smoke_summary['deviceName']} ({smoke_summary['deviceId']})",
+              f"bundle={smoke_summary['bundleId']}",
+              f"build={smoke_summary['build']}",
+              f"install={smoke_summary['install']}",
+              f"boot={smoke_summary['boot']}",
+              f"launch={smoke_summary['launch']}",
+              f"screenshot={smoke_summary['screenshot']}",
+              f"png={smoke_summary['pngReadable']}",
+              f"size={smoke_summary['screenshotWidth']}x{smoke_summary['screenshotHeight']}",
+              f"bytes={smoke_summary['screenshotBytes']}",
+              f"commandExits={stage_command_exit_text}",
+              f"failureStage={smoke_summary['failureStage']}",
+              f"exit={smoke_summary['exitCode']}",
+          ])
 
           manifest = {
               "version": os.environ["VERSION"],
@@ -277,6 +389,8 @@ jobs:
               "nativeBackendAssetOutcome": os.environ["NATIVE_BACKEND_ASSET_OUTCOME"],
               "nativeBackendAssetExpectedSha256": os.environ["NATIVE_BACKEND_ASSET_EXPECTED_SHA"],
               "nativeBackendAssetActualSha256": os.environ["NATIVE_BACKEND_ASSET_ACTUAL_SHA"],
+              "ipadSimulatorSmokeLogPath": os.environ["IPAD_SIMULATOR_SMOKE_LOG_PATH"],
+              "ipadSimulatorSmoke": smoke_summary,
               "staticChecksOutcome": "failure" if static_failed else "success",
               "buildOutcome": "failure" if build_failed else "success",
               "testOutcome": "skipped",
@@ -289,6 +403,7 @@ jobs:
                   "ci-results/swift-parse-native.log",
                   "ci-results/native-backend.log",
                   "ci-results/native-backend-restore.log",
+                  os.environ["IPAD_SIMULATOR_SMOKE_LOG_PATH"],
                   "ci-results/xcode-version.txt",
               ],
               "checks": [
@@ -312,9 +427,14 @@ jobs:
           )
           for name, log_path, status in results:
               testcase = ET.SubElement(testsuite, "testcase", {"name": name})
+              if name == "ipad-simulator-smoke":
+                  system_out = ET.SubElement(testcase, "system-out")
+                  system_out.text = smoke_detail
               if status != 0:
                   failure = ET.SubElement(testcase, "failure", {"message": f"exit {status}"})
                   failure.text = f"{name} failed with exit {status}; see {log_path}"
+                  if name == "ipad-simulator-smoke":
+                      failure.text += f"; {smoke_detail}"
           ET.ElementTree(testsuite).write(
               os.environ["JUNIT_PATH"],
               encoding="utf-8",
@@ -335,6 +455,18 @@ jobs:
           for name, log_path, status in results:
               state = "PASS" if status == 0 else "FAIL"
               summary_lines.append(f"- {state}: `{name}` exit `{status}`; log `{log_path}`")
+          summary_lines.extend([
+              "",
+              "## iPad Simulator Smoke",
+              "",
+              f"- Result: `{html.escape(smoke_summary['result'])}`; failure stage `{html.escape(smoke_summary['failureStage'])}`; exit `{smoke_summary['exitCode']}`",
+              f"- Device: `{html.escape(smoke_summary['deviceName'])}` (`{html.escape(smoke_summary['deviceId'])}`); selection `{html.escape(smoke_summary['deviceSelection'])}`",
+              f"- Bundle/app: `{html.escape(smoke_summary['bundleId'])}`; app path `{html.escape(smoke_summary['appPath'])}`",
+              f"- Stages: build `{html.escape(smoke_summary['build'])}`, install `{html.escape(smoke_summary['install'])}`, boot `{html.escape(smoke_summary['boot'])}`, launch `{html.escape(smoke_summary['launch'])}`, screenshot `{html.escape(smoke_summary['screenshot'])}`",
+              f"- PNG summary: file `{html.escape(smoke_summary['screenshotFile'])}`, readable `{html.escape(smoke_summary['pngReadable'])}`, format `{html.escape(smoke_summary['screenshotFormat'])}`, size `{smoke_summary['screenshotWidth']}x{smoke_summary['screenshotHeight']}`, bytes `{smoke_summary['screenshotBytes']}`",
+              f"- Stage command exits: `{html.escape(stage_command_exit_text)}`",
+              f"- Evidence scope: {html.escape(smoke_summary['evidence'])}",
+          ])
           if all(status == 0 for _, _, status in results):
               summary_lines.extend(["", "All configured checks passed."])
           else:
@@ -345,7 +477,7 @@ jobs:
           )
           PY
 
-          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_video_package}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 ]]; then
+          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_video_package}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 || "${status_ipad_smoke}" -ne 0 ]]; then
             exit 1
           fi
 

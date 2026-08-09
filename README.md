@@ -64,7 +64,9 @@ Run a simulator build, install, launch, and screenshot smoke test with:
 ./Scripts/smoke-test-simulator.sh
 ```
 
-Set `DEVICE_NAME` or `DEVICE_ID` to target a different simulator. This smoke test verifies build, installation, SwiftData startup, and first-screen rendering. Final local-inference acceptance still requires running the app on a device with a real GGUF model and completing one image generation.
+By default the smoke test selects one available iPad simulator. Set `DEVICE_NAME` or `DEVICE_ID` to select a specific available iPad; an iPhone selector is rejected and there is no silent iPhone fallback. The script verifies simulator build, app presence, install, boot, launch, screenshot creation, PNG readability, non-zero file size, and positive pixel dimensions. Its report is simulator build/install/launch/screenshot evidence only: it is not real iPad, VoiceOver, Dynamic Type, Reduce Motion, visual screenshot, or GGUF inference acceptance. Final local-inference acceptance still requires running the app on a device with a real GGUF model and completing one image generation.
+
+The `Local Diffusion CI Results` workflow runs one iPad simulator smoke on every `main` push when the native backend asset is available. It writes `ci-results/ipad-simulator-smoke.log` and copies its device, bundle, stage, PNG, dimension, and exit-code summary into the manifest, JUnit, and failure summary. Smoke DerivedData and screenshots stay in the runner temporary directory and are not uploaded as artifact files. Missing Xcode/CoreSimulator, iPad runtime, or native backend dependencies are reported as blocking failures rather than being replaced with an iPhone run.
 
 ## Agent handoff and maintenance
 
@@ -86,6 +88,12 @@ After every meaningful coding task:
 - By default, Agent B commits the versioned change on `main` and pushes to `origin/main`; Agent C accepts only the latest matching GitHub Actions run and results artifact.
 
 ## Maintenance log
+
+### 2026-08-09
+
+- Completed for v1.163: Changed simulator smoke to select only available iPad devices, with `DEVICE_ID` priority and literal `DEVICE_NAME` selection, explicit environment/device/stage failures, and PNG file/readability/size/dimension summaries. Connected one iPad smoke run to the `Local Diffusion CI Results` workflow and copied its device, bundle, stage, screenshot, and exit-code evidence into the unencrypted text reports.
+- Verified locally: `git diff --check`, `bash -n Scripts/smoke-test-simulator.sh`, project `plutil`, Ruby workflow YAML parsing, embedded report-Python AST parsing, a rejected iPhone `DEVICE_NAME` probe (exit `66`), and an actual temporary-path iPad simulator smoke (exit `0`; iPad Pro 13-inch (M5), PNG `2064x2752`). A manifest/JUnit/failure-summary generation probe also passed. The v1.163 commit was pushed to `origin/main`; the resulting Actions run and artifact were intentionally not awaited in this Agent B turn.
+- Risk: CI runner availability of full Xcode/CoreSimulator, an iPad runtime, and the native Release asset remains an external dependency. This smoke is simulator build/install/launch/screenshot evidence only and does not validate a real iPad, VoiceOver, Dynamic Type, Reduce Motion, visual non-black rendering, or GGUF inference.
 
 ### 2026-07-28
 

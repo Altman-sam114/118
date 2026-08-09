@@ -22,6 +22,17 @@
 
 ## 历史记录
 
+### v1.163 / iPad 模拟器 Smoke 纳入 CI
+
+- 日期：2026-08-09。
+- 基线：v1.162，commit `b3a2186ed268d8bfc72f77a4110ccc91bafa9d0c`；基线 run `31294955026` attempt `1`。
+- 核心变更：`Scripts/smoke-test-simulator.sh` 现在只选择 available iPad，显式 `DEVICE_ID` 优先、`DEVICE_NAME` 使用 literal 匹配；无 iPad、Xcode/CoreSimulator 或阶段命令失败时保留明确非零退出码和 `SMOKE_*` 摘要。脚本检查 simulator build、app、boot、install、launch、screenshot、PNG 可读性、非零文件大小和正的像素宽高。
+- CI 变更：`.github/workflows/ci-results.yml` 在 native asset 可用时执行一次 iPad smoke；native asset 缺失时生成 dependency-blocked smoke 报告。`ipad-simulator-smoke` 作为独立 check 进入 manifest、JUnit、failure summary 和 text report artifact，并进入 workflow 最终失败条件；smoke DerivedData/截图使用 runner `/tmp`，不上传。
+- 关键文件：`Scripts/smoke-test-simulator.sh`、`.github/workflows/ci-results.yml`、`README.md`、`md/test/test.md`、`md/flow/flow.md`、`md/flow/flowchart.md`、`update_log.md`。
+- 验证结果：`git diff --check`、`bash -n Scripts/smoke-test-simulator.sh`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、Ruby workflow YAML parse、workflow 内嵌报告 Python AST parse 均退出 `0`。`DEVICE_NAME='iPhone 17'` 选择拒绝 probe 退出 `66`。临时路径真实 iPad smoke 最终退出 `0`，自动选择 `iPad Pro 13-inch (M5)`，build/boot/install/launch/screenshot 通过，PNG `2064x2752`、非零且可读；manifest/JUnit/failure-summary 生成 probe 退出 `0`。
+- 提交与云端：Agent B 在 `main` 创建主题为 `v1.163: Add iPad simulator smoke CI contract` 的提交并 push `origin/main`；实际提交 SHA、push 回显和后续 Actions run/artifact 以本轮最终交付和 Agent C 对最新远端结果为准，本轮不等待或伪造 run/artifact。
+- 遗留事项：本地和 CI smoke 均不等价于真实 iPad、Stage Manager/Split View、VoiceOver、Dynamic Type、Reduce Motion、硬件键盘、人工截图目检或真实 GGUF/视频推理；Agent C 仍需下载最新未加密 artifact 核对 manifest、JUnit、failure summary、主构建和 smoke 报告。
+
 ### v1.162 / iPad 视频模型 UI 可用性
 
 - 日期：2026-08-09
