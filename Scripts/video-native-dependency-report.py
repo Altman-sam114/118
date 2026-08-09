@@ -38,8 +38,13 @@ def main() -> int:
     checks["engineRevision"] = "pass" if engine_revision not in (None, "", "unknown") else "missing"
     if checks["engineRevision"] == "missing":
         reasons.append("engine-revision-missing")
+    engine_source = manifest.get("engine", {}).get("source")
+    checks["engineSource"] = "pass" if engine_source not in (None, "", "unknown") else "missing"
+    if checks["engineSource"] == "missing":
+        reasons.append("engine-source-missing")
 
     public_abi = manifest.get("publicABI", {})
+    require_path("swiftContract", public_abi.get("swiftContract", {}).get("path"))
     require_path("publicHeader", public_abi.get("videoHeader", {}).get("path"))
     require_path("appBridge", public_abi.get("appBridge", {}).get("path"))
     signature_ok = public_abi.get("signatureEvidence") not in (None, "", "missing", "unknown")
@@ -52,6 +57,7 @@ def main() -> int:
         model.get("family") not in (None, "", "unknown")
         and model.get("version") not in (None, "", "unknown")
         and model.get("components")
+        and bool(model.get("compatibilityManifest", {}).get("path"))
         and model.get("compatibility") not in (None, "", "missing", "unknown")
     )
     checks["modelCompatibility"] = "pass" if compatibility_ok else "missing"

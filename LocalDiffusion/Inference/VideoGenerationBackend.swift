@@ -33,6 +33,7 @@ enum VideoDependencyBlocker: String, Sendable, Equatable {
     case publicABIEvidenceMissing = "public-abi-evidence-missing"
     case modelCompatibilityEvidenceMissing = "model-compatibility-evidence-missing"
     case licenseProvenanceMissing = "license-provenance-missing"
+    case engineSourceMissing = "engine-source-missing"
     case engineRevisionMissing = "engine-revision-missing"
 }
 
@@ -101,6 +102,8 @@ actor UnavailableVideoGenerationBackend: VideoGenerationBackend {
         title: "Video Inference Unavailable",
         message: "Video deployment is separate, but this build has no supported video native engine contract.",
         blockers: [
+            .engineSourceMissing,
+            .engineRevisionMissing,
             .publicABIEvidenceMissing,
             .modelCompatibilityEvidenceMissing,
             .licenseProvenanceMissing,

@@ -5,6 +5,7 @@
     "name": "unknown",
     "source": "unknown",
     "revision": "unknown",
+    "sourceEvidence": "unavailable",
     "revisionEvidence": "unavailable"
   },
   "nativeAsset": {
@@ -33,6 +34,10 @@
     "family": "unknown",
     "components": [],
     "version": "unknown",
+    "compatibilityManifest": {
+      "path": null,
+      "status": "missing"
+    },
     "compatibility": "missing",
     "provenance": "unknown"
   },
@@ -60,6 +65,8 @@
   ],
   "checks": {
     "engineRevision": "blocked",
+    "engineSource": "blocked",
+    "swiftContract": "observed",
     "publicHeader": "blocked",
     "signatureABI": "blocked",
     "appBridge": "blocked",
