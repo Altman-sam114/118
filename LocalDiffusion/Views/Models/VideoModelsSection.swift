@@ -8,6 +8,26 @@ struct VideoModelsSection: View {
     let onCheck: (VideoModel) -> Void
     let onDelete: (VideoModel) -> Void
 
+    private var importAccessibilityValue: String {
+        if isImportingVideoPackage {
+            "Importing"
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress"
+        } else {
+            "Ready"
+        }
+    }
+
+    private var importAccessibilityHint: String {
+        if isImportingVideoPackage {
+            "Copies and validates an explicit .ldvideo package. Video inference remains unavailable."
+        } else if isImportingAnyModel {
+            "Unavailable while GGUF/model import is in progress. Finish that import before importing a video package."
+        } else {
+            "Copies and validates an explicit .ldvideo package. It does not generate video."
+        }
+    }
+
     var body: some View {
         Section {
             if models.isEmpty {
@@ -138,26 +158,6 @@ private struct VideoModelRow: View {
         .accessibilityLabel("Remove video package")
         .accessibilityValue(model.name)
         .accessibilityHint(removeActionAccessibilityHint)
-    }
-
-    private var importAccessibilityValue: String {
-        if isImportingVideoPackage {
-            "Importing"
-        } else if isImportingAnyModel {
-            "Unavailable while GGUF/model import is in progress"
-        } else {
-            "Ready"
-        }
-    }
-
-    private var importAccessibilityHint: String {
-        if isImportingVideoPackage {
-            "Copies and validates an explicit .ldvideo package. Video inference remains unavailable."
-        } else if isImportingAnyModel {
-            "Unavailable while GGUF/model import is in progress. Finish that import before importing a video package."
-        } else {
-            "Copies and validates an explicit .ldvideo package. It does not generate video."
-        }
     }
 
     private var removeActionAccessibilityHint: String {

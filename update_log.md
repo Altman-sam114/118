@@ -30,6 +30,7 @@
   - 视频模型行显示重检失败/不支持状态的真实 `lastError`，并将模型来源、package type、size、deployment status 和 inference availability 按明确字段语义提供给 VoiceOver；删除动作按是否已部署提供准确上下文。
   - Video Models 的 Import/Check 操作补足至少 44pt 命中区；Models 导入状态互斥，视频包导入显示单一可访问的 loading feedback，Add 菜单和导入按钮的 disabled/value 与实际导入状态一致。
   - 追加修正父级把 GGUF、未跟踪模型和视频导入的全局互斥状态传入 Video Models；视频入口在其他模型导入时明确 unavailable，移除确认使用独立模型名 value，并按部署状态生成准确 hint。
+  - v1.162 追加提交前的 CI run `31293525617` 静态检查、native preflight 和视频 fixture 均通过，`xcodebuild` 曾因导入辅助属性作用域错误退出 65；已将其移动到 `VideoModelsSection` 作用域，普通 Swift parse 重新通过。
   - 保持 `NavigationSplitView` regular detail、compact `TabView`、图片模型链路、视频部署/推理状态推导、SwiftData、文件存储和业务动作不变；未引入视频生成或本轮动画。
 - 关键文件：`LocalDiffusion/Views/Models/VideoModelsSection.swift`、`LocalDiffusion/Views/Models/ModelLibraryView.swift`、`README.md`、`md/flow/flow.md`、`md/prompt/v1（体验优化）/v1.162（iPad视频模型UI可用性）.md`。
 - 验证结果：本地 `git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、workflow YAML 解析和普通 iOS Swift parse 均退出 0；未默认执行完整 iPhoneOS build、simulator、真实 iPad、Dynamic Type、VoiceOver 或 Reduce Motion 设备验证，交由 push 后 GitHub Actions/人工设备验证。
