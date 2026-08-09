@@ -40,12 +40,26 @@ struct ModelLibraryView: View {
     }
 
     private var modelFileImportAccessibilityValue: String {
-        if isImportingModelFile || importingUntrackedModel != nil {
+        if isImportingModelFile {
             "Importing"
         } else if isImportingVideoPackage {
             "Unavailable while video package import is in progress"
+        } else if importingUntrackedModel != nil {
+            "Unavailable while untracked model import is in progress"
         } else {
             "Ready"
+        }
+    }
+
+    private var modelFileImportAccessibilityHint: String {
+        if isImportingModelFile {
+            "Importing a GGUF model file. Wait for the import to finish."
+        } else if isImportingVideoPackage {
+            "Unavailable while video package import is in progress. Finish that import before importing a GGUF file."
+        } else if importingUntrackedModel != nil {
+            "Unavailable while untracked model import is in progress. Finish that import before importing a GGUF file."
+        } else {
+            "Opens a file picker for a local GGUF model file."
         }
     }
 
@@ -66,6 +80,22 @@ struct ModelLibraryView: View {
             "Unavailable while GGUF/model import is in progress. Finish that import before importing a video package."
         } else {
             "Opens a file picker for a local .ldvideo package. This deploys a model package only; video inference is unavailable."
+        }
+    }
+
+    private var addMenuAccessibilityValue: String {
+        if isImportingAnyModel {
+            "Unavailable while a model import is in progress. Contains Download GGUF, Import GGUF, and Import Video Package."
+        } else {
+            "Download GGUF, Import GGUF, Import Video Package"
+        }
+    }
+
+    private var addMenuAccessibilityHint: String {
+        if isImportingAnyModel {
+            "Unavailable while a model import is in progress. Contains Download GGUF, Import GGUF, and Import Video Package. Finish that import before opening Add."
+        } else {
+            "Contains Download GGUF, Import GGUF, and Import Video Package."
         }
     }
 
@@ -99,7 +129,7 @@ struct ModelLibraryView: View {
                         }
                         .buttonStyle(SciFiSecondaryButtonStyle())
                         .accessibilityValue(modelFileImportAccessibilityValue)
-                        .accessibilityHint("Opens a file picker for a local GGUF model file.")
+                        .accessibilityHint(modelFileImportAccessibilityHint)
                         .disabled(isImportingAnyModel)
 
                         Button {
@@ -147,7 +177,7 @@ struct ModelLibraryView: View {
                             Label("Import GGUF File", systemImage: "square.and.arrow.down")
                         }
                         .accessibilityValue(modelFileImportAccessibilityValue)
-                        .accessibilityHint("Opens a file picker for a local GGUF model file.")
+                        .accessibilityHint(modelFileImportAccessibilityHint)
                         .disabled(isImportingAnyModel)
 
                         Button {
@@ -162,8 +192,8 @@ struct ModelLibraryView: View {
                         Label("Add", systemImage: "plus")
                     }
                     .accessibilityLabel("Add model options")
-                    .accessibilityValue(isImportingAnyModel ? "Importing" : "Ready")
-                    .accessibilityHint("Opens options to download a Hugging Face GGUF model or import a local GGUF file.")
+                    .accessibilityValue(addMenuAccessibilityValue)
+                    .accessibilityHint(addMenuAccessibilityHint)
                     .disabled(isImportingAnyModel)
                 }
             }
@@ -337,7 +367,11 @@ struct ModelLibraryView: View {
         if !untrackedModelFiles.isEmpty {
             Section("Untracked Files") {
                 ForEach(untrackedModelFiles) { file in
-                    UntrackedModelFileRow(file: file) {
+                    UntrackedModelFileRow(
+                        file: file,
+                        isImportingAnyModel: isImportingAnyModel,
+                        isImportingThisFile: importingUntrackedModel?.id == file.id
+                    ) {
                         importingUntrackedModel = file
                     } delete: {
                         pendingUntrackedModelDeletion = file
@@ -955,6 +989,8 @@ private struct StorageSummaryRow: View {
 
 private struct UntrackedModelFileRow: View {
     let file: UntrackedModelFile
+    let isImportingAnyModel: Bool
+    let isImportingThisFile: Bool
     let importFile: () -> Void
     let delete: () -> Void
 
@@ -1015,7 +1051,9 @@ private struct UntrackedModelFileRow: View {
             .buttonStyle(SciFiSecondaryButtonStyle(color: SciFiTheme.mint))
             .frame(minWidth: 44, minHeight: 44)
             .accessibilityLabel(importAccessibilityLabel)
+            .accessibilityValue(importAccessibilityValue)
             .accessibilityHint(importAccessibilityHint)
+            .disabled(isImportingAnyModel)
 
             Button(role: .destructive, action: delete) {
                 Label("Delete Untracked Model File", systemImage: "trash")
@@ -1045,7 +1083,23 @@ private struct UntrackedModelFileRow: View {
     }
 
     private var importAccessibilityHint: String {
-        "Opens the import form for \(file.filename)."
+        if isImportingThisFile {
+            "Importing \(file.filename). Finish the import before starting another model import."
+        } else if isImportingAnyModel {
+            "Unavailable while another model import is in progress. Finish that import before importing \(file.filename)."
+        } else {
+            "Opens the import form for \(file.filename)."
+        }
+    }
+
+    private var importAccessibilityValue: String {
+        if isImportingThisFile {
+            "Importing"
+        } else if isImportingAnyModel {
+            "Unavailable while another model import is in progress"
+        } else {
+            "Ready"
+        }
     }
 
     private var deleteAccessibilityHint: String {

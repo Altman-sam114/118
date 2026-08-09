@@ -31,10 +31,12 @@
   - Video Models 的 Import/Check 操作补足至少 44pt 命中区；Models 导入状态互斥，视频包导入显示单一可访问的 loading feedback，Add 菜单和导入按钮的 disabled/value 与实际导入状态一致。
   - 追加修正父级把 GGUF、未跟踪模型和视频导入的全局互斥状态传入 Video Models；视频入口在其他模型导入时明确 unavailable，移除确认使用独立模型名 value，并按部署状态生成准确 hint。
   - 父级空态和 toolbar 的视频导入辅助功能语义复用同一状态 helper；未跟踪模型导入期间不再错误朗读 Ready，视频导入期间保持 Importing。
+  - 追加修正 GGUF 导入、Add 菜单和未跟踪文件 Import 的互斥状态 value/hint；导入期间统一明确 unavailable/blocking，空闲时才说明可打开 picker，Delete 保持可用。
   - v1.162 追加提交前的 CI run `31293525617` 静态检查、native preflight 和视频 fixture 均通过，`xcodebuild` 曾因导入辅助属性作用域错误退出 65；已将其移动到 `VideoModelsSection` 作用域，普通 Swift parse 重新通过。
   - 保持 `NavigationSplitView` regular detail、compact `TabView`、图片模型链路、视频部署/推理状态推导、SwiftData、文件存储和业务动作不变；未引入视频生成或本轮动画。
 - 关键文件：`LocalDiffusion/Views/Models/VideoModelsSection.swift`、`LocalDiffusion/Views/Models/ModelLibraryView.swift`、`README.md`、`md/flow/flow.md`、`md/prompt/v1（体验优化）/v1.162（iPad视频模型UI可用性）.md`。
 - 验证结果：本地 `git diff --check`、`plutil -lint LocalDiffusion.xcodeproj/project.pbxproj`、workflow YAML 解析和普通 iOS Swift parse 均退出 0；未默认执行完整 iPhoneOS build、simulator、真实 iPad、Dynamic Type、VoiceOver 或 Reduce Motion 设备验证，交由 push 后 GitHub Actions/人工设备验证。
+- 本轮追加修复后的 `git diff --check`、project plist lint、workflow YAML 解析和普通 iOS Swift parse（含 VideoModelsSection.swift）均实际退出 0；未执行 native parse、完整 build、simulator 或真实设备验证。
 - 遗留事项：本轮静态审计不能替代 regular/compact 尺寸切换、长文本、多种 Dynamic Type、VoiceOver 朗读顺序和 Reduce Motion 的真实设备检查；视频模型仍仅部署与能力识别，`Inference unavailable`。
 
 ### v1.161 / 本地视频模型部署基础
