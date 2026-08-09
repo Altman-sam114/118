@@ -47,6 +47,26 @@ flowchart TD
   GALLERY --> UI
 ```
 
+## 视频 native contract 与依赖门禁
+
+```mermaid
+flowchart TD
+  VREQ["VideoGenerationRequest"] --> VBACK["VideoGenerationBackend contract"]
+  VBACK --> UV["UnavailableVideoGenerationBackend actor"]
+  UV --> CANCEL{"Task cancelled?"}
+  CANCEL -- "是" --> CERR["video-cancellation"]
+  CANCEL -- "否" --> PREF["manifest + native preflight/report"]
+  PREF --> EVID["engine revision / public header / signature ABI / app bridge"]
+  PREF --> MODEL["model components + compatibility"]
+  PREF --> LIC["license + provenance"]
+  PREF --> SYMBOLS["nm: observed symbols only"]
+  SYMBOLS -. "不等于 supported ABI" .-> BLOCK["dependency-blocked / Inference unavailable"]
+  EVID --> BLOCK
+  MODEL --> BLOCK
+  LIC --> BLOCK
+  BLOCK --> NOOUTPUT["no native call / no PNG / no frames / no video file"]
+```
+
 ## 2. 图片生成执行流
 
 读图说明：这张图只看点击 Generate 后发生什么。关键点是先校验模型和文件，再归一化参数，然后通过后端生成；成功才保存文件和 SwiftData，取消或失败不保存半成品。
@@ -210,10 +230,12 @@ flowchart TD
   C --> G["ci-artifact-manifest.json"]
   ASSETLOG --> G
   D --> G
+  VREPORT["video-native-preflight.json + contract/provenance logs"] --> G
   E --> G
   F --> G
   C --> H["junit.xml + ci-failure-summary.md + 主日志"]
   D --> H
+  VREPORT --> H
   E --> H
   F --> H
   G --> I["未加密 artifact"]

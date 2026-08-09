@@ -28,6 +28,11 @@ jobs:
       JUNIT_PATH: ci-results/junit.xml
       FAILURE_SUMMARY_PATH: ci-results/ci-failure-summary.md
       VIDEO_PACKAGE_CHECK_LOG_PATH: ci-results/video-model-package.log
+      VIDEO_NATIVE_PREFLIGHT_LOG_PATH: ci-results/video-native-preflight.log
+      VIDEO_NATIVE_REPORT_PATH: ci-results/video-native-preflight.json
+      VIDEO_NATIVE_MANIFEST: NativeBackend/StableDiffusionCpp/video-native-dependency-manifest.json
+      VIDEO_NATIVE_CONTRACT_LOG_PATH: ci-results/video-native-contract.log
+      VIDEO_NATIVE_PROVENANCE_LOG_PATH: ci-results/video-native-provenance.log
       IPAD_SIMULATOR_SMOKE_LOG_PATH: ci-results/ipad-simulator-smoke.log
       MANIFEST_PATH: ci-results/ci-artifact-manifest.json
       NATIVE_BACKEND_ASSET_METADATA: NativeBackend/StableDiffusionCpp/native-backend-asset.json
@@ -145,6 +150,7 @@ jobs:
           swift_sources=(
             LocalDiffusion/App/LocalDiffusionApp.swift
             LocalDiffusion/Inference/ImageGenerationBackend.swift
+            LocalDiffusion/Inference/VideoGenerationBackend.swift
             LocalDiffusion/Models/AppModels.swift
             LocalDiffusion/Services/AppFileStore.swift
             LocalDiffusion/Services/HuggingFaceDownloadManager.swift
@@ -172,6 +178,24 @@ jobs:
 
           ./Scripts/check-video-model-package.sh > "${VIDEO_PACKAGE_CHECK_LOG_PATH}" 2>&1
           status_video_package=$?
+
+          VIDEO_NATIVE_REPORT="${VIDEO_NATIVE_REPORT_PATH}" \
+            ./Scripts/check-video-native-dependency.sh > "${VIDEO_NATIVE_PREFLIGHT_LOG_PATH}" 2>&1
+          status_video_native_preflight=$?
+          cat "${VIDEO_NATIVE_REPORT_PATH}" >> "${VIDEO_NATIVE_PREFLIGHT_LOG_PATH}"
+          status_video_native=1
+          if [[ "${status_video_native_preflight}" -eq 1 ]] && grep -q '"status": "dependency-blocked"' "${VIDEO_NATIVE_REPORT_PATH}"; then
+            status_video_native=0
+            echo "Expected dependency-blocked gate recorded; no supported video ABI was claimed." >> "${VIDEO_NATIVE_PREFLIGHT_LOG_PATH}"
+          elif [[ "${status_video_native_preflight}" -eq 0 ]]; then
+            echo "FAIL: video native preflight reported ready, but video inference is not implemented." >> "${VIDEO_NATIVE_PREFLIGHT_LOG_PATH}"
+          fi
+
+          ./Scripts/check-video-native-contract.sh > "${VIDEO_NATIVE_CONTRACT_LOG_PATH}" 2>&1
+          status_video_native_contract=$?
+
+          ./Scripts/check-video-native-provenance.sh > "${VIDEO_NATIVE_PROVENANCE_LOG_PATH}" 2>&1
+          status_video_native_provenance=$?
 
           status_native_backend_asset=1
           export NATIVE_BACKEND_ASSET_OUTCOME="missing-log"
@@ -265,6 +289,10 @@ jobs:
           export STATUS_GIT_DIFF="${status_git_diff}"
           export STATUS_PLUTIL="${status_plutil}"
           export STATUS_VIDEO_PACKAGE="${status_video_package}"
+          export STATUS_VIDEO_NATIVE="${status_video_native}"
+          export STATUS_VIDEO_NATIVE_PREFLIGHT="${status_video_native_preflight}"
+          export STATUS_VIDEO_NATIVE_CONTRACT="${status_video_native_contract}"
+          export STATUS_VIDEO_NATIVE_PROVENANCE="${status_video_native_provenance}"
           export STATUS_NATIVE_BACKEND_ASSET="${status_native_backend_asset}"
           export STATUS_SWIFT_PARSE="${status_swift_parse}"
           export STATUS_SWIFT_PARSE_NATIVE="${status_swift_parse_native}"
@@ -284,6 +312,9 @@ jobs:
               ("git-diff-check", "ci-results/git-diff-check.log", int(os.environ["STATUS_GIT_DIFF"])),
               ("plutil", "ci-results/plutil.log", int(os.environ["STATUS_PLUTIL"])),
               ("video-model-package", os.environ["VIDEO_PACKAGE_CHECK_LOG_PATH"], int(os.environ["STATUS_VIDEO_PACKAGE"])),
+              ("video-native-dependency", os.environ["VIDEO_NATIVE_PREFLIGHT_LOG_PATH"], int(os.environ["STATUS_VIDEO_NATIVE"])),
+              ("video-native-contract", os.environ["VIDEO_NATIVE_CONTRACT_LOG_PATH"], int(os.environ["STATUS_VIDEO_NATIVE_CONTRACT"])),
+              ("video-native-provenance", os.environ["VIDEO_NATIVE_PROVENANCE_LOG_PATH"], int(os.environ["STATUS_VIDEO_NATIVE_PROVENANCE"])),
               ("native-backend-asset", os.environ["NATIVE_BACKEND_ASSET_LOG_PATH"], int(os.environ["STATUS_NATIVE_BACKEND_ASSET"])),
               ("swift-parse", "ci-results/swift-parse.log", int(os.environ["STATUS_SWIFT_PARSE"])),
               ("swift-parse-native", "ci-results/swift-parse-native.log", int(os.environ["STATUS_SWIFT_PARSE_NATIVE"])),
@@ -390,6 +421,11 @@ jobs:
               "nativeBackendAssetOutcome": os.environ["NATIVE_BACKEND_ASSET_OUTCOME"],
               "nativeBackendAssetExpectedSha256": os.environ["NATIVE_BACKEND_ASSET_EXPECTED_SHA"],
               "nativeBackendAssetActualSha256": os.environ["NATIVE_BACKEND_ASSET_ACTUAL_SHA"],
+              "videoNativeManifestPath": os.environ["VIDEO_NATIVE_MANIFEST"],
+              "videoNativePreflightReportPath": os.environ["VIDEO_NATIVE_REPORT_PATH"],
+              "videoNativePreflightExitCode": int(os.environ["STATUS_VIDEO_NATIVE_PREFLIGHT"]),
+              "videoNativePreflightOutcome": "dependency-blocked-expected" if int(os.environ["STATUS_VIDEO_NATIVE_PREFLIGHT"]) == 1 and int(os.environ["STATUS_VIDEO_NATIVE"]) == 0 else "failure" if int(os.environ["STATUS_VIDEO_NATIVE"]) != 0 else "unexpected-ready",
+              "videoInferenceOutcome": "unavailable",
               "ipadSimulatorSmokeLogPath": os.environ["IPAD_SIMULATOR_SMOKE_LOG_PATH"],
               "ipadSimulatorSmoke": smoke_summary,
               "staticChecksOutcome": "failure" if static_failed else "success",
@@ -399,6 +435,10 @@ jobs:
                   "ci-results/git-diff-check.log",
                   "ci-results/plutil.log",
                   "ci-results/video-model-package.log",
+                  os.environ["VIDEO_NATIVE_PREFLIGHT_LOG_PATH"],
+                  os.environ["VIDEO_NATIVE_REPORT_PATH"],
+                  os.environ["VIDEO_NATIVE_CONTRACT_LOG_PATH"],
+                  os.environ["VIDEO_NATIVE_PROVENANCE_LOG_PATH"],
                   "ci-results/native-backend-asset.log",
                   "ci-results/swift-parse.log",
                   "ci-results/swift-parse-native.log",
@@ -478,7 +518,7 @@ jobs:
           )
           PY
 
-          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_video_package}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 || "${status_ipad_smoke}" -ne 0 ]]; then
+          if [[ "${status_git_diff}" -ne 0 || "${status_plutil}" -ne 0 || "${status_video_package}" -ne 0 || "${status_video_native}" -ne 0 || "${status_video_native_contract}" -ne 0 || "${status_video_native_provenance}" -ne 0 || "${status_native_backend_asset}" -ne 0 || "${status_swift_parse}" -ne 0 || "${status_swift_parse_native}" -ne 0 || "${status_native_backend}" -ne 0 || "${status_build}" -ne 0 || "${status_ipad_smoke}" -ne 0 ]]; then
             exit 1
           fi
 

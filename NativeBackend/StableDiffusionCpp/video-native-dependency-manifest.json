@@ -1,0 +1,80 @@
+{
+  "schema": "localdiffusion.video-native-dependency",
+  "schemaVersion": 1,
+  "engine": {
+    "name": "unknown",
+    "source": "unknown",
+    "revision": "unknown",
+    "revisionEvidence": "unavailable"
+  },
+  "nativeAsset": {
+    "releaseTag": "native-backend-current",
+    "assetName": "LocalDiffusionNative.xcframework.zip",
+    "sha256": "a1446f367c518155fac0ac268f8ee30b882961776fbbe721588d64db00b1e8d8",
+    "identityEvidence": "NativeBackend/StableDiffusionCpp/native-backend-asset.json"
+  },
+  "publicABI": {
+    "videoHeader": {
+      "path": null,
+      "status": "missing"
+    },
+    "appBridge": {
+      "path": null,
+      "status": "missing"
+    },
+    "swiftContract": {
+      "path": "LocalDiffusion/Inference/VideoGenerationBackend.swift",
+      "status": "contract-only"
+    },
+    "signatureEvidence": "missing",
+    "status": "blocked"
+  },
+  "model": {
+    "family": "unknown",
+    "components": [],
+    "version": "unknown",
+    "compatibility": "missing",
+    "provenance": "unknown"
+  },
+  "license": {
+    "spdx": "unknown",
+    "provenance": "missing",
+    "source": "unknown"
+  },
+  "observedSymbols": [
+    {
+      "symbol": "_generate_video",
+      "status": "observed-only",
+      "meaning": "nm symbol observation; not a supported ABI"
+    },
+    {
+      "symbol": "_sd_ctx_supports_video_generation",
+      "status": "observed-only",
+      "meaning": "nm symbol observation; not a supported ABI"
+    },
+    {
+      "symbolFamily": "LTX/WAN",
+      "status": "observed-only",
+      "meaning": "C++ symbol observation; not model compatibility evidence"
+    }
+  ],
+  "checks": {
+    "engineRevision": "blocked",
+    "publicHeader": "blocked",
+    "signatureABI": "blocked",
+    "appBridge": "blocked",
+    "modelCompatibility": "blocked",
+    "licenseProvenance": "blocked",
+    "observedSymbolsAreABI": false
+  },
+  "gate": {
+    "status": "dependency-blocked",
+    "reasons": [
+      "engine-revision-missing",
+      "public-abi-evidence-missing",
+      "model-compatibility-evidence-missing",
+      "license-provenance-missing"
+    ],
+    "videoInference": "unavailable"
+  }
+}

@@ -385,6 +385,12 @@ git push origin main
 - `HuggingFaceDownloadManager` 可以更新模型下载状态，但不负责生成图片。
 - SwiftData 只保存元数据，图片和模型大文件保存在 Application Support。
 - native backend 只能通过 `ImageGenerationBackend` 暴露给上层。
+
+### Video native dependency gate
+
+视频推理边界独立于图片协议：`VideoGenerationRequest` 只携带模型标识、模型 URL 和提示词，`VideoGenerationBackend` 不返回图片、帧或容器数据。当前唯一实现是 `UnavailableVideoGenerationBackend` actor；它在调用前检查取消，报告 `unavailable`，随后以稳定的 `video-dependency-blocked` 错误结束，不调用 native、不写文件、不修改 SwiftData/Gallery。
+
+`video-native-dependency-manifest.json` 描述 engine 来源/版本、public video header、signature/ABI、app bridge、模型组件/兼容性和 license/provenance。`check-video-native-dependency.sh` 只读取这些受控证据并可用 `nm` 观察 native archive；`_generate_video`、`_sd_ctx_supports_video_generation` 以及 LTX/WAN 符号只能记录为 `observed-only`，`observedSymbolsAreABI` 永远为 false。缺少 pinned revision、public ABI、模型兼容性或 license/provenance 时，preflight 结果为 `dependency-blocked`，视频能力仍为 `Inference unavailable`。
 - CI 使用 `native-backend-asset.json` 约束 Release asset 摘要，摘要不一致时不能继续 native preflight 或 build。
 - 版本提交默认由 Agent B 在 `main` 上完成并 push 到 `origin/main` 触发云端验证。
 - Agent C 只能验收 `origin/main` 最新 commit 对应的 Actions run 和未加密结果包。

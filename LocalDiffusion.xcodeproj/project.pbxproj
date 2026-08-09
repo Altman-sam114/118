@@ -22,6 +22,7 @@
 		9B0000010000000000000113 /* LocalDiffusionNative.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B000001000000000000001D /* LocalDiffusionNative.xcframework */; };
 		9B0000010000000000000114 /* VideoModelPackageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B000001000000000000001E /* VideoModelPackageService.swift */; };
 		9B0000010000000000000115 /* VideoModelsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B000001000000000000001F /* VideoModelsSection.swift */; };
+		9B0000010000000000000116 /* VideoGenerationBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0000010000000000000020 /* VideoGenerationBackend.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		9B000001000000000000001D /* LocalDiffusionNative.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LocalDiffusionNative.xcframework; sourceTree = "<group>"; };
 		9B000001000000000000001E /* VideoModelPackageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoModelPackageService.swift; sourceTree = "<group>"; };
 		9B000001000000000000001F /* VideoModelsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoModelsSection.swift; sourceTree = "<group>"; };
+		9B0000010000000000000020 /* VideoGenerationBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoGenerationBackend.swift; sourceTree = "<group>"; };
 		9B0000010000000000000017 /* StableDiffusionCppBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StableDiffusionCppBridge.mm; sourceTree = "<group>"; };
 		9B0000010000000000000018 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9B0000010000000000000019 /* build-stable-diffusion-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-stable-diffusion-xcframework.sh"; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				9B0000010000000000000005 /* ImageGenerationBackend.swift */,
+				9B0000010000000000000020 /* VideoGenerationBackend.swift */,
 				9B0000010000000000000014 /* NativeStableDiffusionBridge.h */,
 			);
 			path = Inference;
@@ -323,6 +326,7 @@
 				9B0000010000000000000112 /* PromptLibraryView.swift in Sources */,
 				9B0000010000000000000114 /* VideoModelPackageService.swift in Sources */,
 				9B0000010000000000000115 /* VideoModelsSection.swift in Sources */,
+				9B0000010000000000000116 /* VideoGenerationBackend.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

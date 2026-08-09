@@ -22,6 +22,17 @@
 
 ## 历史记录
 
+### v1.164 / 视频 native engine 依赖门禁与 contract
+
+- 日期：2026-08-09。
+- 基线：v1.163，`main/origin/main` 为 `1b37328e56cffbbf44c5e96a4eb90c9538caba4f`；工作树唯一既有未跟踪改动为本轮 Agent A 提示词。
+- 核心变更：新增独立 `VideoGenerationRequest`、`VideoGenerationBackend`、稳定状态/错误/取消边界和 `UnavailableVideoGenerationBackend` actor；调用不启动 native、不写 PNG/帧/视频、不修改 SwiftData/Gallery。新增 `video-native-dependency-manifest.json` 记录 engine/model/license/provenance 事实边界，缺失项保持 unknown/missing/blocked。
+- Native 事实：本地 XCFramework 的 `nm` 确实观察到 `_generate_video`、`_sd_ctx_supports_video_generation`、LTX/WAN C++ 符号，但没有把这些符号当作 supported ABI；没有猜测 engine revision、公开视频 header、signature/lifecycle、模型组件兼容或许可证事实。
+- CI/脚本：新增视频 preflight JSON/report、contract probe 和 provenance fixture probe；CI artifact 收集 preflight/report、manifest、JUnit/failure summary 及既有构建/native/iPad smoke 报告，并把预期 dependency-blocked 作为独立可审计状态。
+- 关键文件：`LocalDiffusion/Inference/VideoGenerationBackend.swift`、`LocalDiffusion.xcodeproj/project.pbxproj`、`NativeBackend/StableDiffusionCpp/video-native-dependency-manifest.json`、`Scripts/check-video-native-*.sh`、`Scripts/video-native-dependency-report.py`、`.github/workflows/ci-results.yml`、`README.md`、`md/test/test.md`、`md/flow/flow.md`、`md/flow/flowchart.md`、本轮 v1.164 提示词。
+- 验证结果：contract probe、provenance probe、JSON/plist/YAML/脚本语法和真实 preflight 已在本地执行；preflight 按预期返回 `dependency-blocked`，其报告标记 `observedSymbolsAreABI=false`。完整 iPhoneOS build、simulator、真实视频 engine/编码器/播放器和模型推理不在本轮范围，交由 push 后 GitHub Actions/Agent C artifact 验收。
+- 遗留事项：后续真实视频实现仍需人工授权的 pinned engine 源码/header/signature/ABI/lifecycle/线程证据、具体模型组件兼容 manifest、license/provenance 和真机取消/内存/帧输出验证；本版本仍为 `Inference unavailable`。
+
 ### v1.163 / iPad 模拟器 Smoke 纳入 CI
 
 - 日期：2026-08-09。

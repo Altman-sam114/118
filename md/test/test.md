@@ -275,6 +275,10 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `ci-results/native-backend-restore.log`
 - `ci-results/ipad-simulator-smoke.log`
 - `ci-results/native-backend.log`
+- `ci-results/video-native-preflight.json`
+- `ci-results/video-native-preflight.log`
+- `ci-results/video-native-contract.log`
+- `ci-results/video-native-provenance.log`
 - `ci-results/xcode-version.txt`
 
 `ci-artifact-manifest.json` 至少记录：
@@ -301,8 +305,33 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `nativeBackendAssetOutcome`
 - `nativeBackendAssetExpectedSha256`
 - `nativeBackendAssetActualSha256`
+- `videoNativeManifestPath`
+- `videoNativePreflightReportPath`
+- `videoNativePreflightExitCode`
+- `videoNativePreflightOutcome`
+- `videoInferenceOutcome`
 - `ipadSimulatorSmokeLogPath`
 - `ipadSimulatorSmoke`：设备名称/UUID、bundle/app 路径、build/install/boot/launch/screenshot 各阶段、PNG 可读性、format、bytes、width、height、failure stage 和 exit code。
+
+## v1.164 视频 native contract / provenance probe
+
+本轮新增独立 `VideoGenerationBackend.swift`、视频依赖 manifest 和报告脚本。`UnavailableVideoGenerationBackend` 只能报告 unavailable/dependency-blocked，取消转换为稳定 `video-cancellation`，不调用 native、不产生任何图片/帧/视频输出。
+
+本地实际检查命令：
+
+```bash
+bash -n Scripts/check-video-native-dependency.sh
+bash -n Scripts/check-video-native-contract.sh
+bash -n Scripts/check-video-native-provenance.sh
+python3 -m json.tool NativeBackend/StableDiffusionCpp/video-native-dependency-manifest.json >/dev/null
+./Scripts/check-video-native-contract.sh
+./Scripts/check-video-native-provenance.sh
+VIDEO_NATIVE_REPORT=/private/tmp/localdiffusion-video-native-preflight-v1.164.json ./Scripts/check-video-native-dependency.sh
+```
+
+contract 和 provenance probe 退出 `0`；真实 preflight 退出 `1`，报告明确为 `dependency-blocked`，`observedSymbolsAreABI=false`，这是当前缺少公开视频 header、稳定 signature/ABI、模型兼容性和 license/provenance 的预期结果。fixture 只写入 `/private/tmp`，不下载模型或大依赖。普通/native Swift parse、workflow YAML、工程 plist 和 `Scripts/check-native-backend.sh` 仍按本轮实际改动追加执行并记录。
+
+CI `ci-results.yml` 将 `video-native-preflight.json`、preflight log、contract/provenance log、manifest、JUnit、failure summary 和既有主构建/native/iPad smoke 报告一起上传；预期 dependency-blocked 作为独立可审计状态收集，不把符号观察升级为 ABI 支持。
 
 ## 静态检查
 
