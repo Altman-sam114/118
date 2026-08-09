@@ -86,3 +86,11 @@ SWIFT
   "${probe_source}" \
   -o "${probe_binary}"
 "${probe_binary}"
+
+cat <<'SUMMARY'
+CONTRACT_STATUS=unavailable
+ERROR_CODE=video-dependency-blocked
+CANCELLATION_CODE=video-cancellation
+NATIVE_CALLS=none
+OUTPUTS=none
+SUMMARY

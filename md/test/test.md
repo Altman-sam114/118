@@ -275,6 +275,8 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `ci-results/native-backend-restore.log`
 - `ci-results/ipad-simulator-smoke.log`
 - `ci-results/native-backend.log`
+- `ci-results/video-native-dependency-manifest.json`
+- `ci-results/video-native-manifest-copy.log`
 - `ci-results/video-native-preflight.json`
 - `ci-results/video-native-preflight.log`
 - `ci-results/video-native-contract.log`
@@ -306,6 +308,9 @@ HOME=/private/tmp/localdiffusion-xcode-home DEVELOPER_DIR=/Applications/Xcode.ap
 - `nativeBackendAssetExpectedSha256`
 - `nativeBackendAssetActualSha256`
 - `videoNativeManifestPath`
+- `videoNativeManifestSourcePath`
+- `videoNativeManifestCopyLogPath`
+- `videoNativeManifestCopyOutcome`
 - `videoNativePreflightReportPath`
 - `videoNativePreflightExitCode`
 - `videoNativePreflightOutcome`
@@ -329,9 +334,9 @@ python3 -m json.tool NativeBackend/StableDiffusionCpp/video-native-dependency-ma
 VIDEO_NATIVE_REPORT=/private/tmp/localdiffusion-video-native-preflight-v1.164.json ./Scripts/check-video-native-dependency.sh
 ```
 
-contract 和 provenance probe 退出 `0`；真实 preflight 退出 `1`，报告明确为 `dependency-blocked`，`observedSymbolsAreABI=false`，这是当前缺少公开视频 header、稳定 signature/ABI、模型兼容性和 license/provenance 的预期结果。fixture 只写入 `/private/tmp`，不下载模型或大依赖。普通/native Swift parse、workflow YAML、工程 plist 和 `Scripts/check-native-backend.sh` 仍按本轮实际改动追加执行并记录。
+contract 和 provenance probe 退出 `0`；真实 preflight 退出 `1`，报告明确为 `dependency-blocked`，`observedSymbolsAreABI=false`，这是当前缺少公开视频 header、稳定 signature/ABI、模型兼容性和 license/provenance 的预期结果。provenance fixture 实际覆盖绝对 evidence path、包含 `..` 的逃逸 path 和伪造非空但不存在的 evidence path；fixture 只写入 `/private/tmp`，不下载模型或大依赖。contract 摘要实际输出 unavailable、video-dependency-blocked、video-cancellation、native/output none。普通/native Swift parse、workflow YAML、工程 plist 和 `Scripts/check-native-backend.sh` 仍按本轮实际改动追加执行并记录。
 
-CI `ci-results.yml` 将 `video-native-preflight.json`、preflight log、contract/provenance log、manifest、JUnit、failure summary 和既有主构建/native/iPad smoke 报告一起上传；预期 dependency-blocked 作为独立可审计状态收集，不把符号观察升级为 ABI 支持。
+CI `ci-results.yml` 将原始 `NativeBackend/StableDiffusionCpp/video-native-dependency-manifest.json` 复制为 artifact 内的 `ci-results/video-native-dependency-manifest.json`，并用 `video-native-manifest-copy.log` 检查存在性；同时上传 preflight JSON/log、contract/provenance log、JUnit、failure summary 和既有主构建/native/iPad smoke 报告。预期 dependency-blocked 作为独立可审计状态收集，不把符号观察升级为 ABI 支持。
 
 ## 静态检查
 

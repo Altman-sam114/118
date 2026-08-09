@@ -5,8 +5,8 @@
     "name": "unknown",
     "source": "unknown",
     "revision": "unknown",
-    "sourceEvidence": "unavailable",
-    "revisionEvidence": "unavailable"
+    "sourceEvidencePath": null,
+    "revisionEvidencePath": null
   },
   "nativeAsset": {
     "releaseTag": "native-backend-current",
@@ -27,7 +27,10 @@
       "path": "LocalDiffusion/Inference/VideoGenerationBackend.swift",
       "status": "contract-only"
     },
-    "signatureEvidence": "missing",
+    "signatureEvidence": {
+      "path": null,
+      "status": "missing"
+    },
     "status": "blocked"
   },
   "model": {
@@ -39,12 +42,15 @@
       "status": "missing"
     },
     "compatibility": "missing",
-    "provenance": "unknown"
+    "provenance": "unknown",
+    "provenanceEvidencePath": null
   },
   "license": {
     "spdx": "unknown",
     "provenance": "missing",
-    "source": "unknown"
+    "source": "unknown",
+    "provenanceEvidencePath": null,
+    "sourceEvidencePath": null
   },
   "observedSymbols": [
     {

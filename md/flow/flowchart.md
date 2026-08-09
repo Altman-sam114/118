@@ -230,7 +230,7 @@ flowchart TD
   C --> G["ci-artifact-manifest.json"]
   ASSETLOG --> G
   D --> G
-  VREPORT["video-native-preflight.json + contract/provenance logs"] --> G
+  VREPORT["ci-results/video-native-dependency-manifest.json + preflight/contract/provenance logs"] --> G
   E --> G
   F --> G
   C --> H["junit.xml + ci-failure-summary.md + 主日志"]

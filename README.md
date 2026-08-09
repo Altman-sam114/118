@@ -45,7 +45,7 @@ The CI results workflow is `.github/workflows/ci-results.yml`. It is triggered b
 
 The generated native XCFramework is not committed to git. CI restores it from the GitHub Release tag `native-backend-current`, asset `LocalDiffusionNative.xcframework.zip`, checks the SHA-256 recorded in `NativeBackend/StableDiffusionCpp/native-backend-asset.json`, and only then runs native preflight and `xcodebuild`.
 
-Video native preflight is intentionally separate from the image bridge. Run `./Scripts/check-video-native-dependency.sh` to inspect the machine-readable blocked report, `./Scripts/check-video-native-contract.sh` for the no-output/cancellation contract probe, and `./Scripts/check-video-native-provenance.sh` for the small incomplete-manifest fixture probe. A nonzero preflight exit with `dependency-blocked` is expected until a pinned engine source, public video header/signature, app bridge, model compatibility manifest, and license/provenance evidence are supplied.
+Video native preflight is intentionally separate from the image bridge. Run `./Scripts/check-video-native-dependency.sh` to inspect the machine-readable blocked report, `./Scripts/check-video-native-contract.sh` for the no-output/cancellation contract probe and stable summary, and `./Scripts/check-video-native-provenance.sh` for the small incomplete-manifest fixture probe. A nonzero preflight exit with `dependency-blocked` is expected until a pinned engine source, public video header/signature, app bridge, model compatibility manifest, and license/provenance evidence are supplied. CI uploads the original manifest at `ci-results/video-native-dependency-manifest.json` and records that path in its artifact manifest.
 
 ## Verification
 
